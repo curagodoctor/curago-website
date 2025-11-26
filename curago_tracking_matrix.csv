@@ -1,0 +1,42 @@
+Event Name,Category,Triggered From,Analytics Platforms,Data Sent / Parameters,Purpose / Notes
+virtual_pageview,Page View,Any SPA route (Quiz, Results, Landing),GA4 + GTM + Meta, page_title, page_path, page_location, referrer_code,SPA-safe page view tracking (virtual route change)
+referral_init,Referral,App mount (if ?ref= present),GA4 + GTM + Meta, referrer_code,Initialize referral tracking session from URL
+generate_lead,Form,Any form submission,GA4,name, email, phone, form_type, referral_code, referral_link,Tracks new lead (GA4 goal event)
+Lead,Form,Any form submission,Meta, content_name, content_category, value, currency, referral_code,Standard Meta “Lead” conversion
+form_submission,Form,All forms (contact/lead/appointment),GTM,event, formType, referralCode, referralLink, ecommerce payload,Used for GTM triggers and form analytics
+Schedule,Form,Appointment booking,Meta,value, currency, referral_code,Schedule / booking conversion
+AppointmentBooked,Form,Appointment booking,Meta, consultant, date, referral_code,Custom Meta event for appointment tracking
+Contact,Form,Contact form,Meta, method, referral_code,Tracks contact form lead or WhatsApp click
+CallbackRequested,Form,Contact form,Meta, callback_time, referral_code,Custom Meta callback intent
+LeadFormSubmitted,Form,Lead form,Meta, service, referral_code,Custom Meta lead tracking
+cta_click,CTA,Buttons (Book Call, Team, Consultation),GTM, ctaName, source, extras,All CTA interactions across site
+select_content,CTA,Generic CTAs (GA4),GA4, content_type, item_id, source, extras,GA4 standard CTA click event
+CTA_Click,CTA,All buttons/CTAs,Meta, cta_name, source, extras,Custom Meta CTA event
+button_click,CTA,All buttons (Get Full Insights, etc.),GTM, buttonName, buttonType, clickSource,Generic button click tracking
+click,CTA/Button,All buttons (GA4),GA4, event_category, event_label, button_type, click_source,GA4 standard click event
+ButtonClick,CTA/Button,All buttons,Meta, button_name, button_type, source,Custom Meta click tracking
+contact_whatsapp,Engagement,WhatsApp buttons (footer, results),GA4,event_category, event_label, method,Tracks WhatsApp contact intent
+WhatsAppClick,Engagement,WhatsApp buttons,Meta, source,Custom Meta event for WhatsApp contact
+contact_method_click,Engagement,Phone or WhatsApp clicks,GTM, contactMethod, source,Tracks which contact method users engage with
+contact_phone,Engagement,Phone click,GA4,event_category, event_label, method,GA4 phone engagement
+PhoneClick,Engagement,Phone click,Meta, source,Custom Meta phone event
+section_view,Engagement,Key scroll sections (results, form),GA4 + GTM, sectionName,Tracks which sections users viewed
+purchase,Conversion,Successful checkout or consultation,GA4,value, currency, transaction_id, referral_code,Tracks conversion value (GA4 eCommerce)
+Purchase,Conversion,Conversion,Meta,value, currency, referral_code,Meta conversion mapping
+conversion,Conversion,Checkout / Paid action,GTM,value, currency, transactionId, referralCode, referralLink,Used for GTM-based conversion tracking
+referral_share,Referral,Share button (WhatsApp Share),GA4 + GTM + Meta, method, referralCode, referralLink, source,Tracks WhatsApp share action for referrals
+ReferralShare,Referral,Share button (Meta custom event),Meta, method, referral_code, referral_link, source,Meta ad retargeting for shares
+referral_copy,Referral,Copy referral message/button,GA4 + GTM + Meta, referralCode, referralLink, source,Tracks copy-to-clipboard referral intent
+ReferralCopy,Referral,Copy referral message/button,Meta, referral_code, referral_link, source,Meta ad retargeting for copy action
+whatsapp_dm,Automation,Server webhook auto-send,GA4 + GTM + Meta, to, source,Tracks automated WhatsApp DMs sent via webhook
+WhatsAppDM,Automation,Server webhook auto-send,Meta,to, source,Custom Meta event for DM automation
+aura_results_impression,Aura Quiz,Results page load,GTM,event, aura_event_id, aura_overall,Entry event for result analytics
+aura_results_scroll,Aura Quiz,Results scroll tracking,GTM,event, aura_event_id, scroll_pct,Scroll depth milestones (25%, 50%, 75%, 90%)
+aura_results_section_view,Aura Quiz,Each tracked section,GTM,event, aura_event_id, section, visible_pct,Viewability of result sections
+aura_results_time_spent,Aura Quiz,Unmount (exit),GTM,event, aura_event_id, total_time_s, max_scroll_pct,Time spent on results
+aura_results_submit_attempt,Aura Quiz,Form submit click,GTM,event, aura_event_id, name_len, has_email,Form attempt analytics
+aura_results_submit_success,Aura Quiz,Form submitted successfully,GTM,event, aura_event_id,Form success analytics
+aura_results_submit_error,Aura Quiz,Form failed submission,GTM,event, aura_event_id, message,Error tracking
+aura_results_cta_click,Aura Quiz,Any CTA button (Retake, Book Call, etc.),GTM,event, aura_event_id, label,Tracks CTA usage on results page
+aura_referral_copy,Aura Quiz,Copy referral text,GTM,event, aura_event_id, code, fallback,Tracks referral copy click
+aura_referral_share_whatsapp,Aura Quiz,Share on WhatsApp,GTM,event, aura_event_id, code,Tracks referral share click

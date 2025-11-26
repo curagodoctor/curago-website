@@ -1,0 +1,112 @@
+version: "3.8"
+
+services:
+  # Traefik reverse proxy with automatic SSL
+  reverse-proxy:
+    image: traefik:v3.0
+    container_name: traefik
+    command:
+      # Docker provider
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      
+      # Entry points
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      
+      # Let's Encrypt configuration
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.email=dubeyjatin0959@gmail.com
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      
+      # Dashboard
+      - --api.dashboard=true
+      
+      # Logging
+      - --log.level=INFO
+      - --accesslog=true
+      - --accesslog.filepath=/var/log/traefik/access.log
+    
+    ports:
+      - "80:80"
+      - "443:443"
+    
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+      - ./logs/traefik:/var/log/traefik
+    
+    labels:
+      - traefik.enable=true
+      
+      # Security headers middleware
+      - traefik.http.middlewares.sec-headers.headers.stsSeconds=31536000
+      - traefik.http.middlewares.sec-headers.headers.stsIncludeSubdomains=true
+      - traefik.http.middlewares.sec-headers.headers.forceSTSHeader=true
+      - traefik.http.middlewares.sec-headers.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.sec-headers.headers.browserXssFilter=true
+      - traefik.http.middlewares.sec-headers.headers.frameDeny=true
+      
+      # HTTP to HTTPS redirect middleware
+      - traefik.http.middlewares.redirect-https.redirectScheme.scheme=https
+      - traefik.http.middlewares.redirect-https.redirectScheme.permanent=true
+      
+      # Traefik dashboard (optional - for monitoring)
+      - traefik.http.routers.dashboard.rule=Host(`traefik.curago.in`)
+      - traefik.http.routers.dashboard.entrypoints=websecure
+      - traefik.http.routers.dashboard.tls.certresolver=letsencrypt
+      - traefik.http.routers.dashboard.service=api@internal
+      - traefik.http.routers.dashboard.middlewares=dashboard-auth
+      
+      # Basic auth for dashboard (username: admin, password: change_this_password)
+      # Generate new password: echo $(htpasswd -nb admin your_password) | sed -e s/\\$/\\$\\$/g
+      - traefik.http.middlewares.dashboard-auth.basicauth.users=admin:$$apr1$$8jcvz7h9$$gkPvPZqvLZBQvkjQQrXUJ0
+    
+    restart: unless-stopped
+    networks:
+      - curago-network
+
+  # Main CuraGo website
+  website:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: curago-website
+    
+    labels:
+      - traefik.enable=true
+      
+      # HTTPS router (main website)
+      - traefik.http.routers.website.rule=Host(`curago.in`) || Host(`www.curago.in`)
+      - traefik.http.routers.website.entrypoints=websecure
+      - traefik.http.routers.website.tls=true
+      - traefik.http.routers.website.tls.certresolver=letsencrypt
+      - traefik.http.routers.website.middlewares=sec-headers
+      - traefik.http.services.website.loadbalancer.server.port=80
+      
+      # HTTP router - redirect to HTTPS
+      - traefik.http.routers.website-http.rule=Host(`curago.in`) || Host(`www.curago.in`)
+      - traefik.http.routers.website-http.entrypoints=web
+      - traefik.http.routers.website-http.middlewares=redirect-https
+    
+    depends_on:
+      - reverse-proxy
+    
+    # healthcheck:
+    #   test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 10s
+    
+    restart: unless-stopped
+    networks:
+      - curago-network
+
+networks:
+  curago-network:
+    driver: bridge
+
+volumes:
+  letsencrypt-data:
