@@ -25,9 +25,15 @@ import {
   AuraQuizFlow,
   AuraResultScreen,
 } from './components/assessment';
+import {
+  AtmLandingPage,
+  AtmQuizFlow,
+  AtmResultScreen,
+} from './components/assessment/atm';
 
 // ✅ Single source of truth for types (new 8-pillar model)
 import type { QuizAnswers, UserInfo, AuraScores } from './types/aura';
+import type { AtmAnswers, AtmUserInfo } from './types/atm';
 
 type SitePage = 'home' | 'team' | 'booking' | 'contact';
 
@@ -35,6 +41,7 @@ const getPathname = () =>
   (typeof window !== 'undefined' ? window.location.pathname : '/') || '/';
 
 const isAuraPath = (p: string) => p.startsWith('/aura-rise-index');
+const isAtmPath = (p: string) => p.startsWith('/anxiety-trigger-mapping');
 
 /** =========================
  *  Referral-safe URL helpers
@@ -62,15 +69,25 @@ export default function App() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [scores, setScores] = useState<AuraScores | null>(null);
 
+  // ---------- ATM state ----------
+  const [atmStage, setAtmStage] =
+    useState<'landing' | 'quiz' | 'results'>('landing');
+  const [atmAnswers, setAtmAnswers] = useState<AtmAnswers | null>(null);
+  const [atmUserInfo, setAtmUserInfo] = useState<AtmUserInfo | null>(null);
+
   // Which branch of the app are we on?
   const [isAuraRoute, setIsAuraRoute] = useState<boolean>(
     isAuraPath(getPathname())
+  );
+  const [isAtmRoute, setIsAtmRoute] = useState<boolean>(
+    isAtmPath(getPathname())
   );
 
   // ---------- Record referral once (captures ?ref=...) ----------
   useEffect(() => {
     trackReferralInit();
   }, []);
+
 
   // ---------- Hash routing (marketing pages) ----------
   useEffect(() => {
@@ -102,13 +119,14 @@ export default function App() {
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [isAuraRoute]);
+  }, [isAuraRoute, isAtmRoute]);
 
   // ---------- Path routing (/contact and /aura-rise-index*) ----------
   useEffect(() => {
     const syncFromPath = () => {
       const { pathname } = window.location;
       setIsAuraRoute(isAuraPath(pathname));
+      setIsAtmRoute(isAtmPath(pathname));
 
       // AURA routes
       if (pathname === '/aura-rise-index') {
@@ -140,6 +158,25 @@ export default function App() {
         return;
       }
 
+      // ATM routes
+      if (pathname === '/anxiety-trigger-mapping') {
+        setAtmStage('landing');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('ATM Landing', 'CuraGo - Anxiety Trigger Mapping');
+        return;
+      }
+      if (pathname === '/anxiety-trigger-mapping/quiz') {
+        setAtmStage('quiz');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('ATM Quiz', 'CuraGo - ATM Quiz');
+        return;
+      }
+      if (pathname === '/anxiety-trigger-mapping/results') {
+        setAtmStage('results');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('ATM Results', 'CuraGo - ATM Results');
+        return;
+      }
 
       // Contact route (full page)
       if (pathname === '/contact') {
@@ -256,6 +293,52 @@ export default function App() {
     goToAura('landing');
   };
 
+  // ---------- ATM nav helpers (path) ----------
+  const goToAtm = (stage: 'landing' | 'quiz' | 'results') => {
+    const path =
+      stage === 'landing'
+        ? '/anxiety-trigger-mapping'
+        : stage === 'quiz'
+        ? '/anxiety-trigger-mapping/quiz'
+        : '/anxiety-trigger-mapping/results';
+
+    history.pushState(null, '', buildUrl(path));
+    setIsAtmRoute(true);
+    setAtmStage(stage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleStartAtmQuiz = () => goToAtm('quiz');
+
+  const handleAtmQuizComplete = (answers: AtmAnswers, userInfo: AtmUserInfo) => {
+    setAtmAnswers(answers);
+    setAtmUserInfo(userInfo);
+    goToAtm('results');
+  };
+
+  const handleAtmRetake = () => {
+    setAtmAnswers(null);
+    setAtmUserInfo(null);
+    goToAtm('landing');
+  };
+
+  // ---------- Handle refresh on results pages without data ----------
+  useEffect(() => {
+    // If we're on ATM results page but have no answers, redirect to landing
+    if (isAtmRoute && atmStage === 'results' && !atmAnswers) {
+      console.log('🔄 ATM Results page accessed without data, redirecting to landing');
+      goToAtm('landing');
+      return;
+    }
+
+    // If we're on AURA results page but have no scores, redirect to landing
+    if (isAuraRoute && auraStage === 'results' && !scores) {
+      console.log('🔄 AURA Results page accessed without data, redirecting to landing');
+      goToAura('landing');
+      return;
+    }
+  }, [isAtmRoute, atmStage, atmAnswers, isAuraRoute, auraStage, scores]);
+
   // ---------- Render ----------
   if (isAuraRoute) {
     return (
@@ -275,6 +358,47 @@ export default function App() {
             userInfo={userInfo}
             onRetake={handleRetake}
           />
+        )}
+        {auraStage === 'results' && (!scores || !userInfo) && (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">Redirecting to start...</p>
+              <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-teal-500 rounded-full mx-auto"></div>
+            </div>
+          </div>
+        )}
+
+        <Footer />
+      </div>
+    );
+  }
+
+  if (isAtmRoute) {
+    return (
+      <div className="min-h-screen bg-white scroll-smooth">
+        <Toaster />
+        <Navbar
+          onBookAppointment={navigateToBooking}
+          currentPage="atm"
+          onNavigate={handleNavigate}
+        />
+
+        {atmStage === 'landing' && <AtmLandingPage onStart={handleStartAtmQuiz} />}
+        {atmStage === 'quiz' && <AtmQuizFlow onComplete={handleAtmQuizComplete} />}
+        {atmStage === 'results' && atmAnswers && atmUserInfo && (
+          <AtmResultScreen
+            answers={atmAnswers}
+            userInfo={atmUserInfo}
+            onRetake={handleAtmRetake}
+          />
+        )}
+        {atmStage === 'results' && (!atmAnswers || !atmUserInfo) && (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">Redirecting to start...</p>
+              <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-teal-500 rounded-full mx-auto"></div>
+            </div>
+          </div>
         )}
 
         <Footer />
