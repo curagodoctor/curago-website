@@ -4,6 +4,7 @@ import { ScrollArea } from './ui/scroll-area';
 interface WebsiteDisclaimerProps {
   trigger?: React.ReactNode;
 }
+  
 
 export function WebsiteDisclaimer({ trigger }: WebsiteDisclaimerProps) {
   return (
