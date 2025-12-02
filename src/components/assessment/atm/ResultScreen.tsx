@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Button } from '../../ui/button';
 import { Card } from '../../ui/card';
 import { Badge } from '../../ui/badge';
@@ -6,6 +6,46 @@ import type { AtmAnswers, UserInfo, AnxietyPattern } from '../../../types/atm';
 import { trackButtonClick, trackPhoneClick, trackFormSubmission } from '../../../utils/tracking';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Zap, Brain, Shield, Target, Clock, AlertTriangle, MessageCircle, X, Phone, User, Mail } from 'lucide-react';
+
+// ---------- GTM tracking helpers ----------
+function simpleHash(str: string) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+  const base36 = Math.abs(h).toString(36);
+  return base36.slice(0, 6).padEnd(6, '0');
+}
+const now = () => Date.now();
+const secs = (ms: number) => Math.round(ms / 1000);
+
+const dlPush = (obj: Record<string, any>) => {
+  try {
+    // GTM DataLayer
+    (window as any).dataLayer = (window as any).dataLayer || [];
+    (window as any).dataLayer.push({
+      page_path: window.location.pathname + window.location.search + window.location.hash,
+      timestamp: new Date().toISOString(),
+      ...obj,
+    });
+    
+    // Meta Pixel equivalent
+    if ((window as any).fbq && obj.event) {
+      const eventName = obj.event.replace('atm_results_', '').replace('atm_', '');
+      const metaEventName = `ATM_${eventName.charAt(0).toUpperCase() + eventName.slice(1)}`;
+      
+      (window as any).fbq('trackCustom', metaEventName, {
+        atm_event_id: obj.atm_event_id,
+        event_type: obj.event,
+        page_path: window.location.pathname,
+        timestamp: new Date().toISOString(),
+        ...obj,
+      });
+      
+      console.log('✅ Meta Pixel: ATM event sent -', metaEventName, obj.atm_event_id);
+    }
+  } catch (e) {
+    console.warn('❌ ATM tracking error:', e);
+  }
+};
 
 interface ResultScreenProps {
   answers: AtmAnswers;
@@ -139,6 +179,12 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
   const details = patternDetails[result.pattern];
   const { Icon, color } = details;
 
+  // GTM tracking state
+  const eventIdRef = useRef(simpleHash(JSON.stringify(answers) + Date.now()));
+  const startTimeRef = useRef(now());
+  const scrollTrackedRef = useRef(new Set<number>());
+  const lastHeartbeatRef = useRef(now());
+
   // Form and popup states
   const [showFormPopup, setShowFormPopup] = useState(false);
   const [showClarityCallPopup, setShowClarityCallPopup] = useState(false);
@@ -150,6 +196,60 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
     email: ''
   });
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+
+  // GTM tracking effects
+  useEffect(() => {
+    // Initial impression event
+    dlPush({
+      event: 'atm_results_impression',
+      atm_event_id: eventIdRef.current,
+      pattern: result.pattern,
+      confidence: result.confidence,
+    });
+
+    // Heartbeat tracking
+    const heartbeatInterval = setInterval(() => {
+      dlPush({
+        event: 'atm_results_heartbeat',
+        atm_event_id: eventIdRef.current,
+        elapsed_s: secs(now() - startTimeRef.current),
+      });
+      lastHeartbeatRef.current = now();
+    }, 30000);
+
+    // Scroll tracking
+    const handleScroll = () => {
+      const scrollPct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+      const milestones = [25, 50, 75, 90];
+      
+      for (const milestone of milestones) {
+        if (scrollPct >= milestone && !scrollTrackedRef.current.has(milestone)) {
+          scrollTrackedRef.current.add(milestone);
+          dlPush({
+            event: 'atm_results_scroll',
+            atm_event_id: eventIdRef.current,
+            scroll_pct: milestone,
+          });
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    // Cleanup
+    return () => {
+      clearInterval(heartbeatInterval);
+      window.removeEventListener('scroll', handleScroll);
+      
+      // Time spent tracking
+      dlPush({
+        event: 'atm_results_time_spent',
+        atm_event_id: eventIdRef.current,
+        total_time_s: secs(now() - startTimeRef.current),
+        max_scroll_pct: Math.max(...Array.from(scrollTrackedRef.current), 0),
+      });
+    };
+  }, [result.pattern, result.confidence]);
 
   // Show form popup after 2 seconds
   useEffect(() => {
@@ -278,6 +378,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
       <header className="container mx-auto px-4 sm:px-6 py-4 flex justify-end items-center">
         <Button
           onClick={() => {
+            dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Retake' });
             trackButtonClick('Retake ATM', 'cta', 'atm_results_header');
             onRetake();
           }}
@@ -386,6 +487,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
               <Button
                 onClick={() => {
+                  dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Free Clarity Call' });
                   trackButtonClick('Book Free Clarity Call', 'cta', 'atm_results_bottom');
                   window.location.href = '/contact';
                 }}
@@ -395,6 +497,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
               </Button>
               <Button
                 onClick={() => {
+                  dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Chat Now on WhatsApp' });
                   trackButtonClick('Chat Now on WhatsApp', 'cta', 'atm_results_bottom');
                   window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
                 }}
@@ -405,6 +508,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
               </Button>
               <Button
                 onClick={() => {
+                  dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Our Mental Health Team' });
                   trackButtonClick('Our Mental Health Team', 'cta', 'atm_results_bottom');
                   const el = document.getElementById('team');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -416,6 +520,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
               </Button>
               <Button
                 onClick={() => {
+                  dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Consultation Now' });
                   trackButtonClick('Book Consultation Now', 'cta', 'atm_results_bottom');
                   const el = document.getElementById('home');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -585,6 +690,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
                 <div className="space-y-3 lg:space-y-4">
                   <Button
                     onClick={() => {
+                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Free Clarity Call (popup)' });
                       trackButtonClick('Book Free Clarity Call', 'popup', 'atm_results_clarity_popup');
                       window.location.href = '/contact';
                       setShowClarityCallPopup(false);
@@ -597,6 +703,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
                   
                   <Button
                     onClick={() => {
+                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Chat Now on WhatsApp (popup)' });
                       trackButtonClick('Chat Now on WhatsApp', 'popup', 'atm_results_clarity_popup');
                       window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
                       setShowClarityCallPopup(false);

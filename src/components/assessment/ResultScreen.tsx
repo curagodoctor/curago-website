@@ -46,13 +46,34 @@ const secs = (ms: number) => Math.round(ms / 1000);
 
 const dlPush = (obj: Record<string, any>) => {
   try {
+    // GTM DataLayer
     (window as any).dataLayer = (window as any).dataLayer || [];
     (window as any).dataLayer.push({
       page_path: window.location.pathname + window.location.search + window.location.hash,
+      timestamp: new Date().toISOString(),
       ...obj,
     });
+    
+    // Meta Pixel equivalent
+    if ((window as any).fbq && obj.event) {
+      const eventName = obj.event.replace('aura_results_', '').replace('aura_', '');
+      const metaEventName = `AURA_${eventName.charAt(0).toUpperCase() + eventName.slice(1)}`;
+      
+      (window as any).fbq('trackCustom', metaEventName, {
+        aura_event_id: obj.aura_event_id,
+        event_type: obj.event,
+        page_path: window.location.pathname,
+        timestamp: new Date().toISOString(),
+        ...obj,
+      });
+      
+      console.log('✅ Meta Pixel: AURA event sent -', metaEventName, obj.aura_event_id);
+    }
+    
     // console.debug('[DL]', obj);
-  } catch { }
+  } catch (e) {
+    console.warn('❌ Tracking error:', e);
+  }
 };
 
 const pillarMeta: Record<

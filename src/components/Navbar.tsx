@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { trackWhatsAppClick, trackButtonClick } from '../utils/tracking';
@@ -12,12 +12,53 @@ interface NavbarProps {
 export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Track which section is currently in view
+  useEffect(() => {
+    if (currentPage !== 'home') {
+      setActiveSection(currentPage);
+      return;
+    }
+
+    const handleSectionScroll = () => {
+      const scrollY = window.scrollY;
+      
+      // Check if we're at the very top (hero/home section)
+      if (scrollY < 100) {
+        setActiveSection('home');
+        return;
+      }
+      
+      const sections = ['services', 'about', 'team'];
+      let activeSection = 'home'; // default
+      
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const elementTop = scrollY + rect.top;
+          
+          // If we've scrolled past the start of this section (with some offset)
+          if (scrollY >= elementTop - 200) {
+            activeSection = section;
+          }
+        }
+      }
+      
+      setActiveSection(activeSection);
+    };
+
+    handleSectionScroll();
+    window.addEventListener('scroll', handleSectionScroll);
+    return () => window.removeEventListener('scroll', handleSectionScroll);
+  }, [currentPage]);
 
   // helper: go to Assessment
   const goToAssessment = (path: string) => {
@@ -86,10 +127,10 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
               }}
-              className={`${baseLink} ${currentPage === 'home' ? 'text-[#096b17]' : ''}`}
+              className={`${baseLink} ${activeSection === 'home' ? 'text-[#096b17]' : ''}`}
             >
               Home
-              <span className={underline(currentPage === 'home')} />
+              <span className={underline(activeSection === 'home')} />
             </a>
 
             <a
@@ -109,25 +150,47 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
             </a>
 
             <a 
-              href="#services" 
-              onClick={() => {
-                document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+              href="/#services" 
+              onClick={(e) => {
+                e.preventDefault();
+                if (currentPage === 'aura' || currentPage === 'atm') {
+                  // Navigate away from assessment pages to home
+                  window.location.href = '/#services';
+                } else if (onNavigate) {
+                  onNavigate('home');
+                  setTimeout(() => {
+                    document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                } else {
+                  document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+                }
               }}
-              className={baseLink}
+              className={`${baseLink} ${activeSection === 'services' ? 'text-[#096b17]' : ''}`}
             >
               Our Services
-              <span className={underline(false)} />
+              <span className={underline(activeSection === 'services')} />
             </a>
 
             <a 
-              href="#about" 
-              onClick={() => {
-                document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+              href="/#about" 
+              onClick={(e) => {
+                e.preventDefault();
+                if (currentPage === 'aura' || currentPage === 'atm') {
+                  // Navigate away from assessment pages to home
+                  window.location.href = '/#about';
+                } else if (onNavigate) {
+                  onNavigate('home');
+                  setTimeout(() => {
+                    document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                } else {
+                  document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                }
               }}
-              className={baseLink}
+              className={`${baseLink} ${activeSection === 'about' ? 'text-[#096b17]' : ''}`}
             >
               About Us
-              <span className={underline(false)} />
+              <span className={underline(activeSection === 'about')} />
             </a>
 
             {/* AURA Index - path route */}
@@ -271,12 +334,23 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
                   </a>
 
                   <a 
-                    href="#services" 
-                    onClick={() => {
+                    href="/#services" 
+                    onClick={(e) => {
+                      e.preventDefault();
                       setMobileOpen(false);
-                      setTimeout(() => {
-                        document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
-                      }, 100);
+                      if (currentPage === 'aura' || currentPage === 'atm') {
+                        // Navigate away from assessment pages to home
+                        window.location.href = '/#services';
+                      } else if (onNavigate) {
+                        onNavigate('home');
+                        setTimeout(() => {
+                          document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                      } else {
+                        setTimeout(() => {
+                          document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                      }
                     }} 
                     className="py-2 text-gray-800"
                   >
@@ -284,12 +358,23 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
                   </a>
 
                   <a 
-                    href="#about" 
-                    onClick={() => {
+                    href="/#about" 
+                    onClick={(e) => {
+                      e.preventDefault();
                       setMobileOpen(false);
-                      setTimeout(() => {
-                        document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
-                      }, 100);
+                      if (currentPage === 'aura' || currentPage === 'atm') {
+                        // Navigate away from assessment pages to home
+                        window.location.href = '/#about';
+                      } else if (onNavigate) {
+                        onNavigate('home');
+                        setTimeout(() => {
+                          document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                      } else {
+                        setTimeout(() => {
+                          document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                      }
                     }} 
                     className="py-2 text-gray-800"
                   >

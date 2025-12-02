@@ -116,6 +116,28 @@
       );
       fbq('init', '833058805840230');
       fbq('track', 'PageView');
+      
+      // Debug logging for Meta Pixel - after initialization
+      setTimeout(() => {
+        console.log('🔍 Meta Pixel Debug Info:');
+        console.log('✅ Meta Pixel initialized with ID: 833058805840230');
+        console.log('✅ Meta Pixel fbq function available:', typeof window.fbq === 'function');
+        console.log('✅ Meta Pixel _fbq available:', typeof window._fbq);
+        console.log('✅ Meta Pixel queue length:', window.fbq?.queue?.length || 'No queue');
+        console.log('- GTM dataLayer:', window.dataLayer ? '✅ Loaded' : '❌ Not loaded');
+        console.log('- Analytics gtag:', typeof window.gtag === 'function' ? '✅ Loaded' : '❌ Not loaded');
+        console.log('- Meta fbq function:', typeof window.fbq === 'function' ? '✅ Loaded' : '❌ Not loaded');
+        
+        // Test if Meta Pixel can send events
+        if (window.fbq) {
+          window.fbq('trackCustom', 'PixelInitTest', { 
+            test: true, 
+            timestamp: new Date().toISOString(),
+            hostname: window.location.hostname 
+          });
+          console.log('✅ Meta Pixel: PixelInitTest event sent');
+        }
+      }, 2000);
     </script>
 
   </head>

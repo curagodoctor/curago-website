@@ -175,6 +175,16 @@ export default function App() {
         setAtmStage('results');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         trackPageView('ATM Results', 'CuraGo - ATM Results');
+
+        // ✅ Developer-added GTM signal for CompleteRegistration (ATM finish)
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'atm_test_finished_signal', // 👈 must match GTM Custom Event trigger name exactly
+          page_path: pathname,
+          timestamp: new Date().toISOString(),
+        });
+
+        console.log('✅ GTM signal fired: atm_test_finished_signal');
         return;
       }
 
