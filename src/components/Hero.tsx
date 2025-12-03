@@ -204,7 +204,7 @@ export function Hero({ onBookAppointment }: HeroProps) {
             >
               <p className="text-2xl md:text-3xl mb-2">Consultation starts at ₹1200/-</p>
               <p className="text-sm md:text-base text-green-100 leading-relaxed">
-                ₹1200 = 1 Video Consultation of minimum 45 mins duration               </p>+ 1 month of Free Unlimited WhatsApp Support
+                ₹1200 = 1 Video Consultation of minimum 45 mins duration               </p>
 
             </motion.div>
 

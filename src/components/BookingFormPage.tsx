@@ -77,8 +77,8 @@ export function BookingFormPage() {
               <p className="text-sm text-green-100">Video Consultation</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <p className="text-2xl mb-1">1 Month Free</p>
-              <p className="text-sm text-green-100">WhatsApp Support</p>
+              <p className="text-2xl mb-1">100% Private</p>
+              <p className="text-sm text-green-100">Safe & Confidential</p>
             </div>
           </div>
 

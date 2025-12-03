@@ -106,19 +106,19 @@ const testimonialsRowB = testimonials.slice(6);
 
 function TestimonialCard({ t }: { t: Testimonial }) {
   return (
-    <div className="w-[85vw] sm:w-[320px] md:w-[360px] lg:w-[380px] flex-shrink-0">
-      <div className="h-full rounded-2xl bg-white ring-1 ring-black/5 shadow-md hover:shadow-lg transition p-5 sm:p-6 md:p-7">
-        <Quote className="h-5 w-5 sm:h-6 sm:w-6 text-gray-300" />
+    <div className="w-[280px] sm:w-[320px] md:w-[360px] lg:w-[380px] flex-shrink-0">
+      <div className="h-full rounded-2xl ring-1 ring-black/5 shadow-md hover:shadow-lg transition p-4 sm:p-5 md:p-6 lg:p-7" style={{ backgroundColor: '#096b17' }}>
+        <Quote className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" style={{ color: '#FFFDBD' }} />
         <p
-          className="mt-3 sm:mt-4 text-gray-800 text-sm sm:text-base leading-relaxed whitespace-normal break-words"
-          style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}
+          className="mt-2 sm:mt-3 md:mt-4 text-xs sm:text-sm md:text-base leading-relaxed whitespace-normal break-words"
+          style={{ wordBreak: "break-word", overflowWrap: "anywhere", color: '#FFFDBD' }}
         >
           “{t.quote}”
         </p>
-        <div className="mt-5 sm:mt-6">
+        <div className="mt-3 sm:mt-4 md:mt-5 lg:mt-6">
           <div>
-            <p className="font-medium text-gray-900 text-sm sm:text-base">{t.name}</p>
-            <p className="text-xs sm:text-sm text-gray-500">{t.title}</p>
+            <p className="font-medium text-xs sm:text-sm md:text-base" style={{ color: '#FFFDBD' }}>{t.name}</p>
+            <p className="text-[10px] sm:text-xs md:text-sm" style={{ color: '#FFFDBD', opacity: 0.8 }}>{t.title}</p>
           </div>
         </div>
       </div>
@@ -153,10 +153,10 @@ function MarqueeRow({
 
 export default function TestimonialsMarquee() {
   return (
-    <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6">
+    <section className="py-8 sm:py-12 md:py-16 lg:py-24 px-2 sm:px-4 md:px-6" style={{ backgroundColor: '#FFFDBD' }}>
       <div
-        className="mx-auto max-w-7xl rounded-[24px] bg-white/95 ring-1 ring-black/5 p-5 sm:p-8 md:p-10 relative overflow-hidden"
-        style={{ boxShadow: "0 30px 80px -40px rgba(0,0,0,0.25)" }}
+        className="mx-auto max-w-7xl rounded-[24px] ring-1 ring-black/5 p-3 sm:p-5 md:p-8 lg:p-10 relative overflow-hidden"
+        style={{ backgroundColor: '#FFFDBD', boxShadow: "0 30px 80px -40px rgba(0,0,0,0.25)" }}
       >
         {/* Badge */}
         <div className="flex justify-center">
@@ -173,10 +173,10 @@ export default function TestimonialsMarquee() {
 
         {/* Header */}
         <div className="text-center mt-6 sm:mt-8">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-gray-900">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight" style={{ color: '#096b17' }}>
             Words of praise for CuraGo
           </h2>
-          <p className="mt-3 text-gray-600 text-sm sm:text-base md:text-lg">
+          <p className="mt-3 text-sm sm:text-base md:text-lg" style={{ color: '#096b17', opacity: 0.8 }}>
             Real stories of better sleep, calmer days, and healthier routines.
           </p>
         </div>
@@ -189,8 +189,8 @@ export default function TestimonialsMarquee() {
         </div>
 
         {/* Edge fades */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-24 bg-gradient-to-r from-white to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-24 bg-gradient-to-l from-white to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-24" style={{ background: 'linear-gradient(to right, #FFFDBD, transparent)' }} />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-24" style={{ background: 'linear-gradient(to left, #FFFDBD, transparent)' }} />
       </div>
 
       {/* Marquee + mobile wrapping fixes */}
@@ -227,11 +227,11 @@ export default function TestimonialsMarquee() {
           }
 
           @media (max-width: 640px) {
-            .marquee-track { gap: 1rem; }
+            .marquee-track { gap: 0.75rem; }
             /* Even slower on phones for readability */
             .marquee-anim-left,
             .marquee-anim-right {
-              animation-duration: calc(var(--marquee-duration, 36s) * 1.4);
+              animation-duration: calc(var(--marquee-duration, 36s) * 1.6);
             }
             /* No pause-on-hover on touch */
             .marquee:hover .marquee-anim-left,

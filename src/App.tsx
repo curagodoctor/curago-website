@@ -248,11 +248,11 @@ export default function App() {
       setCurrentPage('booking');
       window.dispatchEvent(new PopStateEvent('popstate'));
     } else if (page === 'contact') {
-      history.pushState(null, '', buildUrl('/contact'));
-      setIsAuraRoute(false);
-      setIsAtmRoute(false);
-      setCurrentPage('contact');
-      window.dispatchEvent(new PopStateEvent('popstate'));
+      console.log('🧭 Navigating to contact page from:', { isAuraRoute, isAtmRoute, currentPage });
+      // Use window.location.href for clean navigation
+      const contactUrl = buildUrl('/contact');
+      window.location.href = contactUrl;
+      return; // Exit early
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

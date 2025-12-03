@@ -35,7 +35,17 @@ export function BookingForm() {
     'Any Available Consultant'
   ];
 
-  const eveningSlots = [
+  const timeSlots = [
+    '12:00 PM',
+    '12:30 PM',
+    '01:00 PM',
+    '01:30 PM',
+    '02:00 PM',
+    '02:30 PM',
+    '03:00 PM',
+    '03:30 PM',
+    '04:00 PM',
+    '04:30 PM',
     '05:00 PM',
     '05:30 PM',
     '06:00 PM',
@@ -222,10 +232,10 @@ export function BookingForm() {
             </Label>
             <Select value={formData.time} onValueChange={(value) => setFormData({ ...formData, time: value })}>
               <SelectTrigger className="mt-1.5 border-[#096b17]/30 bg-white" style={{ color: '#096b17' }}>
-                <SelectValue placeholder="Select evening slot" />
+                <SelectValue placeholder="Select time slot" />
               </SelectTrigger>
               <SelectContent>
-                {eveningSlots.map((slot) => (
+                {timeSlots.map((slot) => (
                   <SelectItem key={slot} value={slot}>
                     {slot}
                   </SelectItem>
