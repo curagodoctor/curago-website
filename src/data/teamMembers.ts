@@ -44,21 +44,7 @@ export const teamMembers: TeamMember[] = [
     registrationNumber: "MCI-23456",
     image: "/image1.png",
   },
-  {
-    name: "Dr. Swara Kulkarni",
-    designation: "Consultant Psychiatrist",
-    institute: "KEMH, Mumbai",
-    qualification: "MBBS, MD Psychiatry",
-    expertise: [
-      "General Psychiatry",
-      "Geriatric Psychiatry",
-      "Neuropsychiatry",
-      "Sexual Medicine",
-    ],
-    languages: ["Hindi", "Marathi", "English"],
-    registrationNumber: "MCI-34567",
-    image: "/Drswara.png",
-  },
+ 
   {
     name: "Dr. Harshali Sunil More",
     designation: "Consultant Psychiatrist",

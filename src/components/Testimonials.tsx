@@ -6,14 +6,12 @@ type Testimonial = {
   quote: string;
   name: string;
   title: string;
-  avatar: string; // picked to match gender of name
 };
 
 const CURAGO_GREEN = "#096b17";
 
 /** ─────────────────────────────────────────────────────────────
- *  Row data: Indian names; avatars chosen to match gender
- *  (Unsplash portrait images; safe crop at 80×80)
+ *  Row data: Testimonials from Indian professionals
  *  ────────────────────────────────────────────────────────────*/
 const testimonials: Testimonial[] = [
   {
@@ -22,8 +20,6 @@ const testimonials: Testimonial[] = [
       "Working 12-hour days in banking was breaking me mentally. CuraGo's doctor understood the pressure and gave me practical tools to handle stress. I sleep better now and don't dread Mondays anymore.",
     name: "Arjun Singh",
     title: "34, Investment Banker (Mumbai)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/male/1.jpg",
   },
   {
     id: 2,
@@ -31,8 +27,6 @@ const testimonials: Testimonial[] = [
       "As a working mother, I was juggling too much. CuraGo sessions helped me set boundaries and find time for myself. The doctor's advice was so relatable to Indian family dynamics.",
     name: "Deepika Agarwal",
     title: "31, Marketing Manager (Pune)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/female/2.jpg",
   },
   {
     id: 3,
@@ -40,8 +34,6 @@ const testimonials: Testimonial[] = [
       "Job hunting after layoffs was crushing my confidence. My CuraGo therapist helped me rebuild self-worth and tackle interviews with clarity. Got placed within 2 months!",
     name: "Vikas Gupta",
     title: "29, Business Analyst (Hyderabad)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/male/3.jpg",
   },
   {
     id: 4,
@@ -49,8 +41,6 @@ const testimonials: Testimonial[] = [
       "Teaching during COVID while managing home felt impossible. CuraGo's counselor gave me coping strategies that actually work with kids. I'm calmer and my students notice the difference.",
     name: "Sunita Rao",
     title: "38, School Teacher (Bangalore)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/female/4.jpg",
   },
   {
     id: 5,
@@ -58,8 +48,6 @@ const testimonials: Testimonial[] = [
       "Long shifts at the hospital plus family expectations were overwhelming. CuraGo's psychiatrist helped me manage both professional burnout and personal stress. Finally feeling balanced.",
     name: "Dr. Ramesh Kumar",
     title: "42, Physician (AIIMS Delhi)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/male/5.jpg",
   },
   {
     id: 6,
@@ -67,8 +55,6 @@ const testimonials: Testimonial[] = [
       "Running my startup was consuming every waking moment. CuraGo's therapy sessions taught me to prioritize mental health alongside business goals. My team says I'm less stressed now.",
     name: "Nisha Jindal",
     title: "33, Startup Founder (Gurgaon)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/female/6.jpg",
   },
   {
     id: 7,
@@ -76,8 +62,6 @@ const testimonials: Testimonial[] = [
       "CA exams and work pressure had me anxious all the time. CuraGo's counselor helped me develop study strategies and manage exam stress. Cleared CA Final on first attempt!",
     name: "Abhishek Jain",
     title: "26, Chartered Accountant (Delhi)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/male/7.jpg",
   },
   {
     id: 8,
@@ -85,8 +69,6 @@ const testimonials: Testimonial[] = [
       "Marriage issues plus work deadlines had me spiraling. The therapist at CuraGo helped me communicate better at home and set realistic expectations at work. Relationship is much stronger now.",
     name: "Pooja Mehta",
     title: "30, HR Manager (Chennai)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/female/8.jpg",
   },
   {
     id: 9,
@@ -94,8 +76,6 @@ const testimonials: Testimonial[] = [
       "IIT pressure and placement stress were too much to handle alone. CuraGo's counselor understood academic anxiety and helped me build confidence. Now working at Microsoft!",
     name: "Karthik Iyer",
     title: "23, Software Engineer (IIT Madras)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/male/9.jpg",
   },
   {
     id: 10,
@@ -103,8 +83,6 @@ const testimonials: Testimonial[] = [
       "Managing a team of 50+ while dealing with personal loss was impossible. CuraGo's psychiatrist helped me grieve healthily and lead effectively. My team's performance improved too.",
     name: "Shreya Mishra",
     title: "37, Operations Head (Kolkata)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/female/10.jpg",
   },
   {
     id: 11,
@@ -112,8 +90,6 @@ const testimonials: Testimonial[] = [
       "Night shifts in IT support plus family responsibilities were draining me. CuraGo's flexible timings and practical advice helped me find work-life balance. Sleep quality improved dramatically.",
     name: "Rajesh Patel",
     title: "35, IT Support Manager (Ahmedabad)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/male/11.jpg",
   },
   {
     id: 12,
@@ -121,8 +97,6 @@ const testimonials: Testimonial[] = [
       "Being a single mother in consulting was overwhelming. CuraGo's therapist helped me manage guilt and stress while advancing my career. Got promoted to Senior Consultant!",
     name: "Anita Reddy",
     title: "32, Management Consultant (Bangalore)",
-    avatar:
-      "https://xsgames.co/randomusers/assets/avatars/female/12.jpg",
   }
 ];
 
@@ -141,12 +115,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
         >
           “{t.quote}”
         </p>
-        <div className="mt-5 sm:mt-6 flex items-center gap-3">
-          <img
-            src={t.avatar}
-            alt={t.name}
-            className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover ring-2 ring-white shadow"
-          />
+        <div className="mt-5 sm:mt-6">
           <div>
             <p className="font-medium text-gray-900 text-sm sm:text-base">{t.name}</p>
             <p className="text-xs sm:text-sm text-gray-500">{t.title}</p>

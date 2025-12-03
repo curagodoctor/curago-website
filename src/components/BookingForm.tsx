@@ -27,7 +27,6 @@ export function BookingForm() {
   const consultants = [
     'Dr. Charan Kumar Pottem - Consultant Psychiatrist',
     'Dr. Ekaansh Sharmad - Consultant Psychiatrist',
-    'Dr. Swara Kularni - Consultant Psychiatrist',
     'Dr. Harshali Sunil More- Consultant Psychiatrist',
     'Dr. Utkarsh Mestri - Consultant Psychiatrist',
     'Simaral Kamal - Clinical Psychologist',
