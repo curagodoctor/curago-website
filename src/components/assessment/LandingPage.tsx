@@ -18,7 +18,8 @@ import './index.css';
 import './styles/globals.css';
 
 // ✅ tracking helpers
-import { trackCTA, trackSectionView } from '../../utils/tracking';
+import { trackCTA, trackSectionView, trackButtonClick } from '../../utils/tracking';
+import { FloatingButtons } from '../FloatingButtons';
 
 interface LandingPageProps {
   onStart: () => void;
@@ -62,6 +63,14 @@ export default function LandingPage({ onStart }: LandingPageProps) {
   const goToWhatHow = () => {
     trackCTA('What & How', 'aura_landing');
     document.getElementById('what-how')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleBookNow = () => {
+    trackButtonClick('Book Now', 'floating_cta', 'aura_landing');
+    // Navigate to booking page
+    history.pushState(null, '', '/');
+    window.location.hash = '#booking';
+    window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
   return (
@@ -315,6 +324,9 @@ export default function LandingPage({ onStart }: LandingPageProps) {
           </Card>
         </div>
       </section>
+
+      {/* Floating Buttons */}
+      <FloatingButtons onBookNow={handleBookNow} />
     </div>
   );
 }

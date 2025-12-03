@@ -6,6 +6,7 @@ import type { AtmAnswers, UserInfo, AnxietyPattern } from '../../../types/atm';
 import { trackButtonClick, trackPhoneClick, trackFormSubmission } from '../../../utils/tracking';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Zap, Brain, Shield, Target, Clock, AlertTriangle, MessageCircle, X, Phone, User, Mail } from 'lucide-react';
+import { FloatingButtons } from '../../FloatingButtons';
 
 // ---------- GTM tracking helpers ----------
 function simpleHash(str: string) {
@@ -196,6 +197,14 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
     email: ''
   });
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+
+  const handleBookNow = () => {
+    trackButtonClick('Book Now', 'floating_cta', 'atm_results');
+    // Navigate to booking page
+    history.pushState(null, '', '/');
+    window.location.hash = '#booking';
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
 
   // GTM tracking effects
   useEffect(() => {
@@ -752,6 +761,9 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* Floating Buttons */}
+      <FloatingButtons onBookNow={handleBookNow} />
     </div>
   );
 }

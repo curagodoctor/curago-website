@@ -2,13 +2,17 @@ import { Smartphone, Award, MessageSquare } from 'lucide-react';
 import { BookingForm } from './BookingForm';
 import { Button } from './ui/button';
 import { motion } from 'framer-motion';
-import { trackButtonClick, trackWhatsAppClick } from '../utils/tracking';
+import { trackButtonClick } from '../utils/tracking';
+import { WhatsAppConfirmDialog } from './WhatsAppConfirmDialog';
+import { useState } from 'react';
 
 interface HeroProps {
   onBookAppointment?: () => void;
 }
 
 export function Hero({ onBookAppointment }: HeroProps) {
+  const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false);
+
   const scrollToContact = () => {
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -23,6 +27,16 @@ export function Hero({ onBookAppointment }: HeroProps) {
     trackButtonClick('AURA Index', 'cta', 'hero');
     history.pushState(null, '', '/aura-rise-index');
     window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
+  const goAtmTool = () => {
+    trackButtonClick('ATM Tool', 'cta', 'hero');
+    history.pushState(null, '', '/atm');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
+  const handleWhatsAppClick = () => {
+    setShowWhatsAppDialog(true);
   };
 
   return (
@@ -165,7 +179,7 @@ export function Hero({ onBookAppointment }: HeroProps) {
               transition={{ delay: 0.5, duration: 0.8 }}
             >
               <p className="text-xl md:text-2xl leading-relaxed">
-                CuraGo is India's beloved Mental health Platform
+                CuraGo is India's beloved Mental Health Platform
               </p>
               <p className="text-lg md:text-xl text-green-50 leading-relaxed">
                 Book Online Psychiatric Consultations and Psychologist Therapy Sessions
@@ -190,8 +204,8 @@ export function Hero({ onBookAppointment }: HeroProps) {
             >
               <p className="text-2xl md:text-3xl mb-2">Consultation starts at ₹1200/-</p>
               <p className="text-sm md:text-base text-green-100 leading-relaxed">
-                ₹1200 = 1 Video Consultation of minimum 45 mins duration + 1 month of Free Unlimited WhatsApp Support
-              </p>
+                ₹1200 = 1 Video Consultation of minimum 45 mins duration               </p>+ 1 month of Free Unlimited WhatsApp Support
+
             </motion.div>
 
             {/* Feature icons */}
@@ -240,35 +254,30 @@ export function Hero({ onBookAppointment }: HeroProps) {
 
                 <Button
                   onClick={goAuraIndex}
-                  className="w-full bg-white text-[#096b17] hover:bg-gray-100 h-14 transition-all duration-300"
+                  size="lg"
+                  className="w-full bg-white text-[#096b17] hover:bg-gray-100 h-14 text-lg transition-all duration-300 hover:scale-105"
                 >
                   AURA Index
                 </Button>
 
                 {/* Row 2 */}
-                <a 
-                  href="https://wa.me/917021227203" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="w-full"
-                  onClick={() => trackWhatsAppClick('hero')}
+                <Button 
+                  onClick={handleWhatsAppClick}
+                  size="lg"
+                  className="w-full bg-white text-[#096b17] hover:bg-gray-100 h-14 text-lg transition-all duration-300 hover:scale-105"
                 >
-                  <Button className="w-full bg-white text-[#096b17] hover:bg-gray-100 h-12 transition-all duration-300">
-                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347" />
-                    </svg>
-                    Say 'hi' on WhatsApp
-                  </Button>
-                </a>
+                  {/* <svg className="w-5 h-5 " fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-2.462-.96-4.779-2.705-6.526-1.746-1.746-4.065-2.711-6.526-2.713-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.092-.634zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.867-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.149-.173.198-.297.297-.495.099-.198.05-.372-.025-.521-.074-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414l-.005.009z"/>
+                  </svg> */}
+                  Say 'hi' on WhatsApp
+                </Button>
 
                 <Button
-                  onClick={() => {
-                    trackButtonClick('Request a Callback', 'cta', 'hero');
-                    scrollToContact();
-                  }}
-                  className="w-full bg-white text-[#096b17] hover:bg-gray-100 h-12 transition-all duration-300"
+                  onClick={goAtmTool}
+                  size="lg"
+                  className="w-full bg-white text-[#096b17] hover:bg-gray-100 h-14 text-lg transition-all duration-300 hover:scale-105"
                 >
-                  Request a Callback
+                  ATM Tool
                 </Button>
               </div>
             </motion.div>
@@ -286,6 +295,14 @@ export function Hero({ onBookAppointment }: HeroProps) {
           </motion.div>
         </div>
       </div>
+
+      {/* WhatsApp Confirmation Dialog */}
+      <WhatsAppConfirmDialog
+        isOpen={showWhatsAppDialog}
+        onOpenChange={setShowWhatsAppDialog}
+        source="hero"
+        message="Hi! I want to get in touch regarding CuraGo mental health services."
+      />
     </section>
   );
 }

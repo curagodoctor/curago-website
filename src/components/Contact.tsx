@@ -1,7 +1,9 @@
+import React, { useState } from 'react';
 import { Phone, Mail, Smartphone, ShieldCheck, CheckCircle2, Ban, Users, Lock, Star } from 'lucide-react';
 import { ContactForm } from './ContactForm';
 import { motion } from 'framer-motion';
-import { trackWhatsAppClick, trackPhoneClick } from '../utils/tracking';
+import { trackPhoneClick } from '../utils/tracking';
+import { WhatsAppConfirmDialog } from './WhatsAppConfirmDialog';
 
 const PHONE_E164 = '+918062179639';
 const PHONE_DISPLAY = '+91 80621 79639';
@@ -26,8 +28,10 @@ const itemVariants = {
 };
 
 export function Contact() {
+  const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false);
+
   const onWhatsApp = () => {
-    trackWhatsAppClick?.('contact_section');
+    setShowWhatsAppDialog(true);
   };
 
   const onPhone = () => {
@@ -56,13 +60,13 @@ export function Contact() {
           {/* 7. Icons: no commitment/judgement/pressure */}
           <div className="mt-3 sm:mt-4 flex flex-wrap items-center justify-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 text-white px-3 py-1 text-xs sm:text-sm">
-              <ShieldCheck className="w-4 h-4" /> No commitment
+                 No commitment
             </span>
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 text-white px-3 py-1 text-xs sm:text-sm">
-              <Ban className="w-4 h-4" /> No judgement
+               No judgement
             </span>
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 text-white px-3 py-1 text-xs sm:text-sm">
-              <CheckCircle2 className="w-4 h-4" /> No pressure
+               No pressure
             </span>
           </div>
 
@@ -93,13 +97,19 @@ export function Contact() {
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto"
         >
-          {/* Form title */}
-          <h3 className="text-white text-xl sm:text-2xl font-semibold mb-3 text-center">
-            Book Free Clarity Call
-          </h3>
+          {/* Form title as button */}
+          {/* <div className="flex justify-center mb-4">
+            <button
+              onClick={onWhatsApp}
+              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-xl sm:text-2xl font-semibold bg-white cursor-pointer text-[#096b17] hover:bg-white hover:scale-105 transition-all shadow-2xl border-2 border-white/30"
+              aria-label="Book Free Clarity Call"
+            >
+              Book Free Clarity Call
+            </button>
+          </div> */}
 
           {/* Keep most of the form visible by reducing margins/padding around it */}
-          <div className="rounded-2xl overflow-hidden">
+          <div className="rounded-2xl overflow-hidden flex justify-center">
             {/* If your ContactForm supports props, you can pass `title`/`ctaText` safely.
                 Otherwise it will be ignored without breaking. */}
             <ContactForm /* title="Book Free Clarity Call" ctaText="Book Free Clarity Call" */ />
@@ -110,23 +120,24 @@ export function Contact() {
             We respond within ~10 minutes (9:00 AM–9:00 PM). Your details are private.
           </p>
 
-          {/* Primary quick-contact buttons — 11. tighten space below WhatsApp */}
-          <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
-            <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+          {/* Primary quick-contact buttons — centered WhatsApp button */}
+          <div className="mt-4 flex justify-center">
+            <button
               onClick={onWhatsApp}
-              className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-base font-semibold bg-white text-[#096b17] hover:opacity-90"
+              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-semibold bg-white text-[#096b17] hover:opacity-90 shadow-lg transition-all"
               aria-label="Chat on WhatsApp"
             >
               <Smartphone className="w-5 h-5 mr-2" />
               Chat on WhatsApp (Fastest)
-            </a>
+            </button>
+          </div>
+          
+          {/* Secondary call button */}
+          <div className="mt-3 flex justify-center">
             <a
               href={`tel:${PHONE_E164}`}
               onClick={onPhone}
-              className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-base font-semibold bg-[#FFFDBD] text-[#096b17] hover:opacity-90"
+              className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-base font-semibold bg-white text-[#096b17] hover:opacity-90 transition-all shadow-lg"
               aria-label="Call us now"
             >
               <Phone className="w-5 h-5 mr-2" />
@@ -134,19 +145,6 @@ export function Contact() {
             </a>
           </div>
 
-          {/* Optional secondary CTA matching form button text */}
-          <div className="mt-3 flex justify-center">
-            <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={onWhatsApp}
-              className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-base font-semibold bg-[#0CE479] text-[#083E10] hover:opacity-90"
-              aria-label="Book Free Clarity Call"
-            >
-              Book Free Clarity Call
-            </a>
-          </div>
         </motion.div>
 
         {/* Divider hint to scroll (kept compact to retain above-the-fold visibility) */}
@@ -229,13 +227,10 @@ export function Contact() {
               </div>
             </motion.a>
 
-            <motion.a
+            <motion.button
               variants={itemVariants}
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={onWhatsApp}
-              className="block"
+              className="block w-full text-left"
               aria-label="Open WhatsApp chat"
             >
               <div className="rounded-xl p-3 shadow-lg hover:opacity-90 transition-all cursor-pointer" style={{ backgroundColor: '#FFFDBD' }}>
@@ -250,10 +245,18 @@ export function Contact() {
                   </div>
                 </div>
               </div>
-            </motion.a>
+            </motion.button>
           </motion.div>
         </motion.div>
       </div>
+
+      {/* WhatsApp Confirmation Dialog */}
+      <WhatsAppConfirmDialog
+        isOpen={showWhatsAppDialog}
+        onOpenChange={setShowWhatsAppDialog}
+        source="contact_section"
+        message="Hi! I came from the contact page. I want to book a service. Preferred date/time: __. Area: __."
+      />
     </section>
   );
 }

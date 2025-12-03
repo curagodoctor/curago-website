@@ -19,98 +19,116 @@ const testimonials: Testimonial[] = [
   {
     id: 1,
     quote:
-      "I was on the edge of burnout — deadlines, pressure, no time to breathe. My CuraGo psychiatrist actually listened and helped me find structure again. It felt human, not clinical.",
-    name: "Rahul Mehta",
-    title: "37, Software Engineer (Noida)",
+      "Working 12-hour days in banking was breaking me mentally. CuraGo's doctor understood the pressure and gave me practical tools to handle stress. I sleep better now and don't dread Mondays anymore.",
+    name: "Arjun Singh",
+    title: "34, Investment Banker (Mumbai)",
     avatar:
-      "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=80&h=80&fit=crop", // male
+      "https://xsgames.co/randomusers/assets/avatars/male/1.jpg",
   },
   {
     id: 2,
     quote:
-      "I didn’t think an online session could make this much difference. The doctor gave practical steps, not just sympathy. Within two weeks, my sleep and focus improved.",
-    name: "Sneha Kapoor",
-    title: "32, Product Manager (Gurgaon)",
+      "As a working mother, I was juggling too much. CuraGo sessions helped me set boundaries and find time for myself. The doctor's advice was so relatable to Indian family dynamics.",
+    name: "Deepika Agarwal",
+    title: "31, Marketing Manager (Pune)",
     avatar:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop", // female
+      "https://xsgames.co/randomusers/assets/avatars/female/2.jpg",
   },
   {
     id: 3,
     quote:
-      "I used to avoid therapy thinking it’s too complicated. CuraGo made it so easy — booked on WhatsApp, spoke same evening. Finally, someone understood the stress of tech life.",
-    name: "Amit Sharma",
-    title: "35, Data Analyst (Dwarka)",
+      "Job hunting after layoffs was crushing my confidence. My CuraGo therapist helped me rebuild self-worth and tackle interviews with clarity. Got placed within 2 months!",
+    name: "Vikas Gupta",
+    title: "29, Business Analyst (Hyderabad)",
     avatar:
-      "https://images.unsplash.com/photo-1552053831-71594a27632d?w=80&h=80&fit=crop", // male
+      "https://xsgames.co/randomusers/assets/avatars/male/3.jpg",
   },
   {
     id: 4,
     quote:
-      "Working from home had blurred all boundaries. My sessions on CuraGo helped me rebuild a healthy routine. It was like talking to someone who truly ‘got it’.",
-    name: "Neha Verma",
-    title: "29, UI/UX Designer (South Delhi)",
+      "Teaching during COVID while managing home felt impossible. CuraGo's counselor gave me coping strategies that actually work with kids. I'm calmer and my students notice the difference.",
+    name: "Sunita Rao",
+    title: "38, School Teacher (Bangalore)",
     avatar:
-      "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=80&h=80&fit=crop", // female
+      "https://xsgames.co/randomusers/assets/avatars/female/4.jpg",
   },
   {
     id: 5,
     quote:
-      "I was mentally exhausted but kept pushing through. CuraGo’s psychiatrist helped me slow down and see things clearly. Honestly, it brought balance back to my days.",
-    name: "Rohit Bansal",
-    title: "40, Tech Lead (Gurgaon)",
+      "Long shifts at the hospital plus family expectations were overwhelming. CuraGo's psychiatrist helped me manage both professional burnout and personal stress. Finally feeling balanced.",
+    name: "Dr. Ramesh Kumar",
+    title: "42, Physician (AIIMS Delhi)",
     avatar:
-      "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?w=80&h=80&fit=crop", // male
+      "https://xsgames.co/randomusers/assets/avatars/male/5.jpg",
   },
   {
     id: 6,
     quote:
-      "Every session felt genuine — no rush, no judgment. The doctor patiently explained what burnout really means. I’ve started feeling lighter after years.",
-    name: "Priya Nair",
-    title: "34, QA Engineer (Noida)",
+      "Running my startup was consuming every waking moment. CuraGo's therapy sessions taught me to prioritize mental health alongside business goals. My team says I'm less stressed now.",
+    name: "Nisha Jindal",
+    title: "33, Startup Founder (Gurgaon)",
     avatar:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&h=80&fit=crop", // female
+      "https://xsgames.co/randomusers/assets/avatars/female/6.jpg",
   },
   {
     id: 7,
     quote:
-      "I was skeptical about online consultations. But CuraGo’s psychiatrist made me feel comfortable from the first minute. Now I actually look forward to the sessions.",
-    name: "Ankit Tiwari",
-    title: "31, Backend Developer (Delhi NCR)",
+      "CA exams and work pressure had me anxious all the time. CuraGo's counselor helped me develop study strategies and manage exam stress. Cleared CA Final on first attempt!",
+    name: "Abhishek Jain",
+    title: "26, Chartered Accountant (Delhi)",
     avatar:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop", // male
+      "https://xsgames.co/randomusers/assets/avatars/male/7.jpg",
   },
   {
     id: 8,
     quote:
-      "My anxiety had peaked during project sprints. CuraGo gave me tools to manage it, step by step. It’s like finally getting a reset button.",
-    name: "Megha Choudhary",
-    title: "28, Frontend Developer (Delhi)",
+      "Marriage issues plus work deadlines had me spiraling. The therapist at CuraGo helped me communicate better at home and set realistic expectations at work. Relationship is much stronger now.",
+    name: "Pooja Mehta",
+    title: "30, HR Manager (Chennai)",
     avatar:
-      "https://images.unsplash.com/photo-1544005316-04d3c9f1ae09?w=80&h=80&fit=crop", // female
+      "https://xsgames.co/randomusers/assets/avatars/female/8.jpg",
   },
   {
     id: 9,
     quote:
-      "Before CuraGo, therapy felt cold and disconnected. Here, it felt personal — they followed up, remembered details. That small effort made a huge difference.",
-    name: "Vivek Sinha",
-    title: "36, IT Consultant (Gurgaon)",
+      "IIT pressure and placement stress were too much to handle alone. CuraGo's counselor understood academic anxiety and helped me build confidence. Now working at Microsoft!",
+    name: "Karthik Iyer",
+    title: "23, Software Engineer (IIT Madras)",
     avatar:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop", // male-ish alt not perfect; replace if needed
+      "https://xsgames.co/randomusers/assets/avatars/male/9.jpg",
   },
   {
     id: 10,
     quote:
-      "I didn’t expect empathy and structure to go hand in hand. CuraGo managed both — professional yet warm. I’m finally consistent with my sessions.",
-    name: "Kavita Joshi",
-    title: "30, DevOps Engineer (Noida)",
+      "Managing a team of 50+ while dealing with personal loss was impossible. CuraGo's psychiatrist helped me grieve healthily and lead effectively. My team's performance improved too.",
+    name: "Shreya Mishra",
+    title: "37, Operations Head (Kolkata)",
     avatar:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop", // female
+      "https://xsgames.co/randomusers/assets/avatars/female/10.jpg",
   },
+  {
+    id: 11,
+    quote:
+      "Night shifts in IT support plus family responsibilities were draining me. CuraGo's flexible timings and practical advice helped me find work-life balance. Sleep quality improved dramatically.",
+    name: "Rajesh Patel",
+    title: "35, IT Support Manager (Ahmedabad)",
+    avatar:
+      "https://xsgames.co/randomusers/assets/avatars/male/11.jpg",
+  },
+  {
+    id: 12,
+    quote:
+      "Being a single mother in consulting was overwhelming. CuraGo's therapist helped me manage guilt and stress while advancing my career. Got promoted to Senior Consultant!",
+    name: "Anita Reddy",
+    title: "32, Management Consultant (Bangalore)",
+    avatar:
+      "https://xsgames.co/randomusers/assets/avatars/female/12.jpg",
+  }
 ];
 
 // Split into two rows (helps balance)
-const testimonialsRowA = testimonials.slice(0, 5);
-const testimonialsRowB = testimonials.slice(5);
+const testimonialsRowA = testimonials.slice(0, 6);
+const testimonialsRowB = testimonials.slice(6);
 
 function TestimonialCard({ t }: { t: Testimonial }) {
   return (

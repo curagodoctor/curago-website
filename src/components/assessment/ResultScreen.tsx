@@ -21,6 +21,7 @@ import {
 import { motion } from 'framer-motion';
 import type { AuraScores, UserInfo } from '../../types/aura';
 import { trackButtonClick } from '../../utils/tracking';
+import { FloatingButtons } from '../FloatingButtons';
 
 interface ResultScreenProps {
   scores: AuraScores;
@@ -208,6 +209,14 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
   const waDigits = contact.whatsapp.replace(/\D/g, '').slice(0, 10);
   const isWaValid = waDigits.length === 10;
   const canSubmit = displayName.length > 0 && isWaValid && consent && !pending && !submittedOnce;
+
+  const handleBookNow = () => {
+    trackButtonClick('Book Now', 'floating_cta', 'aura_results');
+    // Navigate to booking page
+    history.pushState(null, '', '/');
+    window.location.hash = '#booking';
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
 
   // order for tips
   const orderedKeys = useMemo(
@@ -865,7 +874,7 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
             </div>
 
             {/* Consent */}
-            <label className="flex items-center gap-2 text-sm text-gray-600">
+            {/* <label className="flex items-center gap-2 text-sm text-gray-600">
               <input
                 type="checkbox"
                 checked={consent}
@@ -894,7 +903,7 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
                 }}
               />
               I agree to get insights on WhatsApp and email.
-            </label>
+            </label> */}
 
             <div className="flex justify-center pt-1">
               <Button
@@ -1117,6 +1126,9 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
           </div>
         </Card>
       </div>
+      
+      {/* Floating Buttons */}
+      <FloatingButtons onBookNow={handleBookNow} />
     </div>
   );
 }

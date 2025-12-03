@@ -10,7 +10,7 @@ interface DoctorCardProps {
 
 export function DoctorCard({ member, onBookNow }: DoctorCardProps) {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col h-full">
+    <div className="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-[#096b17]/10 flex flex-col h-full" style={{ backgroundColor: '#FFFDBD' }}>
       {/* Image Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#096b17]/5 to-[#64CB81]/5">
         <div className="relative h-80">
@@ -34,29 +34,29 @@ export function DoctorCard({ member, onBookNow }: DoctorCardProps) {
 
       {/* Content Section */}
       <div className="p-6 flex-1 flex flex-col">
-        <h3 className="text-xl text-gray-900 mb-2">{member.name}</h3>
+        <h3 className="text-xl text-[#096b17] mb-2">{member.name}</h3>
         
         <div className="space-y-3 mb-4">
-          <div className="flex items-start gap-2 text-gray-600 text-sm">
+          <div className="flex items-start gap-2 text-[#096b17] text-sm">
             <Award className="h-4 w-4 text-[#096b17] mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-xs text-gray-500">Designation</p>
+              <p className="text-xs text-[#096b17]/70">Designation</p>
               <p>{member.designation}</p>
             </div>
           </div>
 
-          <div className="flex items-start gap-2 text-gray-600 text-sm">
+          <div className="flex items-start gap-2 text-[#096b17] text-sm">
             <Building2 className="h-4 w-4 text-[#096b17] mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-xs text-gray-500">Institute</p>
+              <p className="text-xs text-[#096b17]/70">Institute</p>
               <p>{member.institute}</p>
             </div>
           </div>
 
-          <div className="flex items-start gap-2 text-gray-600 text-sm">
+          <div className="flex items-start gap-2 text-[#096b17] text-sm">
             <GraduationCap className="h-4 w-4 text-[#096b17] mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-xs text-gray-500">Qualification</p>
+              <p className="text-xs text-[#096b17]/70">Qualification</p>
               <p>{member.qualification}</p>
             </div>
           </div>
@@ -64,7 +64,7 @@ export function DoctorCard({ member, onBookNow }: DoctorCardProps) {
 
         {/* Expertise Tags */}
         <div className="space-y-2 mb-4">
-          <p className="text-xs text-gray-500 uppercase tracking-wide">Areas of Expertise</p>
+          <p className="text-xs text-[#096b17]/70 uppercase tracking-wide">Areas of Expertise</p>
           <div className="flex flex-wrap gap-2">
             {member.expertise.slice(0, 3).map((skill, idx) => (
               <span
@@ -75,7 +75,7 @@ export function DoctorCard({ member, onBookNow }: DoctorCardProps) {
               </span>
             ))}
             {member.expertise.length > 3 && (
-              <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-lg">
+              <span className="text-xs bg-[#096b17]/10 text-[#096b17] px-2.5 py-1 rounded-lg">
                 +{member.expertise.length - 3} more
               </span>
             )}
@@ -86,9 +86,9 @@ export function DoctorCard({ member, onBookNow }: DoctorCardProps) {
         <div className="space-y-2 mb-4">
           <div className="flex items-center gap-1.5">
             <Languages className="h-3.5 w-3.5 text-[#096b17]" />
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Languages</p>
+            <p className="text-xs text-[#096b17]/70 uppercase tracking-wide">Languages</p>
           </div>
-          <p className="text-sm text-gray-700">{member.languages.join(', ')}</p>
+          <p className="text-sm text-[#096b17]">{member.languages.join(', ')}</p>
         </div>
 
         {/* Book Now Button */}

@@ -16,7 +16,8 @@ import {
 } from 'lucide-react';
 import './index.css';
 import './styles/globals.css';
-import { trackCTA, trackSectionView } from '../../../utils/tracking';
+import { trackCTA, trackSectionView, trackButtonClick } from '../../../utils/tracking';
+import { FloatingButtons } from '../../FloatingButtons';
 
 interface LandingPageProps {
   onStart: () => void;
@@ -66,6 +67,14 @@ export default function LandingPage({ onStart }: LandingPageProps) {
     trackCTA('Book Free Clarity Call', 'atm_landing');
     // Navigate to contact page
     window.location.href = '/contact';
+  };
+
+  const handleBookNow = () => {
+    trackButtonClick('Book Now', 'floating_cta', 'atm_landing');
+    // Navigate to booking page
+    history.pushState(null, '', '/');
+    window.location.hash = '#booking';
+    window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
   return (
@@ -269,6 +278,9 @@ export default function LandingPage({ onStart }: LandingPageProps) {
           </Card>
         </div>
       </section>
+
+      {/* Floating Buttons */}
+      <FloatingButtons onBookNow={handleBookNow} />
     </div>
   );
 }

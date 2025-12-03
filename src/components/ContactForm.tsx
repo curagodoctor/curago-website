@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
-import { trackFormSubmission, trackWhatsAppClick } from '../utils/tracking';
+import { trackFormSubmission } from '../utils/tracking';
+import { WhatsAppConfirmDialog } from './WhatsAppConfirmDialog';
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ export function ContactForm() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,8 +71,7 @@ export function ContactForm() {
   };
 
   const handleWhatsApp = () => {
-    trackWhatsAppClick('contact_form');
-    window.open('https://wa.me/917021227203', '_blank');
+    setShowWhatsAppDialog(true);
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,12 +84,12 @@ export function ContactForm() {
 
   return (
     <>
-      <div className="rounded-2xl shadow-2xl p-8 md:p-10 max-w-2xl w-full" style={{ backgroundColor: '#FFFDBD' }}>
-        <div className="mb-8">
+      <div className="rounded-2xl flex flex-col justify-center items-center shadow-2xl p-6 md:p-10 max-w-2xl w-full mx-auto" style={{ backgroundColor: '#FFFDBD' }}>
+        <div className="mb-4 text-center w-full">
           <h3 className="text-2xl mb-3" style={{ color: '#096b17' }}>Request a Callback</h3>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-lg">
           <div>
             <Label htmlFor="name" className="mb-2 block" style={{ color: '#096b17' }}>
               Name <span className="text-red-500">*</span>
@@ -99,8 +100,7 @@ export function ContactForm() {
               placeholder="Enter your name"
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
-              className="bg-white h-12 rounded-lg transition-all duration-300"
-              style={{ borderColor: '#096b17', opacity: 0.5 }}
+              className="bg-white h-12 rounded-lg transition-all duration-300 text-black placeholder:text-black border-[#096b17] focus:border-[#096b17] focus:ring-[#096b17]"
               required
             />
           </div>
@@ -115,8 +115,7 @@ export function ContactForm() {
               placeholder="+91"
               value={formData.phone}
               onChange={handlePhoneChange}
-              className="bg-white h-12 rounded-lg transition-all duration-300"
-              style={{ borderColor: '#096b17', opacity: 0.5 }}
+              className="bg-white h-12 rounded-lg transition-all duration-300 text-black placeholder:text-black border-[#096b17] focus:border-[#096b17] focus:ring-[#096b17]"
               required
             />
           </div>
@@ -131,8 +130,7 @@ export function ContactForm() {
               placeholder="Enter your email"
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="bg-white h-12 rounded-lg transition-all duration-300"
-              style={{ borderColor: '#096b17', opacity: 0.5 }}
+              className="bg-white h-12 rounded-lg transition-all duration-300 text-black placeholder:text-black border-[#096b17] focus:border-[#096b17] focus:ring-[#096b17]"
               required
             />
           </div>
@@ -145,8 +143,8 @@ export function ContactForm() {
               value={formData.callbackTime} 
               onValueChange={(value) => setFormData({...formData, callbackTime: value})}
             >
-              <SelectTrigger className="w-full bg-white h-12 rounded-lg transition-all duration-300" style={{ borderColor: '#096b17', opacity: 0.5, color: '#096b17' }}>
-                <SelectValue placeholder="Select preferred time" />
+              <SelectTrigger className="w-full bg-white h-12 rounded-lg transition-all duration-300 text-black border-[#096b17] focus:border-[#096b17] focus:ring-[#096b17]">
+                <SelectValue placeholder="Select preferred time" className="text-black placeholder:text-black" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="morning">Morning (9 AM - 12 PM)</SelectItem>
@@ -206,6 +204,14 @@ export function ContactForm() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* WhatsApp Confirmation Dialog */}
+      <WhatsAppConfirmDialog
+        isOpen={showWhatsAppDialog}
+        onOpenChange={setShowWhatsAppDialog}
+        source="contact_form"
+        message="Hi! I want to get in touch regarding CuraGo services."
+      />
     </>
   );
 }

@@ -41,7 +41,7 @@ const getPathname = () =>
   (typeof window !== 'undefined' ? window.location.pathname : '/') || '/';
 
 const isAuraPath = (p: string) => p.startsWith('/aura-rise-index');
-const isAtmPath = (p: string) => p.startsWith('/anxiety-trigger-mapping');
+const isAtmPath = (p: string) => p.startsWith('/atm');
 
 /** =========================
  *  Referral-safe URL helpers
@@ -124,7 +124,9 @@ export default function App() {
   // ---------- Path routing (/contact and /aura-rise-index*) ----------
   useEffect(() => {
     const syncFromPath = () => {
-      const { pathname } = window.location;
+      const { pathname, hash } = window.location;
+      console.log('🔄 syncFromPath:', { pathname, hash, isAuraRoute, isAtmRoute });
+      
       setIsAuraRoute(isAuraPath(pathname));
       setIsAtmRoute(isAtmPath(pathname));
 
@@ -159,19 +161,19 @@ export default function App() {
       }
 
       // ATM routes
-      if (pathname === '/anxiety-trigger-mapping') {
+      if (pathname === '/atm') {
         setAtmStage('landing');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         trackPageView('ATM Landing', 'CuraGo - Anxiety Trigger Mapping');
         return;
       }
-      if (pathname === '/anxiety-trigger-mapping/quiz') {
+      if (pathname === '/atm/quiz') {
         setAtmStage('quiz');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         trackPageView('ATM Quiz', 'CuraGo - ATM Quiz');
         return;
       }
-      if (pathname === '/anxiety-trigger-mapping/results') {
+      if (pathname === '/atm/results') {
         setAtmStage('results');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         trackPageView('ATM Results', 'CuraGo - ATM Results');
@@ -196,10 +198,17 @@ export default function App() {
         return;
       }
 
-      // Default to home (no hash)
-      if (!window.location.hash || window.location.hash === '#home') {
-        setCurrentPage('home');
+      // Handle home route (root path with no hash or #home)
+      if (pathname === '/' || pathname === '') {
+        if (!window.location.hash || window.location.hash === '#home') {
+          setCurrentPage('home');
+          trackPageView('Home', 'CuraGo - Professional Healthcare At Your Doorstep');
+        }
+        return;
       }
+      
+      // Fallback for other paths
+      console.log('🤔 Unhandled path:', pathname, 'hash:', window.location.hash);
     };
 
     syncFromPath();
@@ -217,18 +226,33 @@ export default function App() {
   };
 
   const handleNavigate = (page: string) => {
+    console.log('🧭 Navigating to:', page, 'from current route:', { isAuraRoute, isAtmRoute, currentPage });
+    
     if (page === 'home') {
       history.pushState(null, '', buildUrl('/', '#home'));
       setIsAuraRoute(false);
+      setIsAtmRoute(false);
       setCurrentPage('home');
+      // Force a popstate event to trigger route sync
+      window.dispatchEvent(new PopStateEvent('popstate'));
     } else if (page === 'team') {
       history.pushState(null, '', buildUrl('/', '#mental-health-team'));
       setIsAuraRoute(false);
+      setIsAtmRoute(false);
       setCurrentPage('team');
+      window.dispatchEvent(new PopStateEvent('popstate'));
     } else if (page === 'booking') {
       history.pushState(null, '', buildUrl('/', '#booking'));
       setIsAuraRoute(false);
+      setIsAtmRoute(false);
       setCurrentPage('booking');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    } else if (page === 'contact') {
+      history.pushState(null, '', buildUrl('/contact'));
+      setIsAuraRoute(false);
+      setIsAtmRoute(false);
+      setCurrentPage('contact');
+      window.dispatchEvent(new PopStateEvent('popstate'));
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -307,10 +331,10 @@ export default function App() {
   const goToAtm = (stage: 'landing' | 'quiz' | 'results') => {
     const path =
       stage === 'landing'
-        ? '/anxiety-trigger-mapping'
+        ? '/atm'
         : stage === 'quiz'
-        ? '/anxiety-trigger-mapping/quiz'
-        : '/anxiety-trigger-mapping/results';
+        ? '/atm/quiz'
+        : '/atm/results';
 
     history.pushState(null, '', buildUrl(path));
     setIsAtmRoute(true);

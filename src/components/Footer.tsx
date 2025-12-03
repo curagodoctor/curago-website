@@ -1,9 +1,16 @@
+import React, { useState } from 'react';
 import { PrivacyPolicy } from './PrivacyPolicy';
 import { TermsOfUse } from './TermsOfUse';
-
-import { trackWhatsAppClick, trackPhoneClick } from '../utils/tracking';
+import { trackPhoneClick } from '../utils/tracking';
+import { WhatsAppConfirmDialog } from './WhatsAppConfirmDialog';
 
 export function Footer() {
+  const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false);
+
+  const handleWhatsAppClick = () => {
+    setShowWhatsAppDialog(true);
+  };
+
   return (
     <footer className="py-12 relative overflow-hidden" style={{ backgroundColor: '#FFFDBD' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -50,9 +57,9 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="https://wa.me/917021227203" target="_blank" rel="noopener noreferrer" onClick={() => trackWhatsAppClick('footer')} className="hover:opacity-100 transition-opacity">
+                <button onClick={handleWhatsAppClick} className="hover:opacity-100 transition-opacity text-left">
                   WhatsApp: +917021227203
-                </a>
+                </button>
               </li>
               <li>
                 <a href="mailto:help@curago.in" className="hover:opacity-100 transition-opacity">
@@ -78,6 +85,14 @@ export function Footer() {
           </div>
         </div>
       </div>
+
+      {/* WhatsApp Confirmation Dialog */}
+      <WhatsAppConfirmDialog
+        isOpen={showWhatsAppDialog}
+        onOpenChange={setShowWhatsAppDialog}
+        source="footer"
+        message="Hi! I want to get in touch regarding CuraGo mental health services."
+      />
     </footer>
   );
 }
