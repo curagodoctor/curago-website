@@ -687,7 +687,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
 
                 {/* Logo from Navbar */}
                 <div className="flex justify-center mb-6">
-                  <img src="/Logo.svg?v=2" alt="CuraGo Logo" className="h-12 w-auto lg:h-16" />
+                  <img src="/Logo.svg?v=6" alt="CuraGo Logo" className="h-12 w-auto lg:h-16" />
                 </div>
 
 
