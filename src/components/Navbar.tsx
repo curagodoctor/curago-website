@@ -112,7 +112,7 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
               className="flex items-center cursor-pointer"
               aria-label="Go to home"
             >
-              <img src="/Logo.svg" alt="CuraGo Logo" className="h-10 w-auto" />
+              <img src="/Logo.svg?v=2" alt="CuraGo Logo" className="h-10 w-auto" />
             </a>
           </motion.div>
 

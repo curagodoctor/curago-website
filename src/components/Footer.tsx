@@ -18,7 +18,7 @@ export function Footer() {
           {/* Logo Section */}
           <div>
             <div className="mb-4">
-              <img src='/Logo.svg' alt="CuraGo Logo" className="h-12 w-auto" loading='lazy' />
+              <img src='/Logo.svg?v=2' alt="CuraGo Logo" className="h-12 w-auto" loading='lazy' />
             </div>
             <p className="text-sm leading-relaxed" style={{ color: '#096b17' }}>
               India's beloved online mental health platform where science meets life with empathy.
