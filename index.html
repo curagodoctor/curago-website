@@ -90,57 +90,6 @@
       gtag('config', 'G-EFGRF2RMGB');
     </script>
 
-    <!-- Meta Pixel Code -->
-    <script>
-      !(function (f, b, e, v, n, t, s) {
-        if (f.fbq) return;
-        n = f.fbq = function () {
-          n.callMethod
-            ? n.callMethod.apply(n, arguments)
-            : n.queue.push(arguments);
-        };
-        if (!f._fbq) f._fbq = n;
-        n.push = n;
-        n.loaded = !0;
-        n.version = '2.0';
-        n.queue = [];
-        t = b.createElement(e);
-        t.async = !0;
-        t.src = v;
-        s = b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t, s);
-      })(
-        window,
-        document,
-        'script',
-        'https://connect.facebook.net/en_US/fbevents.js'
-      );
-      fbq('init', '833058805840230');
-      fbq('track', 'PageView');
-      
-      // Debug logging for Meta Pixel - after initialization
-      setTimeout(() => {
-        console.log('🔍 Meta Pixel Debug Info:');
-        console.log('✅ Meta Pixel initialized with ID: 833058805840230');
-        console.log('✅ Meta Pixel fbq function available:', typeof window.fbq === 'function');
-        console.log('✅ Meta Pixel _fbq available:', typeof window._fbq);
-        console.log('✅ Meta Pixel queue length:', window.fbq?.queue?.length || 'No queue');
-        console.log('- GTM dataLayer:', window.dataLayer ? '✅ Loaded' : '❌ Not loaded');
-        console.log('- Analytics gtag:', typeof window.gtag === 'function' ? '✅ Loaded' : '❌ Not loaded');
-        console.log('- Meta fbq function:', typeof window.fbq === 'function' ? '✅ Loaded' : '❌ Not loaded');
-        
-        // Test if Meta Pixel can send events
-        if (window.fbq) {
-          window.fbq('trackCustom', 'PixelInitTest', { 
-            test: true, 
-            timestamp: new Date().toISOString(),
-            hostname: window.location.hostname 
-          });
-          console.log('✅ Meta Pixel: PixelInitTest event sent');
-        }
-      }, 2000);
-    </script>
-
   </head>
 
   <body>
@@ -155,16 +104,6 @@
     </noscript>
 
     <div id="root"></div>
-
-    <!-- Meta Pixel noscript -->
-    <noscript>
-      <img
-        height="1"
-        width="1"
-        style="display: none"
-        src="https://www.facebook.com/tr?id=833058805840230&ev=PageView&noscript=1"
-      />
-    </noscript>
 
     <script type="module" src="/src/main.tsx"></script>
   </body>

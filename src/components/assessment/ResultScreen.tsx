@@ -1,5 +1,5 @@
 // src/components/assessment/ResultScreen.tsx
-import { useMemo, useRef, useState, FormEvent, useEffect } from 'react';
+import React, { useMemo, useRef, useState, FormEvent, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -16,7 +16,11 @@ import {
   MessageCircle,
   RefreshCw,
   Copy as CopyIcon,
-  Check as CheckIcon
+  Check as CheckIcon,
+  User,
+  Mail,
+  Phone,
+  X
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { AuraScores, UserInfo } from '../../types/aura';
@@ -206,6 +210,22 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
   const [submittedOnce, setSubmittedOnce] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Modal states
+  const [showFormPopup, setShowFormPopup] = useState(true);
+  const [showClarityCallPopup, setShowClarityCallPopup] = useState(false);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [formPopupClosedTime, setFormPopupClosedTime] = useState<number | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    whatsapp: '',
+    email: ''
+  });
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    whatsapp: '',
+    email: ''
+  });
+
   const waDigits = contact.whatsapp.replace(/\D/g, '').slice(0, 10);
   const isWaValid = waDigits.length === 10;
   const canSubmit = displayName.length > 0 && isWaValid && consent && !pending && !submittedOnce;
@@ -216,6 +236,119 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
     history.pushState(null, '', '/');
     window.location.hash = '#booking';
     window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
+  // Modal form handling
+  const handleInputChange = (field: string, value: string) => {
+    if (field === 'whatsapp') {
+      // Only allow digits and limit to 10 characters
+      value = value.replace(/\D/g, '').slice(0, 10);
+    }
+    
+    setFormData({ ...formData, [field]: value });
+    
+    // Clear error when user starts typing
+    if (formErrors[field as keyof typeof formErrors]) {
+      setFormErrors({ ...formErrors, [field]: '' });
+    }
+  };
+
+  const validateForm = () => {
+    const errors = { name: '', whatsapp: '', email: '' };
+    let isValid = true;
+
+    if (!formData.name.trim()) {
+      errors.name = 'Name is required';
+      isValid = false;
+    }
+
+    if (!formData.whatsapp.trim()) {
+      errors.whatsapp = 'WhatsApp number is required';
+      isValid = false;
+    } else if (formData.whatsapp.length !== 10) {
+      errors.whatsapp = 'Please enter a valid 10-digit number';
+      isValid = false;
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required';
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    try {
+      // Submit to Wylto webhook (same as ATM)
+      const payload = {
+        name: formData.name,
+        whatsapp: `+91${formData.whatsapp}`,
+        email: formData.email,
+        formType: 'aura_results',
+        scores: {
+          overall: Math.round(scores.overall),
+          awareness: Math.round(scores.awareness),
+          understanding: Math.round(scores.understanding),
+          regulation: Math.round(scores.regulation),
+          alignment: Math.round(scores.alignment)
+        },
+        timestamp: new Date().toISOString(),
+      };
+
+      const res = await fetch(WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        setIsFormSubmitted(true);
+        setShowFormPopup(false);
+        setFormPopupClosedTime(Date.now());
+
+        // ✅ Result Unlock Event (₹300 value) - High-value signal
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'guard_rail_unlock',
+          test_type: 'aura_index_form_submit',
+          proxy_value: 300.00,
+          currency: 'INR',
+          // PII Data for Advanced Matching
+          userEmail: formData.email || '',
+          userPhone: `91${formData.whatsapp}`,
+          transactionId: `GR-AURA-${Date.now()}`,
+          page_path: window.location.pathname,
+          aura_event_id: eventIdRef.current,
+        });
+        console.log('✅ guard_rail_unlock event pushed to dataLayer (AURA, ₹300)');
+
+        // Track successful submission (legacy tracking)
+        dlPush({
+          event: 'aura_results_form_submitted',
+          aura_event_id: eventIdRef.current,
+          name: formData.name,
+          whatsapp: formData.whatsapp,
+          email: formData.email
+        });
+
+        trackButtonClick('AURA Form Submitted', 'form', 'aura_results');
+      } else {
+        console.error('Form submission failed');
+        alert('Something went wrong. Please try again.');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('Something went wrong. Please try again.');
+    }
   };
 
   // order for tips
@@ -237,6 +370,27 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // run once
+
+  // Show clarity call popup 5 seconds after first popup is closed
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (formPopupClosedTime) {
+      // If form popup was closed, start timer from that moment
+      timer = setTimeout(() => {
+        setShowClarityCallPopup(true);
+      }, 5000);
+    } else if (!showFormPopup && !isFormSubmitted) {
+      // If form popup was never shown or closed without submission, show after 7 seconds total
+      timer = setTimeout(() => {
+        setShowClarityCallPopup(true);
+      }, 7000);
+    }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [formPopupClosedTime, showFormPopup, isFormSubmitted]);
 
   // ---- Referral code/link ----
   const referralCode = useMemo(() => {
@@ -616,7 +770,117 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
 
   // ---------- UI ----------
   return (
-    <div className="min-h-screen bg-white pt-24">
+    <>
+      {/* Show modal first, then results after form submission */}
+      {showFormPopup && !isFormSubmitted && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={(e) => e.target === e.currentTarget && e.preventDefault()}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="p-6 sm:p-8">
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Unlock Your Results</h3>
+              </div>
+
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Your result is ready.<br />
+                To keep it secure and make it retrievable anytime, we need to link it to your WhatsApp number.<br />
+                You may also receive helpful messages and calls from our team as part of your support journey.<br /><br />
+                Enter your details to unlock your full result.
+              </p>
+
+              <form onSubmit={handleFormSubmit} className="space-y-5">
+                {/* Name Field */}
+                <div>
+                  <div className="flex items-center mb-2">
+                    <User className="w-4 h-4 text-gray-500 mr-2" />
+                    <label className="text-sm font-medium text-gray-700">
+                      Full Name *
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    className={`w-full px-4 py-3 border focus:ring-2 focus:ring-[#64CB81] focus:border-[#64CB81] outline-none transition-colors ${
+                      formErrors.name ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter your full name"
+                  />
+                  {formErrors.name && <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>}
+                </div>
+
+                {/* WhatsApp Field */}
+                <div>
+                  <div className="flex items-center mb-2">
+                    <Phone className="w-4 h-4 text-gray-500 mr-2" />
+                    <label className="text-sm font-medium text-gray-700">
+                      WhatsApp Number *
+                    </label>
+                  </div>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">
+                      +91
+                    </span>
+                    <input
+                      type="tel"
+                      value={formData.whatsapp}
+                      onChange={(e) => handleInputChange('whatsapp', e.target.value)}
+                      className={`flex-1 px-4 py-3 border focus:ring-2 focus:ring-[#64CB81] focus:border-[#64CB81] outline-none transition-colors rounded-r-md ${
+                        formErrors.whatsapp ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="9876543210"
+                      maxLength={10}
+                    />
+                  </div>
+                  {formErrors.whatsapp && <p className="text-red-500 text-sm mt-1">{formErrors.whatsapp}</p>}
+                </div>
+
+                {/* Email Field */}
+                <div>
+                  <div className="flex items-center mb-2">
+                    <Mail className="w-4 h-4 text-gray-500 mr-2" />
+                    <label className="text-sm font-medium text-gray-700">
+                      Email Address *
+                    </label>
+                  </div>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className={`w-full px-4 py-3 border focus:ring-2 focus:ring-[#64CB81] focus:border-[#64CB81] outline-none transition-colors ${
+                      formErrors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="your.email@example.com"
+                  />
+                  {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className="w-full bg-[#64CB81] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#5bb574] transition-colors"
+                >
+                  Unlock My Results
+                </button>
+              </form>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Results content - only show after form submission */}
+      {(!showFormPopup || isFormSubmitted) && (
+        <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] pt-24">
       {/* Header */}
       <header className="container mx-auto px-6 py-5 flex justify-between items-center">
         <Button
@@ -627,7 +891,7 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
           }}
           variant="outline"
           size="sm"
-          className="rounded-xl border-gray-300 hover:border-[#096b17]/40"
+          className="rounded-xl bg-white/20 border border-white/30 text-white hover:bg-white/30"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           Retake
@@ -637,21 +901,20 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
       <div className="container mx-auto px-6 py-6 max-w-5xl">
         {/* Greeting */}
         <div className="text-center mb-4">
-          <h1 className="text-xl text-gray-700 flex items-center justify-center gap-2">
+          <h1 className="text-xl text-white flex items-center justify-center gap-2">
             Hello{displayName ? `, ${displayName}` : ''}!
-            <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: BRAND }} />
+            <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: '#096b17' }} />
           </h1>
         </div>
 
         {/* Profile: Radar + Pillars */}
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           <Card
-            className="p-6 border-[#096b17]/10"
+            className="p-6 bg-white/30 backdrop-blur-md border border-white/20"
             ref={radarRef}
             data-track-id="radar_profile"
           >
-
-            <h3 className="text-lg text-center text-gray-900 mb-4">
+            <h3 className="text-lg text-center text-white mb-4">
               Your Emotional Fitness Profile
             </h3>
             <RadarChartComponent scores={scores} />
@@ -666,42 +929,42 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
               const hi = k === highestKey;
               const lo = k === lowestKey;
               return (
-                <Card key={k} className="p-5 border-[#096b17]/10">
+                <Card key={k} className="p-5 bg-white/30 backdrop-blur-md border border-white/20">
                   <div className="flex items-start justify-between gap-3 mb-1">
                     <div className="flex items-start gap-3 min-w-0">
                       <div
                         className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: '#FFFDBD' }}
+                        style={{ backgroundColor: 'rgba(255, 253, 189, 0.3)' }}
                       >
-                        <MetaIcon className="w-5 h-5" color={BRAND} />
+                        <MetaIcon className="w-5 h-5" color="#096b17" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-base font-medium text-gray-900 break-words">
+                        <h4 className="text-base font-medium text-white break-words">
                           {pillarMeta[k].name}
                         </h4>
-                        <p className="text-sm text-gray-600 break-words leading-snug">
+                        <p className="text-sm text-white/90 break-words leading-snug">
                           {pillarMeta[k].desc}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      {hi && <TrendingUp className="w-5 h-5" color={BRAND} />}
-                      {lo && <TrendingDown className="w-5 h-5" color={BRAND} />}
-                      <span className="text-xl font-semibold text-gray-900">
+                      {hi && <TrendingUp className="w-5 h-5" color="#096b17" />}
+                      {lo && <TrendingDown className="w-5 h-5" color="#096b17" />}
+                      <span className="text-xl font-semibold text-white">
                         {Math.round(scores[k])}
                       </span>
                     </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${scores[k]}%` }}
                       transition={{ duration: 0.6 }}
                       className="h-2 rounded-full"
-                      style={{ backgroundColor: BRAND }}
+                      style={{ backgroundColor: '#096b17' }}
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">{pillarLabel(scores[k])}</p>
+                  <p className="text-xs text-white/70 mt-2">{pillarLabel(scores[k])}</p>
                 </Card>
               );
             })}
@@ -709,370 +972,160 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
         </div>
 
         {/* Overall score */}
-        <Card className="p-6 mb-8 border-[#096b17]/10 text-center"
+        <Card className="p-6 mb-8 bg-white/30 backdrop-blur-md border border-white/20 text-center"
           ref={formRef}
-          data-track-id="full_insights_form">
+          data-track-id="overall_score">
           <div className="mb-2">
-            <span className="text-6xl font-semibold" style={{ color: BRAND }}>
+            <span className="text-6xl font-semibold" style={{ color: '#096b17' }}>
               {Math.round(scores.overall)}
             </span>
-            <span className="text-2xl text-gray-400">/100</span>
+            <span className="text-2xl text-white/90">/100</span>
           </div>
-          <Badge className="bg-[#FFFDBD] border-0 px-4 py-1.5 text-sm" style={{ color: BRAND }}>
+          <Badge className="bg-white/20 border-0 px-4 py-1.5 text-sm text-white">
             {analytics.label}
           </Badge>
         </Card>
 
-        {/* Full insights form */}
+        {/* Advanced analytics & personal tips */}
         <Card
-          className="p-6 mb-8 border-[#096b17]/20"
-          ref={(el) => { formRef.current = el; if (el) el.dataset.trackId = 'full_insights_form'; }}
+          className="p-6 mb-8 bg-white/30 backdrop-blur-md border border-white/20"
+          ref={(el) => { advRef.current = el; if (el) el.dataset.trackId = 'advanced_insights'; }}
         >
-          <h3 className="text-2xl text-center text-gray-900 mb-2">Get your full insights</h3>
-          <p className="text-gray-600 text-center mb-6">
-            Get detailed pillar-by-pillar interpretations and personalised next steps.
-          </p>
+          <h3 className="text-xl font-semibold text-white mb-3">Your Advanced Insights</h3>
 
-          <form onSubmit={onSubmit} className="max-w-xl mx-auto text-left space-y-4">
-            {/* Name */}
-            <div>
-              <Label>Name *</Label>
-              <Input
-                value={contact.name}
-                onFocus={() => {
-                  markFormStartIfNeeded('name');
-                  dlPush({ event: 'aura_results_input_focus', aura_event_id: eventIdRef.current, field: 'name' });
-                }}
-                onBlur={(e) => {
-                  dlPush({
-                    event: 'aura_results_input_blur',
-                    aura_event_id: eventIdRef.current,
-                    field: 'name',
-                    len: e.target.value.length,
-                  });
-                }}
-                onChange={(e) => {
-                  setContact({ ...contact, name: e.target.value });
-                  changeCountRef.current.name += 1;
-                  dlPush({
-                    event: 'aura_results_input_change',
-                    aura_event_id: eventIdRef.current,
-                    field: 'name',
-                    len: e.target.value.length,
-                    filled_fields: fieldsFilledCount(),
-                  });
-                }}
-                placeholder="Your name"
-                className="
-                  text-base
-                  border border-[#FFF7AF]/70
-                  focus-visible:!outline-none
-                  focus-visible:!ring-2
-                  focus-visible:!ring-[#FFF7AF]
-                  focus-visible:!border-[#FFF7AF]
-                "
-                style={{ ['--tw-ring-color' as any]: '#FFF7AF' }}
-              />
+          {/* Summary */}
+          <div className="grid md:grid-cols-3 gap-4 mb-4">
+            <div className="p-4 rounded-xl bg-white/20 border border-white/10">
+              <p className="text-xs text-white/70">Top Pillar</p>
+              <p className="font-medium text-white">{pillarMeta[highestKey].name}</p>
             </div>
-
-            {/* WhatsApp */}
-            <div>
-              <Label>WhatsApp Number *</Label>
-              <div
-                className="
-                  flex items-center rounded-md border bg-background
-                  border-[#FFF7AF]/70
-                  focus-within:!ring-2
-                  focus-within:!ring-[#FFF7AF]
-                  focus-within:!border-[#FFF7AF]
-                "
-                style={{ ['--tw-ring-color' as any]: '#FFF7AF' }}
-              >
-                <span className="px-3 text-sm font-medium" style={{ color: BRAND }}>
-                  +91
-                </span>
-                <input
-                  className="flex-1 h-10 px-3 outline-none bg-transparent text-base"
-                  inputMode="numeric"
-                  pattern="\d*"
-                  placeholder="10-digit number"
-                  value={waDigits}
-                  onFocus={() => {
-                    markFormStartIfNeeded('whatsapp');
-                    dlPush({ event: 'aura_results_input_focus', aura_event_id: eventIdRef.current, field: 'whatsapp' });
-                  }}
-                  onBlur={(e) => {
-                    dlPush({
-                      event: 'aura_results_input_blur',
-                      aura_event_id: eventIdRef.current,
-                      field: 'whatsapp',
-                      len: e.target.value.replace(/\D/g, '').length,
-                      valid: e.target.value.replace(/\D/g, '').length === 10,
-                    });
-                  }}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/\D/g, '').slice(0, 10);
-                    setContact({ ...contact, whatsapp: v });
-                    changeCountRef.current.whatsapp += 1;
-                    dlPush({
-                      event: 'aura_results_input_change',
-                      aura_event_id: eventIdRef.current,
-                      field: 'whatsapp',
-                      len: v.length,
-                      valid: v.length === 10,
-                      filled_fields: fieldsFilledCount(),
-                    });
-                  }}
-                />
-              </div>
-              {!isWaValid && contact.whatsapp.length > 0 && (
-                <p className="text-xs text-red-600 mt-1">Please enter a valid 10-digit number.</p>
-              )}
+            <div className="p-4 rounded-xl bg-white/20 border border-white/10">
+              <p className="text-xs text-white/70">Focus Area</p>
+              <p className="font-medium text-white">{pillarMeta[lowestKey].name}</p>
             </div>
-
-            {/* Email */}
-            <div>
-              <Label>Email (optional)</Label>
-              <Input
-                type="email"
-                value={contact.email}
-                onFocus={() => {
-                  markFormStartIfNeeded('email');
-                  dlPush({ event: 'aura_results_input_focus', aura_event_id: eventIdRef.current, field: 'email' });
-                }}
-                onBlur={(e) => {
-                  dlPush({
-                    event: 'aura_results_input_blur',
-                    aura_event_id: eventIdRef.current,
-                    field: 'email',
-                    len: e.target.value.length,
-                    has_at: e.target.value.includes('@'),
-                  });
-                }}
-                onChange={(e) => {
-                  setContact({ ...contact, email: e.target.value });
-                  changeCountRef.current.email += 1;
-                  dlPush({
-                    event: 'aura_results_input_change',
-                    aura_event_id: eventIdRef.current,
-                    field: 'email',
-                    len: e.target.value.length,
-                    filled_fields: fieldsFilledCount(),
-                  });
-                }}
-                placeholder="you@example.com"
-                className="
-                  text-base
-                  border border-[#FFF7AF]/70
-                  focus-visible:!outline-none
-                  focus-visible:!ring-2
-                  focus-visible:!ring-[#FFF7AF]
-                  focus-visible:!border-[#FFF7AF]
-                "
-                style={{ ['--tw-ring-color' as any]: '#FFF7AF' }}
-              />
+            <div className="p-4 rounded-xl bg-white/20 border border-white/10">
+              <p className="text-xs text-white/70">Overall Band</p>
+              <p className="font-medium text-white">{analytics.label}</p>
             </div>
+          </div>
 
-            {/* Consent */}
-            {/* <label className="flex items-center gap-2 text-sm text-gray-600">
-              <input
-                type="checkbox"
-                checked={consent}
-                onFocus={() => {
-                  markFormStartIfNeeded('consent');
-                  dlPush({ event: 'aura_results_input_focus', aura_event_id: eventIdRef.current, field: 'consent' });
-                }}
-                onChange={(e) => {
-                  setConsent(e.target.checked);
-                  changeCountRef.current.consent += 1;
-                  dlPush({
-                    event: 'aura_results_input_change',
-                    aura_event_id: eventIdRef.current,
-                    field: 'consent',
-                    value: e.target.checked,
-                    filled_fields: fieldsFilledCount(),
-                  });
-                }}
-                onBlur={(e) => {
-                  dlPush({
-                    event: 'aura_results_input_blur',
-                    aura_event_id: eventIdRef.current,
-                    field: 'consent',
-                    value: e.target.checked,
-                  });
-                }}
-              />
-              I agree to get insights on WhatsApp and email.
-            </label> */}
-
-            <div className="flex justify-center pt-1">
-              <Button
-                type="submit"
-                disabled={!canSubmit}
-                onClick={() => {
-                  dlPush({
-                    event: 'aura_results_cta_click',
-                    aura_event_id: eventIdRef.current,
-                    label: 'Get Full Insights',
-                    can_submit: canSubmit,
-                    fields_filled: fieldsFilledCount(),
-                  });
-                  trackButtonClick('Get Full Insights', 'cta', 'results_form');
-                }}
-                className="rounded-xl px-6 text-white"
-                style={{ backgroundColor: BRAND }}
-              >
-                {pending ? 'Submitting…' : submittedOnce ? 'Submitted' : 'Get Full Insights'}
-              </Button>
-            </div>
-          </form>
-        </Card>
-
-        {/* Advanced analytics & personal tips (visible after submit) */}
-        {submittedOnce && (
-          <Card
-            className="p-6 mb-8 border-[#096b17]/30"
-            ref={(el) => { advRef.current = el; if (el) el.dataset.trackId = 'advanced_insights'; }}
-          >
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">Your Advanced Insights</h3>
-
-            {/* Summary */}
-            <div className="grid md:grid-cols-3 gap-4 mb-4">
-              <div className="p-4 rounded-xl border border-[#096b17]/20">
-                <p className="text-xs text-gray-500">Top Pillar</p>
-                <p className="font-medium">{pillarMeta[highestKey].name}</p>
-              </div>
-              <div className="p-4 rounded-xl border border-[#096b17]/20">
-                <p className="text-xs text-gray-500">Focus Area</p>
-                <p className="font-medium">{pillarMeta[lowestKey].name}</p>
-              </div>
-              <div className="p-4 rounded-xl border border-[#096b17]/20">
-                <p className="text-xs text-gray-500">Overall Band</p>
-                <p className="font-medium">{analytics.label}</p>
-              </div>
-            </div>
-
-            {/* Risk flags */}
-            {analytics.riskFlags.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm font-medium text-gray-900 mb-1">Potential Risks</p>
-                <ul className="list-disc list-inside text-sm text-gray-700">
-                  {analytics.riskFlags.map((r, i) => (
-                    <li key={i}>{r}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Per-pillar bands */}
+          {/* Risk flags */}
+          {analytics.riskFlags.length > 0 && (
             <div className="mb-4">
-              <p className="text-sm font-medium text-gray-900 mb-1">Pillar Status</p>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {analytics.perPillar.map((p) => (
-                  <div key={p.key} className="p-3 rounded-lg border border-[#096b17]/15 flex items-center justify-between">
-                    <span className="text-sm text-gray-800">{p.name}</span>
-                    <span className="text-xs text-gray-600">{p.score}/100 • {p.band}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick tips */}
-            <div className="mb-4">
-              <p className="text-sm font-medium text-gray-900 mb-1">Personal Tips (Next 7 Days)</p>
-              <ul className="list-disc list-inside text-sm text-gray-700">
-                {analytics.quickTips.map((t, i) => (
-                  <li key={i}>{t}</li>
+              <p className="text-sm font-medium text-white mb-1">Potential Risks</p>
+              <ul className="list-disc list-inside text-sm text-white/90">
+                {analytics.riskFlags.map((r, i) => (
+                  <li key={i}>{r}</li>
                 ))}
               </ul>
             </div>
+          )}
 
-            {/* 7-day plan */}
-            <div className="mb-6">
-              <p className="text-sm font-medium text-gray-900 mb-1">Simple 7-Day Plan</p>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {analytics.weekPlan.map((d, i) => (
-                  <div key={i} className="p-3 rounded-lg border border-[#096b17]/15">
-                    <p className="text-xs text-gray-500">{d.day}</p>
-                    <p className="text-sm font-medium">{d.focus}</p>
-                    <ul className="list-disc list-inside text-xs text-gray-700 mt-1">
-                      {d.actions.map((a, j) => (
-                        <li key={j}>{a}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+          {/* Per-pillar bands */}
+          <div className="mb-4">
+            <p className="text-sm font-medium text-white mb-1">Pillar Status</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {analytics.perPillar.map((p) => (
+                <div key={p.key} className="p-3 rounded-lg bg-white/20 border border-white/10 flex items-center justify-between">
+                  <span className="text-sm text-white">{p.name}</span>
+                  <span className="text-xs text-white/90">{p.score}/100 • {p.band}</span>
+                </div>
+              ))}
             </div>
+          </div>
 
-            {/* Share on WhatsApp (Referral) */}
-            <div
-              className="rounded-xl border border-[#096b17]/30"
-              ref={(el) => { shareRef.current = el; if (el) el.dataset.trackId = 'referral_share'; }}
-            >
-              <div className="px-4 py-3 border-b border-[#096b17]/20 flex items-center justify-between">
-                <p className="text-sm font-medium text-gray-900">Share on WhatsApp</p>
+          {/* Quick tips */}
+          <div className="mb-4">
+            <p className="text-sm font-medium text-white mb-1">Personal Tips (Next 7 Days)</p>
+            <ul className="list-disc list-inside text-sm text-white/90">
+              {analytics.quickTips.map((t, i) => (
+                <li key={i}>{t}</li>
+              ))}
+            </ul>
+          </div>
+
+          {/* 7-day plan */}
+          <div className="mb-6">
+            <p className="text-sm font-medium text-white mb-1">Simple 7-Day Plan</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {analytics.weekPlan.map((d, i) => (
+                <div key={i} className="p-3 rounded-lg bg-white/20 border border-white/10">
+                  <p className="text-xs text-white/70">{d.day}</p>
+                  <p className="text-sm font-medium text-white">{d.focus}</p>
+                  <ul className="list-disc list-inside text-xs text-white/90 mt-1">
+                    {d.actions.map((a, j) => (
+                      <li key={j}>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Share on WhatsApp (Referral) */}
+          <div
+            className="rounded-xl bg-white/20 border border-white/10"
+            ref={(el) => { shareRef.current = el; if (el) el.dataset.trackId = 'referral_share'; }}
+          >
+            <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+              <p className="text-sm font-medium text-white">Share on WhatsApp</p>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={copyShareToClipboard}
+                className="h-8 px-3 rounded-lg bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                {copied ? <CheckIcon className="w-4 h-4 mr-2" /> : <CopyIcon className="w-4 h-4 mr-2" />}
+                {copied ? 'Copied' : 'Copy'}
+              </Button>
+            </div>
+            <div className="p-4">
+              <pre className="whitespace-pre-wrap text-sm text-white/90">{whatsappShareText}</pre>
+              <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                <Button
+                  type="button"
+                  onClick={openWhatsAppShare}
+                  className="rounded-xl text-white"
+                  style={{ backgroundColor: '#096b17' }}
+                >
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  Share on WhatsApp
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={copyShareToClipboard}
-                  className="h-8 px-3 rounded-lg"
-                  style={{ borderColor: BRAND, color: BRAND }}
+                  className="rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  onClick={() => {
+                    dlPush({ event: 'aura_results_cta_click', aura_event_id: eventIdRef.current, label: 'Book Free Clarity Call (share card)' });
+                    trackButtonClick('Book Free Clarity Call', 'cta', 'results_share_card');
+                    window.open(`${SITE_BASE}/contact`, '_blank');
+                  }}
                 >
-                  {copied ? <CheckIcon className="w-4 h-4 mr-2" /> : <CopyIcon className="w-4 h-4 mr-2" />}
-                  {copied ? 'Copied' : 'Copy'}
+                  Book Free Clarity Call
                 </Button>
               </div>
-              <div className="p-4">
-                <pre className="whitespace-pre-wrap text-sm text-gray-800">{whatsappShareText}</pre>
-                <div className="mt-3 flex flex-col sm:flex-row gap-2">
-                  <Button
-                    type="button"
-                    onClick={openWhatsAppShare}
-                    className="rounded-xl text-white"
-                    style={{ backgroundColor: BRAND }}
-                  >
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    Share on WhatsApp
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="rounded-xl"
-                    style={{ color: BRAND, borderColor: BRAND }}
-                    onClick={() => {
-                      dlPush({ event: 'aura_results_cta_click', aura_event_id: eventIdRef.current, label: 'Book Free Clarity Call (share card)' });
-                      trackButtonClick('Book Free Clarity Call', 'cta', 'results_share_card');
-                      window.open(`${SITE_BASE}/contact`, '_blank');
-                    }}
-                  >
-                    Book Free Clarity Call
-                  </Button>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Your referral code: <code className="font-semibold">{referralCode}</code> • Link:{' '}
-                  <a
-                    href={referralLink}
-                    className="underline"
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => dlPush({ event: 'aura_referral_link_click', aura_event_id: eventIdRef.current, code: referralCode })}
-                  >
-                    {referralLink}
-                  </a>
-                </p>
-
-              </div>
+              <p className="text-xs text-white/70 mt-2">
+                Your referral code: <code className="font-semibold text-white">{referralCode}</code> • Link:{' '}
+                <a
+                  href={referralLink}
+                  className="underline text-white/90"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => dlPush({ event: 'aura_referral_link_click', aura_event_id: eventIdRef.current, code: referralCode })}
+                >
+                  {referralLink}
+                </a>
+              </p>
             </div>
-          </Card>
-        )}
+          </div>
+        </Card>
 
         {/* Next-step CTAs */}
         <Card
-          className="p-6 text-center border-[#096b17]/10"
+          className="p-6 text-center bg-white/30 backdrop-blur-md border border-white/20"
           ref={(el) => { ctaRef.current = el; if (el) el.dataset.trackId = 'results_ctas'; }}
         >
-          <h3 className="text-xl text-gray-900 mb-3">Ready to take your next step?</h3>
+          <h3 className="text-xl text-white mb-3">Ready to take your next step?</h3>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
               onClick={() => {
@@ -1081,7 +1134,7 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
                 window.location.assign('/contact');
               }}
               className="sm:w-auto w-full rounded-xl text-white"
-              style={{ backgroundColor: BRAND }}
+              style={{ backgroundColor: '#096b17' }}
             >
               Book Free Clarity Call
             </Button>
@@ -1091,8 +1144,7 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
                 trackButtonClick('Chat Now on WhatsApp', 'cta', 'results_bottom');
                 window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my AURA Index and would like to chat.'), '_blank', 'noopener,noreferrer');
               }}
-              className="sm:w-auto w-full rounded-xl bg-white border"
-              style={{ color: BRAND, borderColor: BRAND }}
+              className="sm:w-auto w-full rounded-xl bg-white/20 border border-white/30 text-white hover:bg-white/30"
             >
               <MessageCircle className="w-5 h-5 mr-2" />
               Chat Now on WhatsApp
@@ -1105,8 +1157,7 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
                 else window.location.assign('/#mental-health-team');
               }}
-              className="sm:w-auto w-full rounded-xl bg-white border"
-              style={{ color: BRAND, borderColor: BRAND }}
+              className="sm:w-auto w-full rounded-xl bg-white/20 border border-white/30 text-white hover:bg-white/30"
             >
               Our Mental Health Team
             </Button>
@@ -1118,8 +1169,7 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
                 else window.location.assign('/#home');
               }}
-              className="sm:w-auto w-full rounded-xl bg-white border"
-              style={{ color: BRAND, borderColor: BRAND }}
+              className="sm:w-auto w-full rounded-xl bg-white/20 border border-white/30 text-white hover:bg-white/30"
             >
               Book Consultation Now
             </Button>
@@ -1129,6 +1179,94 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
       
       {/* Floating Buttons */}
       <FloatingButtons onBookNow={handleBookNow} />
-    </div>
+        </div>
+      )}
+
+      {/* Second popup - Clarity Call */}
+      {showClarityCallPopup && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={(e) => e.target === e.currentTarget && setShowClarityCallPopup(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md lg:max-w-lg xl:max-w-xl mx-4"
+          >
+            <div className="p-6 sm:p-8 lg:p-10 text-center">
+              <div className="flex justify-end mb-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowClarityCallPopup(false)}
+                  className="rounded-full w-8 h-8 p-0 border-gray-200 hover:bg-gray-50"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {/* Logo */}
+              <div className="flex justify-center mb-6">
+                <img src="/Logo.svg?v=6" alt="CuraGo Logo" className="h-12 w-auto lg:h-16" />
+              </div>
+
+             
+              <h3 className="text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800 mb-4">
+                Get Personalized Guidance
+              </h3>
+              
+              <p className="text-gray-600 mb-6 lg:mb-8 text-sm lg:text-base leading-relaxed">
+                Book a free 15-minute clarity call with our mental health expert to discuss your AURA results and create a personalized plan for your emotional fitness journey.
+              </p>
+              
+              <div className="space-y-3 lg:space-y-4">
+                <Button
+                  onClick={() => {
+                    // ✅ Clarity Call CTA Click (₹400 value intent)
+                    window.dataLayer = window.dataLayer || [];
+                    window.dataLayer.push({
+                      event: 'contact_form_submission',
+                      form_type: 'clarity_call_cta_click',
+                      proxy_value: 400.00,
+                      currency: 'INR',
+                      page_path: window.location.pathname,
+                      source: 'aura_clarity_popup',
+                      aura_event_id: eventIdRef.current,
+                    });
+                    console.log('✅ contact_form_submission event (CTA click) pushed to dataLayer (₹400)');
+
+                    dlPush({ event: 'aura_results_cta_click', aura_event_id: eventIdRef.current, label: 'Book Free Clarity Call (popup)' });
+                    trackButtonClick('Book Free Clarity Call', 'popup', 'aura_results_clarity_popup');
+                    window.location.href = '/contact';
+                    setShowClarityCallPopup(false);
+                  }}
+                  className="w-full bg-white border cursor-pointer border-gray-300 text-gray-800 hover:bg-gray-50 py-3 lg:py-4 rounded-lg font-semibold text-sm lg:text-base xl:text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  <Phone className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
+                  Book Free Clarity Call
+                </Button>
+                
+                <Button
+                  onClick={() => {
+                    dlPush({ event: 'aura_results_cta_click', aura_event_id: eventIdRef.current, label: 'Chat Now on WhatsApp (popup)' });
+                    trackButtonClick('Chat Now on WhatsApp', 'popup', 'aura_results_clarity_popup');
+                    window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my AURA assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
+                    setShowClarityCallPopup(false);
+                  }}
+                  className="w-full py-3 lg:py-4 rounded-lg font-medium text-sm lg:text-base bg-[#64CB81] text-white cursor-pointer hover:bg-green-600 transition-all duration-300"
+                >
+                  <MessageCircle className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
+                  Chat Now on WhatsApp
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </>
   );
 }

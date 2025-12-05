@@ -41,7 +41,7 @@ export function PrivacyPolicy({ trigger }: PrivacyPolicyProps) {
               <p className="mb-3">Information related to payments processed through Razorpay or Google Pay, including transaction IDs (we do not store full payment credentials).</p>
 
               <h4 className="mb-2 text-gray-900">d. Technical Data:</h4>
-              <p>Cookies, IP address, browser type, device ID, and usage data collected through analytics and advertising tools such as Meta (Facebook) Pixel and Google Ads for retargeting and performance measurement.</p>
+              <p>Cookies, IP address, browser type, device ID, and usage data collected through analytics and advertising tools such as Google Tag Manager and Google Analytics for performance measurement.</p>
             </section>
 
             <section>
@@ -63,7 +63,7 @@ export function PrivacyPolicy({ trigger }: PrivacyPolicyProps) {
               <ul className="list-disc pl-6 space-y-2">
                 <li>Registered medical practitioners, psychologists, and authorized staff of Curago.</li>
                 <li>Payment processors (Razorpay, Google Pay) for completing transactions.</li>
-                <li>Service providers for analytics, hosting, and communication (e.g., Meta, Google).</li>
+                <li>Service providers for analytics, hosting, and communication (e.g., Google).</li>
                 <li>Law enforcement or regulatory bodies when legally required.</li>
               </ul>
               <p className="mt-3"><strong>We do not sell or rent your personal data to third parties.</strong></p>
@@ -104,7 +104,7 @@ export function PrivacyPolicy({ trigger }: PrivacyPolicyProps) {
             <section>
               <h3 className="text-lg mb-3 text-gray-900">7. Cookies and Tracking</h3>
               <p>
-                Our website and tools use cookies and tracking pixels (Meta, Google) to improve performance and deliver personalized experiences. You can disable cookies in your browser at any time.
+                Our website and tools use cookies and tracking technologies (Google Tag Manager, Google Analytics) to improve performance and deliver personalized experiences. You can disable cookies in your browser at any time.
               </p>
             </section>
 

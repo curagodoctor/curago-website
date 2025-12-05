@@ -106,14 +106,16 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
         setCurrentQuestion((q) => q + 1);
         setSelectedValue(null);
       } else {
-        // ✅ On complete, push custom GTM signal
+        // ✅ Test Finish Event (₹50 value)
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
-          event: 'aura_quiz_complete',
-          aura_stage: 'complete',
+          event: 'assessment_test_finish',
+          test_type: 'aura_index',
+          proxy_value: 50.00,
+          currency: 'INR',
           page_path: window.location.pathname,
         });
-        console.log('✅ aura_quiz_complete event pushed to dataLayer');
+        console.log('✅ assessment_test_finish event pushed to dataLayer (AURA, ₹50)');
 
         // FINISHED: directly complete without any form
         const user: UserInfo = { name: '', whatsapp: '', email: '' };
@@ -130,47 +132,33 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--brand-teal-50)] via-[var(--brand-violet-50)] to-[var(--brand-rose-50)] flex flex-col pt-24">
+    <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] flex flex-col pt-24">
       {/* Sticky Progress */}
-      <div className="w-full glass p-4 sticky top-16 z-20 backdrop-blur-md shadow-sm">
+      <div className="w-full bg-gradient-to-b from-[#096b17]/60 to-[#075110]/40 backdrop-blur-md border-b border-white/20 p-3 sticky top-16 z-20 shadow-sm">
         <div className="container mx-auto max-w-3xl">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-700 font-medium">
+            <span className="text-sm text-white font-semibold">
               Question {currentQuestion + 1} of {questions.length}
             </span>
-            <span className="text-sm text-gray-700 font-medium">{Math.round(progress)}%</span>
+            <span className="text-sm text-white font-semibold">{Math.round(progress)}%</span>
           </div>
-          <Progress value={progress} className="h-2 rounded-full transition-all duration-500" />
+          <div className="relative">
+            <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden shadow-inner">
+              <div
+                className="h-full bg-[#64CB81] rounded-full transition-all duration-500 ease-out shadow-sm"
+                style={{ 
+                  width: `${progress}%`,
+                  background: 'linear-gradient(90deg, #64CB81 0%, #4CAF50 100%)'
+                }}
+              />
+            </div>
+          </div>
 
-          {/* A • U • R • A (chips) */}
-          <div className="mt-3 flex items-center justify-center gap-2">
-            {questions.map((q, i) => (
-              <span
-                key={q.id as string}
-                className={`text-[11px] px-2 py-0.5 rounded-full border font-medium ${
-                  i === currentQuestion
-                    ? 'bg-[#096b17] text-white border-[#096b17]'
-                    : 'bg-white/80 text-gray-700 border-gray-300'
-                }`}
-                title={
-                  q.pillar === 'A'
-                    ? 'Awareness'
-                    : q.pillar === 'U'
-                    ? 'Understanding'
-                    : q.pillar === 'R'
-                    ? 'Regulation'
-                    : 'Alignment'
-                }
-              >
-                {q.pillar === 'A2' ? 'A' : q.pillar}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 
       {/* Question Area */}
-      <div className="flex-1 flex items-center justify-center px-4 py-16 sm:py-20">
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="max-w-3xl w-full">
           <AnimatePresence mode="wait">
             <motion.div
@@ -179,20 +167,10 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.3 }}
-              className="space-y-10"
+              className="space-y-8"
             >
-              <div className="text-center space-y-4">
-                <div className="inline-block px-4 py-2 glass rounded-full text-sm text-gray-700">
-                  {question.pillar === 'A'
-                    ? 'Awareness'
-                    : question.pillar === 'U'
-                    ? 'Understanding'
-                    : question.pillar === 'R'
-                    ? 'Regulation'
-                    : 'Alignment'}{' '}
-                  · Scenario {currentQuestion + 1}
-                </div>
-                <h2 className="text-2xl md:text-3xl text-gray-800 max-w-2xl mx-auto">
+              <div className="text-center">
+                <h2 className="text-2xl md:text-3xl text-white max-w-2xl mx-auto">
                   {question.scenario}
                 </h2>
               </div>
@@ -203,28 +181,28 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
                   <motion.button
                     key={index}
                     onClick={() => handleAnswer(index)}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: index * 0.05 }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    className={`w-full p-6 rounded-2xl text-left transition-all duration-300 ${
+                    transition={{ duration: 0.4, delay: index * 0.08, ease: "easeOut" }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`w-full p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl text-left transition-all duration-300 ${
                       selectedValue === index
-                        ? 'bg-gradient-to-r from-[var(--brand-teal-500)] to-[var(--brand-violet-500)] text-white shadow-xl'
-                        : 'glass hover:bg-white text-gray-800 shadow-md hover:shadow-xl'
+                        ? 'bg-[#64CB81] text-white shadow-xl border-2 border-[#64CB81]'
+                        : 'bg-white/40 backdrop-blur-md border-2 border-white/30 hover:bg-white/50 hover:border-white/40 text-white shadow-lg hover:shadow-xl'
                     }`}
                   >
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-3 sm:gap-4 md:gap-6">
                       <div
-                        className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-sm transition-all duration-300 ${
+                        className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm sm:text-base font-bold transition-all duration-300 ${
                           selectedValue === index
-                            ? 'bg-white/30 text-white scale-110'
-                            : 'bg-gradient-to-br from-[var(--brand-teal-100)] to-[var(--brand-violet-100)] text-gray-700'
+                            ? 'bg-white text-[#64CB81] scale-110 shadow-lg'
+                            : 'bg-white/30 backdrop-blur-sm text-white border-2 border-white/20'
                         }`}
                       >
                         {String.fromCharCode(65 + index)}
                       </div>
-                      <p className={selectedValue === index ? 'text-white' : 'text-gray-800'}>
+                      <p className={`text-sm sm:text-base md:text-lg leading-relaxed font-medium text-white`}>
                         {option.text}
                       </p>
                     </div>

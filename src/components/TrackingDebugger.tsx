@@ -18,7 +18,6 @@ export function TrackingDebugger() {
   const [trackingStatus, setTrackingStatus] = useState({
     gtm: false,
     ga4: false,
-    metaPixel: false,
     dataLayerEvents: 0,
     url: '',
   });
@@ -29,7 +28,6 @@ export function TrackingDebugger() {
       setTrackingStatus({
         gtm: !!(window as any).dataLayer,
         ga4: !!(window as any).gtag,
-        metaPixel: !!(window as any).fbq,
         dataLayerEvents: (window as any).dataLayer?.length || 0,
         url: window.location.href,
       });
@@ -57,12 +55,6 @@ export function TrackingDebugger() {
       });
     }
 
-    if ((window as any).fbq) {
-      (window as any).fbq('trackCustom', 'DebugTest', {
-        timestamp: new Date().toISOString(),
-      });
-    }
-
     alert('Test event sent! Check your browser console and Network tab.');
   };
 
@@ -86,14 +78,7 @@ export function TrackingDebugger() {
               {trackingStatus.ga4 ? '✅ Loaded' : '❌ Missing'}
             </span>
           </div>
-          
-          <div className="flex items-center justify-between">
-            <span>Meta Pixel (fbq):</span>
-            <span className={trackingStatus.metaPixel ? 'text-green-600' : 'text-red-600'}>
-              {trackingStatus.metaPixel ? '✅ Loaded' : '❌ Missing'}
-            </span>
-          </div>
-          
+
           <div className="flex items-center justify-between">
             <span>DataLayer Events:</span>
             <span className="font-mono">{trackingStatus.dataLayerEvents}</span>
@@ -118,7 +103,6 @@ export function TrackingDebugger() {
           <p className="font-semibold">Quick Checks:</p>
           <p>• GTM: GTM-PL6KV3ND</p>
           <p>• GA4: G-EFGRF2RMGB</p>
-          <p>• Pixel: 833058805840230</p>
         </div>
       </div>
     </Card>

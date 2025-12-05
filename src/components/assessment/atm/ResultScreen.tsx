@@ -316,7 +316,24 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
       setIsFormSubmitted(true);
       setShowFormPopup(false);
       setFormPopupClosedTime(Date.now());
-      
+
+      // ✅ Result Unlock Event (₹300 value) - High-value signal
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'guard_rail_unlock',
+        test_type: 'atm_tool_form_submit',
+        proxy_value: 300.00,
+        currency: 'INR',
+        // PII Data for Advanced Matching
+        userEmail: formData.email || '',
+        userPhone: formData.whatsapp.startsWith('+91') ? formData.whatsapp.slice(3) : formData.whatsapp,
+        transactionId: `GR-ATM-${Date.now()}`,
+        page_path: window.location.pathname,
+        atm_event_id: eventIdRef.current,
+        pattern: result.pattern,
+      });
+      console.log('✅ guard_rail_unlock event pushed to dataLayer (ATM, ₹300)');
+
       // Send webhook with form data and ATM results
       try {
         const webhookPayload = {
@@ -347,7 +364,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
           },
           body: JSON.stringify(webhookPayload)
         });
-        
+
         console.log('✅ ATM assessment webhook sent successfully');
       } catch (error) {
         console.error('❌ Failed to send ATM assessment webhook:', error);
@@ -363,12 +380,6 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
     }
   };
 
-  const handleFormPopupClose = () => {
-    setShowFormPopup(false);
-    if (!isFormSubmitted) {
-      setFormPopupClosedTime(Date.now());
-    }
-  };
 
   const handleInputChange = (field: string, value: string) => {
     if (field === 'whatsapp') {
@@ -552,7 +563,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-            onClick={(e) => e.target === e.currentTarget && handleFormPopupClose()}
+            onClick={(e) => e.target === e.currentTarget && e.preventDefault()}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -561,20 +572,15 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
               className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
             >
               <div className="p-6 sm:p-8">
-                <div className="flex justify-between items-center mb-6">
+                <div className="mb-6">
                   <h3 className="text-2xl font-bold text-gray-800">Unlock Your Results</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleFormPopupClose}
-                    className="rounded-full w-8 h-8 p-0"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
                 </div>
 
-                <p className="text-gray-600 mb-6">
-                  Submit your details to unlock your personalized micro action that will help you take control over your anxiety.
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Your result is ready.<br />
+                  To keep it secure and make it retrievable anytime, we need to link it to your WhatsApp number.<br />
+                  You may also receive helpful messages and calls from our team as part of your support journey.<br /><br />
+                  Enter your details to unlock your full result.
                 </p>
 
                 <form onSubmit={handleFormSubmit} className="space-y-5">
@@ -699,6 +705,20 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
                 <div className="space-y-3 lg:space-y-4">
                   <Button
                     onClick={() => {
+                      // ✅ Clarity Call CTA Click (₹400 value intent)
+                      window.dataLayer = window.dataLayer || [];
+                      window.dataLayer.push({
+                        event: 'contact_form_submission',
+                        form_type: 'clarity_call_cta_click',
+                        proxy_value: 400.00,
+                        currency: 'INR',
+                        page_path: window.location.pathname,
+                        source: 'atm_clarity_popup',
+                        atm_event_id: eventIdRef.current,
+                        pattern: result.pattern,
+                      });
+                      console.log('✅ contact_form_submission event (CTA click) pushed to dataLayer (₹400)');
+
                       dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Free Clarity Call (popup)' });
                       trackButtonClick('Book Free Clarity Call', 'popup', 'atm_results_clarity_popup');
                       window.location.href = '/contact';

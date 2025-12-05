@@ -43,12 +43,28 @@ export function ContactForm() {
       });
 
       if (result.success) {
+        // ✅ Contact Form Submission Event (₹400 value)
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'contact_form_submission',
+          form_type: 'clarity_call_request',
+          proxy_value: 400.00,
+          currency: 'INR',
+          // PII Data for Advanced Matching
+          userEmail: formData.email,
+          userPhone: formData.phone.replace(/^\+91/, ''),
+          transactionId: `CONTACT-${Date.now()}`,
+          page_path: window.location.pathname,
+          callback_time: formData.callbackTime,
+        });
+        console.log('✅ contact_form_submission event pushed to dataLayer (₹400)');
+
         // Track conversion across all platforms (GTM, Meta Pixel, GA4)
         trackFormSubmission('contact', {
           ...formData,
           callbackTime: formData.callbackTime,
         });
-        
+
         setShowSuccessDialog(true);
         
         // Reset form
