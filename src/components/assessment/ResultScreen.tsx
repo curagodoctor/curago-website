@@ -37,7 +37,7 @@ interface ResultScreenProps {
 type PillarKey = 'awareness' | 'understanding' | 'regulation' | 'alignment';
 
 const BRAND = '#096b17';
-const WEBHOOK = 'https://server.wylto.com/webhook/vSO7svt3bkRXqvZWUa'; // Same webhook as ATM
+const WEBHOOK = 'https://server.wylto.com/webhook/oFClXjgvHUCq5l0qpU'; // AURA results webhook
 const SITE_BASE = 'https://curago.in';
 
 // ---------- tiny helpers ----------
@@ -430,30 +430,35 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
     if (!validateForm()) return;
 
     try {
-      // Submit to Wylto webhook (same structure as ATM)
+      // Submit to Wylto webhook - Contact info + Full assessment data
       const payload = {
-        action: "aura_assessment",
-        contact: {
-          name: formData.name,
-          whatsapp: `+91${formData.whatsapp}`,
-          email: formData.email || ""
+        // Basic contact info (as per curl example format)
+        name: formData.name,
+        phoneNumber: `+91${formData.whatsapp}`,
+        email: formData.email || undefined, // Only include if provided
+
+        // Assessment Results
+        scores: {
+          overall: Math.round(scores.overall),
+          awareness: Math.round(scores.awareness),
+          understanding: Math.round(scores.understanding),
+          regulation: Math.round(scores.regulation),
+          alignment: Math.round(scores.alignment)
         },
-        assessment: {
-          type: "AURA",
-          scores: {
-            overall: Math.round(scores.overall),
-            awareness: Math.round(scores.awareness),
-            understanding: Math.round(scores.understanding),
-            regulation: Math.round(scores.regulation),
-            alignment: Math.round(scores.alignment)
-          },
-          answers: answers || {},
-          label: analytics.label,
-          strengths: analytics.strengths,
-          growth: analytics.growth,
-          riskFlags: analytics.riskFlags
-        },
+
+        // Analysis Data
+        label: analytics.label,
+        strengths: analytics.strengths,
+        growth: analytics.growth,
+        riskFlags: analytics.riskFlags,
+
+        // Raw answers for detailed tracking
+        answers: answers || {},
+
+        // Metadata
         timestamp: new Date().toISOString(),
+        testType: 'aura_index',
+        eventId: eventIdRef.current
       };
 
       const res = await fetch(WEBHOOK, {
