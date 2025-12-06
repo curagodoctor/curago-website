@@ -106,18 +106,7 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
         setCurrentQuestion((q) => q + 1);
         setSelectedValue(null);
       } else {
-        // ✅ Test Finish Event (₹50 value)
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: 'assessment_test_finish',
-          test_type: 'aura_index',
-          proxy_value: 50.00,
-          currency: 'INR',
-          page_path: window.location.pathname,
-        });
-        console.log('✅ assessment_test_finish event pushed to dataLayer (AURA, ₹50)');
-
-        // FINISHED: directly complete without any form
+        // Quiz complete - navigate to results (test_finish event fires on ResultScreen)
         const user: UserInfo = { name: '', whatsapp: '', email: '' };
         onComplete(newAnswersAsFull(newAnswers), user);
       }

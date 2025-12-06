@@ -391,6 +391,7 @@ export default function App() {
             scores={scores}
             userInfo={userInfo}
             onRetake={handleRetake}
+            answers={answers || undefined}
           />
         )}
         {auraStage === 'results' && (!scores || !userInfo) && (

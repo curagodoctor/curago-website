@@ -112,17 +112,7 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
         setCurrentQuestion((q) => q + 1);
         setSelectedValue(null);
       } else {
-        // ✅ Test Finish Event (₹50 value)
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: 'assessment_test_finish',
-          test_type: 'atm_tool',
-          proxy_value: 50.00,
-          currency: 'INR',
-          page_path: window.location.pathname,
-        });
-        console.log('✅ assessment_test_finish event pushed to dataLayer (ATM, ₹50)');
-
+        // Quiz complete - navigate to results (test_finish event fires on ResultScreen)
         const user: UserInfo = { name: '', whatsapp: '', email: '' };
         onComplete(newAnswers as AtmAnswers, user);
       }

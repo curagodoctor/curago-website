@@ -208,13 +208,27 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
 
   // GTM tracking effects
   useEffect(() => {
-    // Initial impression event
-    dlPush({
+    // ✅ ATM Results Impression - Comprehensive payload with test finish data (₹50 value)
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
       event: 'atm_results_impression',
+      test_type: 'atm_tool',
+      proxy_value: 50.00,
+      currency: 'INR',
+      // Assessment Results
       atm_event_id: eventIdRef.current,
       pattern: result.pattern,
       confidence: result.confidence,
+      // Detailed Information
+      explanation: details.explanation,
+      neurological: details.neurological,
+      impact: details.impact.join(', '),
+      micro_action_title: details.microAction.title,
+      micro_action_description: details.microAction.description,
+      page_path: window.location.pathname,
+      timestamp: new Date().toISOString(),
     });
+    console.log('✅ atm_results_impression event pushed to dataLayer (ATM, ₹50) with full results');
 
     // Heartbeat tracking
     const heartbeatInterval = setInterval(() => {
@@ -291,21 +305,22 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
 
   const validateForm = () => {
     const errors: {[key: string]: string} = {};
-    
+
     if (!formData.name.trim()) {
       errors.name = 'Name is required';
     }
-    
+
     if (!formData.whatsapp.trim()) {
       errors.whatsapp = 'WhatsApp number is required';
     } else if (!/^\d{10}$/.test(formData.whatsapp)) {
       errors.whatsapp = 'Please enter a valid 10-digit mobile number';
     }
-    
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+
+    // Email is optional, but if provided, must be valid
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
     }
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -317,24 +332,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
       setShowFormPopup(false);
       setFormPopupClosedTime(Date.now());
 
-      // ✅ Result Unlock Event (₹300 value) - High-value signal
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: 'guard_rail_unlock',
-        test_type: 'atm_tool_form_submit',
-        proxy_value: 300.00,
-        currency: 'INR',
-        // PII Data for Advanced Matching
-        userEmail: formData.email || '',
-        userPhone: formData.whatsapp.startsWith('+91') ? formData.whatsapp.slice(3) : formData.whatsapp,
-        transactionId: `GR-ATM-${Date.now()}`,
-        page_path: window.location.pathname,
-        atm_event_id: eventIdRef.current,
-        pattern: result.pattern,
-      });
-      console.log('✅ guard_rail_unlock event pushed to dataLayer (ATM, ₹300)');
-
-      // Send webhook with form data and ATM results
+      // Send webhook with form data and ATM results - FIRES FIRST
       try {
         const webhookPayload = {
           action: "atm_assessment",
@@ -370,13 +368,38 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
         console.error('❌ Failed to send ATM assessment webhook:', error);
       }
 
+      // Track form submission - FIRES SECOND
       trackFormSubmission('lead', {
         name: formData.name,
         phone: formData.whatsapp,
         email: formData.email,
-        source: 'ATM Assessment Results'
+        source: 'ATM Assessment Results',
+        value: 300.00,
+        currency: 'INR',
       });
+
+      // Track button click - FIRES THIRD
       trackButtonClick('ATM Form Submitted', 'form', 'atm_results');
+
+      // Small delay to ensure other events fire first
+      setTimeout(() => {
+        // ✅ Result Unlock Event (₹300 value) - High-value signal - FIRES LAST
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'guard_rail_unlock',
+          test_type: 'atm_tool_form_submit',
+          proxy_value: 300.00,
+          currency: 'INR',
+          // PII Data for Advanced Matching
+          userEmail: formData.email || '',
+          userPhone: formData.whatsapp.startsWith('+91') ? formData.whatsapp.slice(3) : formData.whatsapp,
+          transactionId: `GR-ATM-${Date.now()}`,
+          page_path: window.location.pathname,
+          atm_event_id: eventIdRef.current,
+          pattern: result.pattern,
+        });
+        console.log('✅ guard_rail_unlock event pushed to dataLayer (ATM, ₹300) - FINAL EVENT');
+      }, 100);
     }
   };
 

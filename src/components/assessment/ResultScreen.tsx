@@ -23,7 +23,7 @@ import {
   X
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import type { AuraScores, UserInfo } from '../../types/aura';
+import type { AuraScores, UserInfo, QuizAnswers } from '../../types/aura';
 import { trackButtonClick } from '../../utils/tracking';
 import { FloatingButtons } from '../FloatingButtons';
 
@@ -31,12 +31,13 @@ interface ResultScreenProps {
   scores: AuraScores;
   userInfo: UserInfo;
   onRetake: () => void;
+  answers?: QuizAnswers; // Raw answers for detailed analysis
 }
 
 type PillarKey = 'awareness' | 'understanding' | 'regulation' | 'alignment';
 
 const BRAND = '#096b17';
-const WEBHOOK = 'https://server.wylto.com/webhook/oFClXjgvHUCq5l0qpU';
+const WEBHOOK = 'https://server.wylto.com/webhook/vSO7svt3bkRXqvZWUa'; // Same webhook as ATM
 const SITE_BASE = 'https://curago.in';
 
 // ---------- tiny helpers ----------
@@ -147,6 +148,149 @@ function sevenDayPlan(lowest: PillarKey, secondLowest: PillarKey) {
   ];
 }
 
+// ========== DETAILED PILLAR ANALYSIS ==========
+type PillarAnalysis = {
+  grade: string;
+  meaning: string;
+  interpretation: string;
+  microAction: string;
+};
+
+const detailedPillarAnalysis: Record<PillarKey, Record<number, PillarAnalysis>> = {
+  awareness: {
+    5: {
+      grade: 'A',
+      meaning: 'You recognize your limits instantly.',
+      interpretation: 'You have a strong internal boundary system and can detect emotional depletion immediately.',
+      microAction: 'Pause for 20 seconds → place hand on chest → ask: "What does my mind need right now?"'
+    },
+    4: {
+      grade: 'B',
+      meaning: 'You sense discomfort but still override it.',
+      interpretation: 'You\'re aware of your fatigue, but guilt and obligation dilute your awareness.',
+      microAction: 'Before responding to anyone → inhale 4 sec, exhale 6 sec → check: "Am I responding out of care or pressure?"'
+    },
+    3: {
+      grade: 'C',
+      meaning: 'You detect your exhaustion only after engaging.',
+      interpretation: 'Your awareness is delayed — emotional autopilot mode.',
+      microAction: 'Set a "body check" reminder at 3 random times: "What is my energy level 0–10?"'
+    },
+    2: {
+      grade: 'D',
+      meaning: 'You suppress your internal signals.',
+      interpretation: 'You function by overriding your body\'s cues until you crash.',
+      microAction: 'When irritation appears → stop for 10 seconds → name the sensation: "This is fatigue talking, not me."'
+    },
+    1: {
+      grade: 'E',
+      meaning: 'You disconnect from your needs completely.',
+      interpretation: 'Your awareness system is shutting down — classic burnout marker.',
+      microAction: 'Before sleeping → write one sentence: "What drained me today?"'
+    }
+  },
+  understanding: {
+    5: {
+      grade: 'A',
+      meaning: 'You connect anxiety with context.',
+      interpretation: 'You make sense of emotions without spiralling.',
+      microAction: 'Quick grounding: List 3 things in your control today.'
+    },
+    4: {
+      grade: 'B',
+      meaning: 'You notice anxiety but don\'t explore it.',
+      interpretation: 'You avoid digging deeper — functional avoidance.',
+      microAction: 'Ask yourself: "If this anxiety had a message, what would it be?"'
+    },
+    3: {
+      grade: 'C',
+      meaning: 'Anxiety triggers self-criticism.',
+      interpretation: 'You personalise emotional states — emotional reasoning.',
+      microAction: 'Write 1 counter-thought: "Feeling anxious ≠ failing today."'
+    },
+    2: {
+      grade: 'D',
+      meaning: 'You push anxiety away with force.',
+      interpretation: 'Classic long-term burnout pattern → emotional avoidance.',
+      microAction: 'Take 30 sec → breathe into your belly → say internally: "I can slow down for a moment."'
+    },
+    1: {
+      grade: 'E',
+      meaning: 'You assume anxiety is your identity.',
+      interpretation: 'This is emotional resignation — a late-stage burnout marker.',
+      microAction: 'Write one question to yourself: "What small change would make my mornings 5% lighter?"'
+    }
+  },
+  regulation: {
+    5: {
+      grade: 'A',
+      meaning: 'You pause and restructure.',
+      interpretation: 'This is the healthiest stress-response pattern.',
+      microAction: 'Use the 2-minute rule → break task into one first step.'
+    },
+    4: {
+      grade: 'B',
+      meaning: 'You act despite discomfort.',
+      interpretation: 'You regulate enough to function — but you lose emotional stability.',
+      microAction: 'Set a 20-minute timer → mandatory 60 sec pause after it.'
+    },
+    3: {
+      grade: 'C',
+      meaning: 'You push yourself past your capacity.',
+      interpretation: 'A chronic stress-compensation pattern → burnout accelerant.',
+      microAction: 'Before multitasking → Write: "Top 1 priority for the next 20 minutes."'
+    },
+    2: {
+      grade: 'D',
+      meaning: 'Irritability or withdrawal.',
+      interpretation: 'System overload → emotional bandwidth collapse.',
+      microAction: 'Stand up → shake arms for 15 sec → reset nervous system.'
+    },
+    1: {
+      grade: 'E',
+      meaning: 'You freeze, procrastinate, feel guilt.',
+      interpretation: 'Classic burnout freeze mode.',
+      microAction: 'Do the 15-second start: Pick any micro-task → do it for 15 seconds only.'
+    }
+  },
+  alignment: {
+    5: {
+      grade: 'A',
+      meaning: 'You evaluate realistically.',
+      interpretation: 'You make decisions from stability, not desperation.',
+      microAction: 'Ask: "Does this add to my life or drain it?"'
+    },
+    4: {
+      grade: 'B',
+      meaning: 'You need reassurance before deciding.',
+      interpretation: 'You outsource alignment → early burnout risk.',
+      microAction: 'Write your non-negotiables for work (3 items).'
+    },
+    3: {
+      grade: 'C',
+      meaning: 'You take more than you can handle.',
+      interpretation: 'Your identity is built on over-functioning.',
+      microAction: 'List 1 commitment you can reduce this week.'
+    },
+    2: {
+      grade: 'D',
+      meaning: 'You say yes despite inner discomfort.',
+      interpretation: 'You override internal alarms — late-stage burnout trait.',
+      microAction: 'Before any major yes → pause 30 sec → ask: "What is this \'yes\' costing me?"'
+    },
+    1: {
+      grade: 'E',
+      meaning: 'You say yes → suffer silently.',
+      interpretation: 'Identity burnout → deep misalignment with emotional needs.',
+      microAction: 'Write 1 boundary you wish to express but haven\'t.'
+    }
+  }
+};
+
+function getPillarAnalysis(pillar: PillarKey, rawAnswer: number): PillarAnalysis | null {
+  return detailedPillarAnalysis[pillar]?.[rawAnswer] || null;
+}
+
 function formatWhatsAppMessage(
   name: string,
   scores: AuraScores,
@@ -193,7 +337,7 @@ function formatReferralShareMessage(
   ].join(nl);
 }
 
-export default function ResultScreen({ scores, userInfo, onRetake }: ResultScreenProps) {
+export default function ResultScreen({ scores, userInfo, onRetake, answers }: ResultScreenProps) {
   // --- Prefill from userInfo (name + possible +91…) ---
   const initialName = (userInfo?.name || '').trim();
   const initialWaDigits = (userInfo?.whatsapp || '').replace(/\D/g, '').slice(-10);
@@ -270,10 +414,8 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
       isValid = false;
     }
 
-    if (!formData.email.trim()) {
-      errors.email = 'Email is required';
-      isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    // Email is optional, but if provided, must be valid
+    if (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
       isValid = false;
     }
@@ -288,18 +430,28 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
     if (!validateForm()) return;
 
     try {
-      // Submit to Wylto webhook (same as ATM)
+      // Submit to Wylto webhook (same structure as ATM)
       const payload = {
-        name: formData.name,
-        whatsapp: `+91${formData.whatsapp}`,
-        email: formData.email,
-        formType: 'aura_results',
-        scores: {
-          overall: Math.round(scores.overall),
-          awareness: Math.round(scores.awareness),
-          understanding: Math.round(scores.understanding),
-          regulation: Math.round(scores.regulation),
-          alignment: Math.round(scores.alignment)
+        action: "aura_assessment",
+        contact: {
+          name: formData.name,
+          whatsapp: `+91${formData.whatsapp}`,
+          email: formData.email || ""
+        },
+        assessment: {
+          type: "AURA",
+          scores: {
+            overall: Math.round(scores.overall),
+            awareness: Math.round(scores.awareness),
+            understanding: Math.round(scores.understanding),
+            regulation: Math.round(scores.regulation),
+            alignment: Math.round(scores.alignment)
+          },
+          answers: answers || {},
+          label: analytics.label,
+          strengths: analytics.strengths,
+          growth: analytics.growth,
+          riskFlags: analytics.riskFlags
         },
         timestamp: new Date().toISOString(),
       };
@@ -311,42 +463,50 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
       });
 
       if (res.ok) {
+        console.log('✅ AURA assessment webhook sent successfully');
+
         setIsFormSubmitted(true);
         setShowFormPopup(false);
         setFormPopupClosedTime(Date.now());
 
-        // ✅ Result Unlock Event (₹300 value) - High-value signal
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: 'guard_rail_unlock',
-          test_type: 'aura_index_form_submit',
-          proxy_value: 300.00,
-          currency: 'INR',
-          // PII Data for Advanced Matching
-          userEmail: formData.email || '',
-          userPhone: `91${formData.whatsapp}`,
-          transactionId: `GR-AURA-${Date.now()}`,
-          page_path: window.location.pathname,
-          aura_event_id: eventIdRef.current,
-        });
-        console.log('✅ guard_rail_unlock event pushed to dataLayer (AURA, ₹300)');
-
-        // Track successful submission (legacy tracking)
+        // Track successful submission (legacy tracking) - FIRES FIRST
         dlPush({
           event: 'aura_results_form_submitted',
           aura_event_id: eventIdRef.current,
           name: formData.name,
           whatsapp: formData.whatsapp,
-          email: formData.email
+          email: formData.email,
+          value: 300.00,
+          currency: 'INR',
         });
 
+        // Track button click - FIRES SECOND
         trackButtonClick('AURA Form Submitted', 'form', 'aura_results');
+
+        // Small delay to ensure other events fire first
+        setTimeout(() => {
+          // ✅ Result Unlock Event (₹300 value) - High-value signal - FIRES LAST
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({
+            event: 'guard_rail_unlock',
+            test_type: 'aura_index_form_submit',
+            proxy_value: 300.00,
+            currency: 'INR',
+            // PII Data for Advanced Matching
+            userEmail: formData.email || '',
+            userPhone: `91${formData.whatsapp}`,
+            transactionId: `GR-AURA-${Date.now()}`,
+            page_path: window.location.pathname,
+            aura_event_id: eventIdRef.current,
+          });
+          console.log('✅ guard_rail_unlock event pushed to dataLayer (AURA, ₹300) - FINAL EVENT');
+        }, 100);
       } else {
-        console.error('Form submission failed');
+        console.error('❌ AURA assessment webhook failed:', res.status);
         alert('Something went wrong. Please try again.');
       }
     } catch (error) {
-      console.error('Form submission error:', error);
+      console.error('❌ AURA assessment webhook error:', error);
       alert('Something went wrong. Please try again.');
     }
   };
@@ -410,6 +570,7 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
         name: pillarMeta[k].name,
         score: Math.round(scores[k]),
         band: pillarLabel(scores[k]),
+        analysis: answers ? getPillarAnalysis(k, answers[k]) : null,
       })
     );
 
@@ -437,7 +598,7 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
       quickTips,
       weekPlan,
     };
-  }, [scores, lowestKey, secondLowestKey]);
+  }, [scores, lowestKey, secondLowestKey, answers]);
 
   // ---- Messages ----
   const whatsappText = useMemo(
@@ -503,11 +664,29 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
     eventIdRef.current = eid;
     startRef.current = now();
 
-    dlPush({
+    // ✅ AURA Results Impression - Comprehensive payload with test finish data (₹50 value)
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
       event: 'aura_results_impression',
+      test_type: 'aura_index',
+      proxy_value: 50.00,
+      currency: 'INR',
+      // Assessment Results
       aura_event_id: eid,
       aura_overall: Math.round(scores.overall),
+      awareness_score: Math.round(scores.awareness),
+      understanding_score: Math.round(scores.understanding),
+      regulation_score: Math.round(scores.regulation),
+      alignment_score: Math.round(scores.alignment),
+      // Detailed Information
+      label: analytics.label,
+      strengths: analytics.strengths.join(', '),
+      growth_areas: analytics.growth.join(', '),
+      risk_flags: analytics.riskFlags.join(', '),
+      page_path: window.location.pathname,
+      timestamp: new Date().toISOString(),
     });
+    console.log('✅ aura_results_impression event pushed to dataLayer (AURA, ₹50) with full results');
 
     // 15s heartbeat
     heartbeatRef.current = window.setInterval(() => {
@@ -850,7 +1029,7 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
                   <div className="flex items-center mb-2">
                     <Mail className="w-4 h-4 text-gray-500 mr-2" />
                     <label className="text-sm font-medium text-gray-700">
-                      Email Address *
+                      Email Address (Optional)
                     </label>
                   </div>
                   <input
@@ -1033,6 +1212,48 @@ export default function ResultScreen({ scores, userInfo, onRetake }: ResultScree
               ))}
             </div>
           </div>
+
+          {/* Detailed Pillar Analysis */}
+          {answers && (
+            <div className="mb-6">
+              <p className="text-sm font-medium text-white mb-3">Your Personalized Analysis</p>
+              <div className="space-y-4">
+                {analytics.perPillar.map((p) => {
+                  if (!p.analysis) return null;
+                  return (
+                    <div key={p.key} className="p-4 rounded-xl bg-white/25 border border-white/30 backdrop-blur-sm">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base font-bold text-white">{p.name}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-[#64CB81] text-white text-xs font-bold">
+                            Grade {p.analysis.grade}
+                          </span>
+                        </div>
+                        <span className="text-sm text-white/90">{p.score}/100</span>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-xs font-semibold text-white/70 mb-1">What This Means:</p>
+                          <p className="text-sm text-white leading-relaxed">{p.analysis.meaning}</p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs font-semibold text-white/70 mb-1">Interpretation:</p>
+                          <p className="text-sm text-white/90 leading-relaxed">{p.analysis.interpretation}</p>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-[#64CB81]/20 border border-[#64CB81]/30">
+                          <p className="text-xs font-semibold text-white mb-2">💡 Micro-Action for You:</p>
+                          <p className="text-sm text-white leading-relaxed">{p.analysis.microAction}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Quick tips */}
           <div className="mb-4">
