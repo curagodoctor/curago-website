@@ -208,10 +208,10 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
 
   // GTM tracking effects
   useEffect(() => {
-    // ✅ ATM Results Impression - Comprehensive payload with test finish data (₹50 value)
+    // ✅ Test Finish Event - Comprehensive payload with assessment data (₹50 value)
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
-      event: 'atm_results_impression',
+      event: 'test_finish',
       test_type: 'atm_tool',
       proxy_value: 50.00,
       currency: 'INR',
@@ -228,7 +228,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
       page_path: window.location.pathname,
       timestamp: new Date().toISOString(),
     });
-    console.log('✅ atm_results_impression event pushed to dataLayer (ATM, ₹50) with full results');
+    console.log('✅ test_finish event pushed to dataLayer (ATM, ₹50) with full results');
 
     // Heartbeat tracking
     const heartbeatInterval = setInterval(() => {

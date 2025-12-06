@@ -669,10 +669,10 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
     eventIdRef.current = eid;
     startRef.current = now();
 
-    // ✅ AURA Results Impression - Comprehensive payload with test finish data (₹50 value)
+    // ✅ Test Finish Event - Comprehensive payload with assessment data (₹50 value)
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
-      event: 'aura_results_impression',
+      event: 'test_finish',
       test_type: 'aura_index',
       proxy_value: 50.00,
       currency: 'INR',
@@ -691,7 +691,7 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
       page_path: window.location.pathname,
       timestamp: new Date().toISOString(),
     });
-    console.log('✅ aura_results_impression event pushed to dataLayer (AURA, ₹50) with full results');
+    console.log('✅ test_finish event pushed to dataLayer (AURA, ₹50) with full results');
 
     // 15s heartbeat
     heartbeatRef.current = window.setInterval(() => {
