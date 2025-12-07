@@ -45,7 +45,7 @@ export function trackVirtualPage(opts: { title: string; path?: string }) {
   if (lastTrackedPath === page_path) return;
   lastTrackedPath = page_path;
 
-  // --- GTM ---
+  // --- GTM (handles both GTM and GA4 via server) ---
   window.dataLayer?.push({
     event: 'virtual_pageview',
     page_title: opts.title,
@@ -53,16 +53,6 @@ export function trackVirtualPage(opts: { title: string; path?: string }) {
     page_location: loc.href,
     referrer_code: ref,
   });
-
-  // --- GA4 (route change) ---
-  if (typeof window.gtag === 'function') {
-    window.gtag('config', GA_ID, {
-      page_title: opts.title,
-      page_path,
-      page_location: loc.href,
-      referrer_code: ref,
-    });
-  }
 }
 
 /** Backwards-compat wrapper your app already calls */
@@ -78,7 +68,6 @@ export const trackReferralInit = () => {
   const ref = getRefFromUrl();
   if (!ref) return;
   window.dataLayer?.push({ event: 'referral_init', referrer_code: ref });
-  window.gtag?.('event', 'referral_init', { referrer_code: ref });
   console.log(`✅ Tracking: Referral init (${ref})`);
 };
 
@@ -91,18 +80,7 @@ export const trackFormSubmission = (
 ) => {
   const refParam = getRefFromUrl();
 
-  // GA4
-  window.gtag?.('event', 'generate_lead', {
-    event_category: 'Form',
-    event_label: formType,
-    form_type: formType,
-    value: formType === 'appointment' ? 1200 : 0,
-    currency: 'INR',
-    referral_code: referral?.code || refParam,
-    referral_link: referral?.link,
-  });
-
-  // GTM
+  // GTM (will handle GA4 via server-side routing)
   window.dataLayer?.push({
     event: 'form_submission',
     formType,
@@ -113,8 +91,12 @@ export const trackFormSubmission = (
         ? 'Contact Form'
         : 'Lead Form',
     formValue: formType === 'appointment' ? 1200 : 0,
+    value: formType === 'appointment' ? 1200 : 0,
+    currency: 'INR',
     referralCode: referral?.code || refParam,
     referralLink: referral?.link,
+    referral_code: referral?.code || refParam,
+    referral_link: referral?.link,
     formData: {
       hasName: !!formData?.name,
       hasEmail: !!formData?.email,
@@ -144,19 +126,13 @@ export const trackFormSubmission = (
 /** ========== BUTTONS / CTAs ========== */
 /** Generic CTA */
 export const trackCTA = (ctaName: string, source?: string, extras?: Record<string, any>) => {
-  // GA4
-  window.gtag?.('event', 'select_content', {
-    content_type: 'cta',
-    item_id: ctaName,
-    source,
-    ...extras,
-  });
-
-  // GTM
+  // GTM (will handle GA4 via server-side routing)
   window.dataLayer?.push({
     event: 'cta_click',
     ctaName,
     source,
+    content_type: 'cta',
+    item_id: ctaName,
     ...extras,
   });
 
@@ -173,20 +149,16 @@ export const trackBookConsultationCTA = () =>
 
 /** Existing generic click helpers */
 export const trackButtonClick = (buttonName: string, buttonType?: string, source?: string) => {
-  // GA4
-  window.gtag?.('event', 'click', {
-    event_category: 'Button',
-    event_label: buttonName,
-    button_type: buttonType,
-    click_source: source,
-  });
-
-  // GTM
+  // GTM (will handle GA4 via server-side routing)
   window.dataLayer?.push({
     event: 'button_click',
     buttonName,
     buttonType,
     clickSource: source,
+    event_category: 'Button',
+    event_label: buttonName,
+    button_type: buttonType,
+    click_source: source,
   });
 
   console.log('✅ Tracking: Button click -', buttonName, buttonType, 'from', source);
@@ -194,16 +166,13 @@ export const trackButtonClick = (buttonName: string, buttonType?: string, source
 
 /** WhatsApp (direct contact to team) */
 export const trackWhatsAppClick = (source: string) => {
-  window.gtag?.('event', 'contact_whatsapp', {
-    event_category: 'Engagement',
-    event_label: source,
-    method: 'whatsapp',
-  });
-
   window.dataLayer?.push({
     event: 'contact_method_click',
     contactMethod: 'whatsapp',
     source,
+    event_category: 'Engagement',
+    event_label: source,
+    method: 'whatsapp',
   });
 
   console.log(`✅ Tracking: WhatsApp clicked from ${source}`);
@@ -211,16 +180,13 @@ export const trackWhatsAppClick = (source: string) => {
 
 /** Phone call click */
 export const trackPhoneClick = (source: string) => {
-  window.gtag?.('event', 'contact_phone', {
-    event_category: 'Engagement',
-    event_label: source,
-    method: 'phone',
-  });
-
   window.dataLayer?.push({
     event: 'contact_method_click',
     contactMethod: 'phone',
     source,
+    event_category: 'Engagement',
+    event_label: source,
+    method: 'phone',
   });
 
   console.log(`✅ Tracking: Phone clicked from ${source}`);
@@ -228,16 +194,12 @@ export const trackPhoneClick = (source: string) => {
 
 /** Section view */
 export const trackSectionView = (sectionName: string) => {
-  // GA4
-  window.gtag?.('event', 'section_view', {
-    event_category: 'Engagement',
-    event_label: sectionName,
-  });
-
-  // GTM
+  // GTM (will handle GA4 via server-side routing)
   window.dataLayer?.push({
     event: 'section_view',
     sectionName,
+    event_category: 'Engagement',
+    event_label: sectionName,
   });
 
   console.log('✅ Tracking: Section view -', sectionName);
@@ -252,21 +214,17 @@ export const trackConversion = (
 ) => {
   const refParam = getRefFromUrl();
 
-  window.gtag?.('event', 'purchase', {
-    value,
-    currency: safeCurrency(currency),
-    transaction_id: transactionId,
-    referral_code: referral?.code || refParam,
-    referral_link: referral?.link,
-  });
-
   window.dataLayer?.push({
     event: 'conversion',
     conversionValue: value,
+    value,
     currency: safeCurrency(currency),
     transactionId,
+    transaction_id: transactionId,
     referralCode: referral?.code || refParam,
     referralLink: referral?.link,
+    referral_code: referral?.code || refParam,
+    referral_link: referral?.link,
   });
 
   console.log(`✅ Tracking: Conversion of ${currency} ${value} (ref=${referral?.code || refParam || '—'})`);
@@ -281,21 +239,15 @@ export const trackReferralShare = (opts: {
 }) => {
   const refParam = getRefFromUrl();
 
-  // GA4 "share" event
-  window.gtag?.('event', 'share', {
-    method: 'whatsapp',
-    content_type: 'referral',
-    item_id: opts.referralCode || refParam,
-    referral_link: opts.referralLink,
-    source: opts.source,
-  });
-
-  // GTM
+  // GTM (will handle GA4 via server-side routing)
   window.dataLayer?.push({
     event: 'referral_share',
     method: 'whatsapp',
+    content_type: 'referral',
+    item_id: opts.referralCode || refParam,
     referralCode: opts.referralCode || refParam,
     referralLink: opts.referralLink,
+    referral_link: opts.referralLink,
     source: opts.source,
   });
 
@@ -310,17 +262,13 @@ export const trackReferralCopy = (opts: {
 }) => {
   const refParam = getRefFromUrl();
 
-  window.gtag?.('event', 'copy', {
-    content_type: 'referral',
-    item_id: opts.referralCode || refParam,
-    referral_link: opts.referralLink,
-    source: opts.source,
-  });
-
   window.dataLayer?.push({
     event: 'referral_copy',
+    content_type: 'referral',
+    item_id: opts.referralCode || refParam,
     referralCode: opts.referralCode || refParam,
     referralLink: opts.referralLink,
+    referral_link: opts.referralLink,
     source: opts.source,
   });
 
@@ -332,14 +280,9 @@ export const trackPreparedWhatsAppDM = (opts: {
   toPhoneE164?: string; // e.g., +91900...
   source?: string; // e.g., 'webhook_auto'
 }) => {
-  window.gtag?.('event', 'message_send', {
-    method: 'whatsapp',
-    to: opts.toPhoneE164,
-    source: opts.source,
-  });
-
   window.dataLayer?.push({
     event: 'whatsapp_dm',
+    method: 'whatsapp',
     to: opts.toPhoneE164,
     source: opts.source,
   });
@@ -355,7 +298,7 @@ export const runTrackingDiagnostic = () => {
 
   const results = {
     gtm: false,
-    ga4: false,
+    serverRouting: false,
     issues: [] as string[]
   };
 
@@ -363,18 +306,19 @@ export const runTrackingDiagnostic = () => {
   if (window.dataLayer) {
     results.gtm = true;
     console.log('✅ GTM: DataLayer available');
+
+    // Check server routing
+    const firstItem = window.dataLayer[0];
+    if (firstItem && firstItem.server) {
+      results.serverRouting = true;
+      console.log('✅ Server Routing: Active (' + firstItem.server + ')');
+    } else {
+      results.issues.push('Server routing not configured');
+      console.log('❌ Server Routing: Not configured');
+    }
   } else {
     results.issues.push('GTM dataLayer not available');
     console.log('❌ GTM: DataLayer not available');
-  }
-
-  // GA4 Check
-  if (typeof window.gtag === 'function') {
-    results.ga4 = true;
-    console.log('✅ GA4: gtag function available');
-  } else {
-    results.issues.push('GA4 gtag function not available');
-    console.log('❌ GA4: gtag function not available');
   }
 
   // Environment checks
@@ -398,43 +342,43 @@ export const getTrackingEventSummary = () => {
   console.log('📊 CuraGo Tracking Event Summary:');
   console.log('');
 
-  console.log('🔄 Page Views (GTM + GA4):');
+  console.log('🔄 Page Views (GTM → Server → GA4/CAPI):');
   console.log('  - virtual_pageview event');
   console.log('  - All SPA routes tracked');
   console.log('');
 
-  console.log('📝 Form Events (GTM + GA4):');
-  console.log('  - form_submission (GTM) → generate_lead (GA4)');
+  console.log('📝 Form Events (GTM → Server → GA4/CAPI):');
+  console.log('  - form_submission → generate_lead');
   console.log('  - Appointment, Contact, and Lead forms');
   console.log('');
 
-  console.log('🎯 CTA Events (GTM + GA4):');
-  console.log('  - cta_click (GTM) → select_content (GA4)');
-  console.log('  - button_click (GTM) → click (GA4)');
+  console.log('🎯 CTA Events (GTM → Server → GA4/CAPI):');
+  console.log('  - cta_click → select_content');
+  console.log('  - button_click → click');
   console.log('');
 
-  console.log('📞 Contact Events (GTM + GA4):');
-  console.log('  - contact_method_click (GTM) → contact_whatsapp/phone (GA4)');
+  console.log('📞 Contact Events (GTM → Server → GA4/CAPI):');
+  console.log('  - contact_method_click → contact_whatsapp/phone');
   console.log('');
 
-  console.log('👁️ Engagement Events (GTM + GA4):');
-  console.log('  - section_view (GTM + GA4)');
+  console.log('👁️ Engagement Events (GTM → Server → GA4/CAPI):');
+  console.log('  - section_view');
   console.log('');
 
-  console.log('🧠 Assessment Events (GTM):');
+  console.log('🧠 Assessment Events (GTM → Server → GA4/CAPI):');
+  console.log('  - test_finish, guard_rail_unlock');
   console.log('  - aura_results_* and atm_results_* events');
   console.log('');
 
-  console.log('🔗 Referral Events (GTM + GA4):');
+  console.log('🔗 Referral Events (GTM → Server → GA4/CAPI):');
   console.log('  - referral_init, referral_share, referral_copy');
-  console.log('  - All tracked across platforms');
   console.log('');
 
-  console.log('💰 Conversion Events (GTM + GA4):');
-  console.log('  - conversion (GTM) → purchase (GA4)');
+  console.log('💰 Conversion Events (GTM → Server → GA4/CAPI):');
+  console.log('  - conversion → purchase');
   console.log('');
 
-  console.log('✅ All events now have GTM + GA4 coverage!');
+  console.log('✅ All events route through server-side GTM for FB CAPI!');
 };
 
 // Auto-run test and summary on development
