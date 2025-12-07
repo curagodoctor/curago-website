@@ -676,6 +676,14 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
       test_type: 'aura_index',
       proxy_value: 50.00,
       currency: 'INR',
+      // REQUIRED: Unique event ID for deduplication
+      event_id: eid,
+      // REQUIRED FOR HIGH MATCH RATE: User data for CAPI matching
+      user_data: {
+        email_address: (userInfo?.email || '').toLowerCase().trim(),
+        phone_number: (userInfo?.whatsapp || '').replace(/\D/g, '').slice(-10) ? '91' + (userInfo?.whatsapp || '').replace(/\D/g, '').slice(-10) : '',
+        external_id: eid
+      },
       // Assessment Results
       aura_event_id: eid,
       aura_overall: Math.round(scores.overall),

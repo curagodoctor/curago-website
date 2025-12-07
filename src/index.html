@@ -32,12 +32,18 @@
     
     <!-- Google Tag Manager -->
     <script>
-      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-      })(window,document,'script','dataLayer','GTM-PL6KV3ND');
+      // 1. Logic to select the correct tracking subdomain for the 'server' key
+      var serverHost = window.location.hostname.includes('.co.in')
+        ? 'gtm.curago.co.in'
+        : 'gtm.curago.in';
+      dataLayer = [{
+        'gtm.start': new Date().getTime(),
+        event: 'gtm.js',
+        // 2. CRITICAL ADDITION: Route ALL GTM data requests to the selected server
+        server: 'https://' + serverHost
+      }];
     </script>
+    <script async src="https://gtm.curago.in/gtm.js?id=GTM-PL6KV3ND"></script>
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EFGRF2RMGB"></script>

@@ -215,6 +215,14 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
       test_type: 'atm_tool',
       proxy_value: 50.00,
       currency: 'INR',
+      // REQUIRED: Unique event ID for deduplication
+      event_id: eventIdRef.current,
+      // REQUIRED FOR HIGH MATCH RATE: User data for CAPI matching (will be populated after form submission)
+      user_data: {
+        email_address: '',
+        phone_number: '',
+        external_id: eventIdRef.current
+      },
       // Assessment Results
       atm_event_id: eventIdRef.current,
       pattern: result.pattern,
