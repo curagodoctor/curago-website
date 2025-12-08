@@ -5,14 +5,11 @@ import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import RadarChartComponent from './RadarChart';
 import {
   Eye,
   Brain,
   Scale,
   Target,
-  TrendingUp,
-  TrendingDown,
   MessageCircle,
   RefreshCw,
   Copy as CopyIcon,
@@ -94,7 +91,7 @@ const pillarMeta: Record<
 
 const getLabel = (s: number) =>
   s >= 80
-    ? 'Exceptional & Thriving'
+    ? 'Strong'
     : s >= 70
       ? 'Balanced & Reflective'
       : s >= 60
@@ -1091,93 +1088,6 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
       </header>
 
       <div className="container mx-auto px-6 py-6 max-w-5xl">
-        {/* Greeting */}
-        <div className="text-center mb-4">
-          <h1 className="text-xl text-white flex items-center justify-center gap-2">
-            Hello{displayName ? `, ${displayName}` : ''}!
-            <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: '#096b17' }} />
-          </h1>
-        </div>
-
-        {/* Profile: Radar + Pillars */}
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
-          <Card
-            className="p-6 bg-white/30 backdrop-blur-md border border-white/20"
-            ref={radarRef}
-            data-track-id="radar_profile"
-          >
-            <h3 className="text-lg text-center text-white mb-4">
-              Your Emotional Fitness Profile
-            </h3>
-            <RadarChartComponent scores={scores} />
-          </Card>
-
-          <div
-            className="space-y-4"
-            ref={(el) => { pillarsRef.current = el; if (el) el.dataset.trackId = 'pillar_cards'; }}
-          >
-            {(['awareness', 'understanding', 'regulation', 'alignment'] as PillarKey[]).map((k) => {
-              const MetaIcon = pillarMeta[k].Icon;
-              const hi = k === highestKey;
-              const lo = k === lowestKey;
-              return (
-                <Card key={k} className="p-5 bg-white/30 backdrop-blur-md border border-white/20">
-                  <div className="flex items-start justify-between gap-3 mb-1">
-                    <div className="flex items-start gap-3 min-w-0">
-                      <div
-                        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: 'rgba(255, 253, 189, 0.3)' }}
-                      >
-                        <MetaIcon className="w-5 h-5" color="#096b17" />
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="text-base font-medium text-white break-words">
-                          {pillarMeta[k].name}
-                        </h4>
-                        <p className="text-sm text-white/90 break-words leading-snug">
-                          {pillarMeta[k].desc}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {hi && <TrendingUp className="w-5 h-5" color="#096b17" />}
-                      {lo && <TrendingDown className="w-5 h-5" color="#096b17" />}
-                      <span className="text-xl font-semibold text-white">
-                        {Math.round(scores[k])}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${scores[k]}%` }}
-                      transition={{ duration: 0.6 }}
-                      className="h-2 rounded-full"
-                      style={{ backgroundColor: '#096b17' }}
-                    />
-                  </div>
-                  <p className="text-xs text-white/70 mt-2">{pillarLabel(scores[k])}</p>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Overall score */}
-        <Card className="p-6 mb-8 bg-white/30 backdrop-blur-md border border-white/20 text-center"
-          ref={formRef}
-          data-track-id="overall_score">
-          <div className="mb-2">
-            <span className="text-6xl font-semibold" style={{ color: '#096b17' }}>
-              {Math.round(scores.overall)}
-            </span>
-            <span className="text-2xl text-white/90">/100</span>
-          </div>
-          <Badge className="bg-white/20 border-0 px-4 py-1.5 text-sm text-white">
-            {analytics.label}
-          </Badge>
-        </Card>
-
         {/* Advanced analytics & personal tips */}
         <Card
           className="p-6 mb-8 bg-white/30 backdrop-blur-md border border-white/20"
@@ -1268,90 +1178,6 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
             </div>
           )}
 
-          {/* Quick tips */}
-          <div className="mb-4">
-            <p className="text-sm font-medium text-white mb-1">Personal Tips (Next 7 Days)</p>
-            <ul className="list-disc list-inside text-sm text-white/90">
-              {analytics.quickTips.map((t, i) => (
-                <li key={i}>{t}</li>
-              ))}
-            </ul>
-          </div>
-
-          {/* 7-day plan */}
-          <div className="mb-6">
-            <p className="text-sm font-medium text-white mb-1">Simple 7-Day Plan</p>
-            <div className="grid sm:grid-cols-2 gap-3">
-              {analytics.weekPlan.map((d, i) => (
-                <div key={i} className="p-3 rounded-lg bg-white/20 border border-white/10">
-                  <p className="text-xs text-white/70">{d.day}</p>
-                  <p className="text-sm font-medium text-white">{d.focus}</p>
-                  <ul className="list-disc list-inside text-xs text-white/90 mt-1">
-                    {d.actions.map((a, j) => (
-                      <li key={j}>{a}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Share on WhatsApp (Referral) */}
-          <div
-            className="rounded-xl bg-white/20 border border-white/10"
-            ref={(el) => { shareRef.current = el; if (el) el.dataset.trackId = 'referral_share'; }}
-          >
-            <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-              <p className="text-sm font-medium text-white">Share on WhatsApp</p>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={copyShareToClipboard}
-                className="h-8 px-3 rounded-lg bg-white/10 border-white/20 text-white hover:bg-white/20"
-              >
-                {copied ? <CheckIcon className="w-4 h-4 mr-2" /> : <CopyIcon className="w-4 h-4 mr-2" />}
-                {copied ? 'Copied' : 'Copy'}
-              </Button>
-            </div>
-            <div className="p-4">
-              <pre className="whitespace-pre-wrap text-sm text-white/90">{whatsappShareText}</pre>
-              <div className="mt-3 flex flex-col sm:flex-row gap-2">
-                <Button
-                  type="button"
-                  onClick={openWhatsAppShare}
-                  className="rounded-xl text-white"
-                  style={{ backgroundColor: '#096b17' }}
-                >
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  Share on WhatsApp
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  onClick={() => {
-                    dlPush({ event: 'aura_results_cta_click', aura_event_id: eventIdRef.current, label: 'Book Free Clarity Call (share card)' });
-                    trackButtonClick('Book Free Clarity Call', 'cta', 'results_share_card');
-                    window.open(`${SITE_BASE}/contact`, '_blank');
-                  }}
-                >
-                  Book Free Clarity Call
-                </Button>
-              </div>
-              <p className="text-xs text-white/70 mt-2">
-                Your referral code: <code className="font-semibold text-white">{referralCode}</code> • Link:{' '}
-                <a
-                  href={referralLink}
-                  className="underline text-white/90"
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={() => dlPush({ event: 'aura_referral_link_click', aura_event_id: eventIdRef.current, code: referralCode })}
-                >
-                  {referralLink}
-                </a>
-              </p>
-            </div>
-          </div>
         </Card>
 
         {/* Next-step CTAs */}

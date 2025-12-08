@@ -14,11 +14,10 @@ if (typeof window !== 'undefined') {
   window.dataLayer = window.dataLayer || [];
 }
 
-/** ====== Config (keep in sync with index.html) ====== */
-const GA_ID =
-  typeof window !== 'undefined'
-    ? window.GA_MEASUREMENT_ID || 'G-EFGRF2RMGB'
-    : 'G-EFGRF2RMGB';
+/** ====== Config - All tracking handled via GTM server-side ====== */
+// REMOVED: Hardcoded GA4 ID to prevent direct Google Analytics calls
+// All tracking is now exclusively managed through GTM Web Container (GTM-PL6KV3ND)
+// which routes to custom server (gtm.curago.in) for server-side tracking
 
 let lastTrackedPath = '';
 
