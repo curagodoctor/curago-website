@@ -411,12 +411,12 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
 
       // Small delay to ensure other events fire first
       setTimeout(() => {
-        // ✅ Result Unlock Event (₹300 value) - High-value signal - FIRES LAST
+        // ✅ Result Unlock Event (₹350 value) - High-value signal - FIRES LAST
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
           event: 'guard_rail_unlock',
           test_type: 'atm_tool_form_submit',
-          proxy_value: 300.00,
+          proxy_value: 350.00,
           currency: 'INR',
           // PII Data for Advanced Matching
           userEmail: formData.email || '',
@@ -426,7 +426,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
           atm_event_id: eventIdRef.current,
           pattern: result.pattern,
         });
-        console.log('✅ guard_rail_unlock event pushed to dataLayer (ATM, ₹300) - FINAL EVENT');
+        console.log('✅ guard_rail_unlock event pushed to dataLayer (ATM, ₹350) - FINAL EVENT');
       }, 100);
     }
   };

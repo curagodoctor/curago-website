@@ -511,12 +511,12 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
 
         // Small delay to ensure other events fire first
         setTimeout(() => {
-          // ✅ Result Unlock Event (₹300 value) - High-value signal - FIRES LAST
+          // ✅ Result Unlock Event (₹350 value) - High-value signal - FIRES LAST
           window.dataLayer = window.dataLayer || [];
           window.dataLayer.push({
             event: 'guard_rail_unlock',
             test_type: 'aura_index_form_submit',
-            proxy_value: 300.00,
+            proxy_value: 350.00,
             currency: 'INR',
             // PII Data for Advanced Matching
             userEmail: formData.email || '',
@@ -525,7 +525,7 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
             page_path: window.location.pathname,
             aura_event_id: eventIdRef.current,
           });
-          console.log('✅ guard_rail_unlock event pushed to dataLayer (AURA, ₹300) - FINAL EVENT');
+          console.log('✅ guard_rail_unlock event pushed to dataLayer (AURA, ₹350) - FINAL EVENT');
         }, 100);
       } else {
         console.error('❌ AURA assessment webhook failed:', res.status);
