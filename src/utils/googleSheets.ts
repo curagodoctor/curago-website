@@ -4,18 +4,14 @@
 // ============================================================
 // CONFIGURATION
 // ============================================================
-// Your Google Apps Script Web App URL
-const DIRECT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzm96I8BCUDFBeCWbGHYqLzbeHQ-KetMDXb7Mpku7BOqrtJ8jRJAa94uw83DPFee6fK/exec';
-
-// In development (localhost), use Vite proxy to bypass CORS
-// In production, use direct URL (CORS is handled by Apps Script deployment)
-const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const GOOGLE_APPS_SCRIPT_URL = isDevelopment ? '/api/google-sheets' : DIRECT_SCRIPT_URL;
+// Always use the proxy endpoint (works in both dev and production)
+// Development: Vite proxy at localhost:3000/api/google-sheets
+// Production: Node.js proxy server at your-domain.com/api/google-sheets
+const GOOGLE_APPS_SCRIPT_URL = '/api/google-sheets';
 
 console.log('📊 Google Sheets API:', {
-  environment: isDevelopment ? 'Development' : 'Production',
   endpoint: GOOGLE_APPS_SCRIPT_URL,
-  mode: isDevelopment ? 'Vite Proxy' : 'Direct'
+  mode: 'Proxy Mode (CORS handled by backend)'
 });
 
 interface AuraResultData {

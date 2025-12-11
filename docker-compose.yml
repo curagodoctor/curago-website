@@ -67,16 +67,34 @@ services:
     networks:
       - curago-network
 
+  # Proxy server for Google Apps Script
+  proxy-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: curago-proxy
+
+    restart: unless-stopped
+    networks:
+      - curago-network
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   # Main CuraGo website
   website:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: curago-website
-    
+
     labels:
       - traefik.enable=true
-      
+
       # HTTPS router (main website)
       - traefik.http.routers.website.rule=Host(`curago.in`) || Host(`www.curago.in`)
       - traefik.http.routers.website.entrypoints=websecure
@@ -84,22 +102,23 @@ services:
       - traefik.http.routers.website.tls.certresolver=letsencrypt
       - traefik.http.routers.website.middlewares=sec-headers
       - traefik.http.services.website.loadbalancer.server.port=80
-      
+
       # HTTP router - redirect to HTTPS
       - traefik.http.routers.website-http.rule=Host(`curago.in`) || Host(`www.curago.in`)
       - traefik.http.routers.website-http.entrypoints=web
       - traefik.http.routers.website-http.middlewares=redirect-https
-    
+
     depends_on:
       - reverse-proxy
-    
+      - proxy-server
+
     # healthcheck:
     #   test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
     #   interval: 30s
     #   timeout: 5s
     #   retries: 3
     #   start_period: 10s
-    
+
     restart: unless-stopped
     networks:
       - curago-network
