@@ -4,12 +4,19 @@
 // ============================================================
 // CONFIGURATION
 // ============================================================
-// Use local Vite proxy in development to bypass CORS
-// The proxy is configured in vite.config.ts and forwards to the Apps Script URL
-const GOOGLE_APPS_SCRIPT_URL = '/api/google-sheets';
+// Your Google Apps Script Web App URL
+const DIRECT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzm96I8BCUDFBeCWbGHYqLzbeHQ-KetMDXb7Mpku7BOqrtJ8jRJAa94uw83DPFee6fK/exec';
 
-console.log('📊 Google Sheets API Endpoint:', GOOGLE_APPS_SCRIPT_URL);
-console.log('📍 Proxying to: https://script.google.com/macros/s/AKfycbzm96I8BCUDFBeCWbGHYqLzbeHQ-KetMDXb7Mpku7BOqrtJ8jRJAa94uw83DPFee6fK/exec');
+// In development (localhost), use Vite proxy to bypass CORS
+// In production, use direct URL (CORS is handled by Apps Script deployment)
+const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const GOOGLE_APPS_SCRIPT_URL = isDevelopment ? '/api/google-sheets' : DIRECT_SCRIPT_URL;
+
+console.log('📊 Google Sheets API:', {
+  environment: isDevelopment ? 'Development' : 'Production',
+  endpoint: GOOGLE_APPS_SCRIPT_URL,
+  mode: isDevelopment ? 'Vite Proxy' : 'Direct'
+});
 
 interface AuraResultData {
   testType: 'aura_index';
