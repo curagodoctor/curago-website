@@ -7,6 +7,7 @@ import { trackButtonClick, trackPhoneClick, trackFormSubmission } from '../../..
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Zap, Brain, Shield, Target, Clock, AlertTriangle, MessageCircle, X, Phone, User, Mail } from 'lucide-react';
 import { FloatingButtons } from '../../FloatingButtons';
+import { sendAtmResultsToGoogleSheets } from '../../../utils/googleSheets';
 
 // ---------- GTM tracking helpers ----------
 function simpleHash(str: string) {
@@ -290,15 +291,15 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
     return () => clearTimeout(timer);
   }, []);
 
-  // Show clarity call popup 5 seconds after first popup is closed (or after 7 seconds if not opened)
+  // Show clarity call popup 7 seconds after first popup is closed (or after 7 seconds if not opened)
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    
+
     if (formPopupClosedTime) {
       // If form popup was closed, start timer from that moment
       timer = setTimeout(() => {
         setShowClarityCallPopup(true);
-      }, 5000);
+      }, 7000);
     } else {
       // If form popup was never opened, show after 7 seconds total
       timer = setTimeout(() => {
@@ -307,7 +308,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
         }
       }, 7000);
     }
-    
+
     return () => clearTimeout(timer);
   }, [formPopupClosedTime, showFormPopup, isFormSubmitted]);
 
@@ -324,8 +325,10 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
       errors.whatsapp = 'Please enter a valid 10-digit mobile number';
     }
 
-    // Email is optional, but if provided, must be valid
-    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    // Email is now REQUIRED
+    if (!formData.email.trim()) {
+      errors.email = 'Email address is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
     }
 
@@ -375,6 +378,25 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
       } catch (error) {
         console.error('❌ Failed to send ATM assessment webhook:', error);
       }
+
+      // Send to Google Sheets and trigger email (email is now required)
+      sendAtmResultsToGoogleSheets({
+        testType: 'atm_tool',
+        name: formData.name,
+        email: formData.email,
+        phoneNumber: formData.whatsapp.startsWith('+91') ? formData.whatsapp : `+91${formData.whatsapp}`,
+        pattern: result.pattern,
+        confidence: result.confidence,
+        explanation: details.explanation,
+        neurological: details.neurological,
+        impact: details.impact,
+        microActionTitle: details.microAction.title,
+        microActionDescription: details.microAction.description,
+        eventId: eventIdRef.current,
+      }).catch(err => {
+        console.error('❌ Failed to send to Google Sheets:', err);
+        // Don't block user experience if Google Sheets fails
+      });
 
       // Track form submission - FIRES SECOND
       trackFormSubmission('lead', {
@@ -586,15 +608,14 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
         </motion.div>
       </div>
 
-      {/* Form Popup Overlay */}
+      {/* Form Popup Overlay - MANDATORY (cannot be closed) */}
       <AnimatePresence>
         {showFormPopup && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-            onClick={(e) => e.target === e.currentTarget && e.preventDefault()}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -666,7 +687,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
                     <div className="flex items-center mb-2">
                       <Mail className="w-4 h-4 text-gray-500 mr-2" />
                       <label className="text-sm font-medium text-gray-700">
-                        Email Address (Optional)
+                        Email Address *
                       </label>
                     </div>
                     <input
@@ -677,6 +698,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
                         formErrors.email ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter your email address"
+                      required
                     />
                     {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
                   </div>

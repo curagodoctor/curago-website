@@ -58,5 +58,15 @@
     server: {
       port: 3000,
       open: true,
+      proxy: {
+        // Proxy Google Apps Script requests to bypass CORS
+        '/api/google-sheets': {
+          target: 'https://script.google.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/google-sheets/, '/macros/s/AKfycbzMa8OcngMKEekZl3qSepiJrtwTj7lwGN7gWDMqNcrws_jLnmH51DyEp0yIPVi-GOXC/exec'),
+          secure: true,
+          followRedirects: true,
+        },
+      },
     },
   });

@@ -23,6 +23,7 @@ import { motion } from 'framer-motion';
 import type { AuraScores, UserInfo, QuizAnswers } from '../../types/aura';
 import { trackButtonClick } from '../../utils/tracking';
 import { FloatingButtons } from '../FloatingButtons';
+import { sendAuraResultsToGoogleSheets } from '../../utils/googleSheets';
 
 interface ResultScreenProps {
   scores: AuraScores;
@@ -411,8 +412,11 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
       isValid = false;
     }
 
-    // Email is optional, but if provided, must be valid
-    if (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email)) {
+    // Email is now REQUIRED
+    if (!formData.email.trim()) {
+      errors.email = 'Email address is required';
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
       isValid = false;
     }
@@ -466,6 +470,29 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
 
       if (res.ok) {
         console.log('✅ AURA assessment webhook sent successfully');
+
+        // Send to Google Sheets and trigger email (email is now required)
+        sendAuraResultsToGoogleSheets({
+          testType: 'aura_index',
+          name: formData.name,
+          email: formData.email,
+          phoneNumber: `+91${formData.whatsapp}`,
+          scores: {
+            overall: Math.round(scores.overall),
+            awareness: Math.round(scores.awareness),
+            understanding: Math.round(scores.understanding),
+            regulation: Math.round(scores.regulation),
+            alignment: Math.round(scores.alignment),
+          },
+          label: analytics.label,
+          strengths: analytics.strengths,
+          growth: analytics.growth,
+          riskFlags: analytics.riskFlags,
+          eventId: eventIdRef.current,
+        }).catch(err => {
+          console.error('❌ Failed to send to Google Sheets:', err);
+          // Don't block user experience if Google Sheets fails
+        });
 
         setIsFormSubmitted(true);
         setShowFormPopup(false);
@@ -533,22 +560,22 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // run once
 
-  // Show clarity call popup 5 seconds after first popup is closed
+  // Show clarity call popup 7 seconds after first popup is closed
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    
+
     if (formPopupClosedTime) {
       // If form popup was closed, start timer from that moment
       timer = setTimeout(() => {
         setShowClarityCallPopup(true);
-      }, 5000);
+      }, 7000);
     } else if (!showFormPopup && !isFormSubmitted) {
       // If form popup was never shown or closed without submission, show after 7 seconds total
       timer = setTimeout(() => {
         setShowClarityCallPopup(true);
       }, 7000);
     }
-    
+
     return () => {
       if (timer) clearTimeout(timer);
     };
@@ -960,14 +987,13 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
   // ---------- UI ----------
   return (
     <>
-      {/* Show modal first, then results after form submission */}
+      {/* Show modal first, then results after form submission - MANDATORY (cannot be closed) */}
       {showFormPopup && !isFormSubmitted && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-          onClick={(e) => e.target === e.currentTarget && e.preventDefault()}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -1039,7 +1065,7 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
                   <div className="flex items-center mb-2">
                     <Mail className="w-4 h-4 text-gray-500 mr-2" />
                     <label className="text-sm font-medium text-gray-700">
-                      Email Address (Optional)
+                      Email Address *
                     </label>
                   </div>
                   <input
@@ -1050,6 +1076,7 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
                       formErrors.email ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="your.email@example.com"
+                    required
                   />
                   {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
                 </div>
