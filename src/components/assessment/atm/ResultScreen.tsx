@@ -209,12 +209,12 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
 
   // GTM tracking effects
   useEffect(() => {
-    // ✅ Test Finish Event - Comprehensive payload with assessment data (₹50 value)
+    // ✅ Test Finish Event - Comprehensive payload with assessment data (₹10 value)
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       event: 'test_finish',
       test_type: 'atm_tool',
-      proxy_value: 50.00,
+      proxy_value: 10.00,
       currency: 'INR',
       // REQUIRED: Unique event ID for deduplication
       event_id: eventIdRef.current,
@@ -237,7 +237,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
       page_path: window.location.pathname,
       timestamp: new Date().toISOString(),
     });
-    console.log('✅ test_finish event pushed to dataLayer (ATM, ₹50) with full results');
+    console.log('✅ test_finish event pushed to dataLayer (ATM, ₹10) with full results');
 
     // Heartbeat tracking
     const heartbeatInterval = setInterval(() => {
@@ -283,15 +283,15 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
     };
   }, [result.pattern, result.confidence]);
 
-  // Show form popup after 2 seconds
+  // Show first popup after 1 second
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowFormPopup(true);
-    }, 2000);
+    }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Show clarity call popup 7 seconds after first popup is closed (or after 7 seconds if not opened)
+  // Show clarity call popup 8 seconds after first popup is closed (or after 8 seconds if not opened)
   useEffect(() => {
     let timer: NodeJS.Timeout;
 
@@ -299,14 +299,14 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
       // If form popup was closed, start timer from that moment
       timer = setTimeout(() => {
         setShowClarityCallPopup(true);
-      }, 7000);
+      }, 8000);
     } else {
-      // If form popup was never opened, show after 7 seconds total
+      // If form popup was never opened, show after 8 seconds total
       timer = setTimeout(() => {
         if (!showFormPopup && !isFormSubmitted) {
           setShowClarityCallPopup(true);
         }
-      }, 7000);
+      }, 8000);
     }
 
     return () => clearTimeout(timer);
@@ -325,10 +325,8 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
       errors.whatsapp = 'Please enter a valid 10-digit mobile number';
     }
 
-    // Email is now REQUIRED
-    if (!formData.email.trim()) {
-      errors.email = 'Email address is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    // Email is optional, but validate format if provided
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
     }
 
@@ -625,14 +623,14 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
             >
               <div className="p-6 sm:p-8">
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-gray-800">Unlock Your Results</h3>
+                  <h3 className="text-2xl font-bold text-gray-800">Unlock Your Full Analysis</h3>
                 </div>
 
                 <p className="text-gray-600 mb-6 leading-relaxed">
-                  Your result is ready.<br />
-                  To keep it secure and make it retrievable anytime, we need to link it to your WhatsApp number.<br />
-                  You may also receive helpful messages and calls from our team as part of your support journey.<br /><br />
-                  Enter your details to unlock your full result.
+                  Your test is complete and your report is ready.<br />
+                  To keep it secure and send it privately to you, we need to link your result to your verified WhatsApp number.<br /><br />
+                  <strong>ONLY ENTER YOUR DETAILS IF YOU GENUINELY WANT TO UNDERSTAND YOUR RESULTS AND TAKE THE NEXT STEP TOWARD CLARITY.</strong><br /><br />
+                  
                 </p>
 
                 <form onSubmit={handleFormSubmit} className="space-y-5">
@@ -687,7 +685,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
                     <div className="flex items-center mb-2">
                       <Mail className="w-4 h-4 text-gray-500 mr-2" />
                       <label className="text-sm font-medium text-gray-700">
-                        Email Address *
+                        Email Address
                       </label>
                     </div>
                     <input
@@ -698,7 +696,6 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
                         formErrors.email ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter your email address"
-                      required
                     />
                     {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
                   </div>
@@ -707,7 +704,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
                     type="submit"
                     className="w-full bg-[#64CB81] text-white hover:bg-[#64CB81]/90 py-3 rounded-lg font-semibold text-base mt-6"
                   >
-                    Submit & Unlock Micro Action
+                    I AM READY FOR THE RESULTS
                   </Button>
                 </form>
               </div>
@@ -750,47 +747,72 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
                 </div>
 
 
-                <h3 className="text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800 mb-4 lg:mb-6">Ready for Your Next Step?</h3>
+                <h3 className="text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800 mb-4 lg:mb-6">You've Taken a Big Step - Here's Your Next One</h3>
                 <p className="text-gray-600 text-sm lg:text-base xl:text-lg mb-6 lg:mb-8 leading-relaxed px-2 lg:px-4">
-                  Book a free 15-minute clarity call with our mental health expert to discuss your results and create a personalized plan for your anxiety management journey.
+                  Your results are now clear. If you'd like to understand what your results actually mean and what to do next, our team can guide you.<br /><br />
+                  Just book a free clarity call and we will walk you through the whole process. This is the safest next step.
                 </p>
 
                 <div className="space-y-3 lg:space-y-4">
                   <Button
                     onClick={() => {
-                      // ✅ Clarity Call CTA Click (₹400 value intent)
+                      // ✅ Clarity Call CTA Click (₹350 value intent)
                       window.dataLayer = window.dataLayer || [];
                       window.dataLayer.push({
                         event: 'contact_form_submission',
                         form_type: 'clarity_call_cta_click',
-                        proxy_value: 400.00,
+                        proxy_value: 350.00,
                         currency: 'INR',
                         page_path: window.location.pathname,
                         source: 'atm_clarity_popup',
                         atm_event_id: eventIdRef.current,
                         pattern: result.pattern,
                       });
-                      console.log('✅ contact_form_submission event (CTA click) pushed to dataLayer (₹400)');
+                      console.log('✅ contact_form_submission event (CTA click) pushed to dataLayer (₹350)');
 
                       dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Free Clarity Call (popup)' });
                       trackButtonClick('Book Free Clarity Call', 'popup', 'atm_results_clarity_popup');
                       window.location.href = '/contact';
                       setShowClarityCallPopup(false);
                     }}
-                    className="w-full bg-white border cursor-pointer border-gray-300 text-gray-800 hover:bg-gray-50 py-3 lg:py-4 rounded-lg font-semibold text-sm lg:text-base xl:text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    className="w-full bg-[#64CB81] text-white cursor-pointer hover:bg-green-600 py-3 lg:py-4 rounded-lg font-semibold text-sm lg:text-base xl:text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                   >
                     <Phone className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                     Book Free Clarity Call
                   </Button>
-                  
+
                   <Button
                     onClick={() => {
-                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Chat Now on WhatsApp (popup)' });
-                      trackButtonClick('Chat Now on WhatsApp', 'popup', 'atm_results_clarity_popup');
+                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Mental Health Team (popup)' });
+                      trackButtonClick('Mental Health Team', 'popup', 'atm_results_clarity_popup');
+                      window.location.href = '/team';
+                      setShowClarityCallPopup(false);
+                    }}
+                    className="w-full bg-white border cursor-pointer border-gray-300 text-gray-800 hover:bg-gray-50 py-3 lg:py-4 rounded-lg font-medium text-sm lg:text-base shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    Mental Health Team
+                  </Button>
+
+                  <Button
+                    onClick={() => {
+                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Appointment (popup)' });
+                      trackButtonClick('Book Appointment', 'popup', 'atm_results_clarity_popup');
+                      window.location.href = '/contact';
+                      setShowClarityCallPopup(false);
+                    }}
+                    className="w-full bg-white border cursor-pointer border-gray-300 text-gray-800 hover:bg-gray-50 py-3 lg:py-4 rounded-lg font-medium text-sm lg:text-base shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    Book Appointment
+                  </Button>
+
+                  <Button
+                    onClick={() => {
+                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Chat on WhatsApp (popup)' });
+                      trackButtonClick('Chat on WhatsApp', 'popup', 'atm_results_clarity_popup');
                       window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
                       setShowClarityCallPopup(false);
                     }}
-                    className="w-full py-3 lg:py-4 rounded-lg font-medium text-sm lg:text-base bg-[#64CB81] text-white cursor-pointer hover:bg-green-600 transition-all duration-300"
+                    className="w-full py-3 lg:py-4 rounded-lg font-medium text-sm lg:text-base bg-white border border-gray-300 text-gray-800 cursor-pointer hover:bg-gray-50 transition-all duration-300"
                   >
                     <svg className="w-4 h-4 lg:w-5 lg:h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-2.462-.96-4.779-2.705-6.526-1.746-1.746-4.065-2.711-6.526-2.713-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.092-.634zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.867-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.149-.173.198-.297.297-.495.099-.198.05-.372-.025-.521-.074-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414l-.005.009z"/>
