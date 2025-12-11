@@ -21,6 +21,46 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Proxy server is running' });
 });
 
+// Test Google Apps Script endpoint
+app.get('/api/google-sheets', async (req, res) => {
+  try {
+    console.log('📥 Testing Google Apps Script with GET request');
+
+    const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+      method: 'GET',
+      redirect: 'follow',
+    });
+
+    const text = await response.text();
+
+    console.log('📄 GET Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      contentType: response.headers.get('content-type'),
+      url: response.url, // Final URL after redirects
+      textPreview: text.substring(0, 200)
+    });
+
+    try {
+      const data = JSON.parse(text);
+      res.json(data);
+    } catch (e) {
+      res.json({
+        success: false,
+        error: 'Non-JSON response',
+        htmlPreview: text.substring(0, 500)
+      });
+    }
+
+  } catch (error) {
+    console.error('❌ GET test error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Proxy endpoint for Google Sheets
 app.post('/api/google-sheets', async (req, res) => {
   try {
@@ -34,25 +74,55 @@ app.post('/api/google-sheets', async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify(req.body),
+      redirect: 'follow', // Follow redirects from Google Apps Script
+      follow: 20, // Maximum redirects to follow
     });
 
-    const data = await response.json();
+    // Get the response text first to handle both JSON and HTML errors
+    const text = await response.text();
 
-    console.log('✅ Response from Google Apps Script:', {
+    console.log('📄 Response from Google Apps Script:', {
       status: response.status,
-      success: data.success
+      statusText: response.statusText,
+      contentType: response.headers.get('content-type'),
+      textLength: text.length,
+      textPreview: text.substring(0, 200)
     });
 
-    // Return the response with CORS headers (already handled by cors middleware)
-    res.status(response.ok ? 200 : 500).json(data);
+    // Try to parse as JSON
+    let data;
+    try {
+      data = JSON.parse(text);
+
+      console.log('✅ Parsed JSON response:', {
+        success: data.success
+      });
+
+      // Return the response with CORS headers (already handled by cors middleware)
+      res.status(response.ok ? 200 : 500).json(data);
+
+    } catch (jsonError) {
+      // Response is not JSON (probably HTML error page)
+      console.error('❌ Google Apps Script returned non-JSON response (HTML error page)');
+      console.error('Response text:', text);
+
+      res.status(500).json({
+        success: false,
+        error: 'Google Apps Script error',
+        details: 'The Apps Script returned an HTML error page instead of JSON. This usually means there is an error in the Apps Script code. Check the Apps Script execution logs.',
+        htmlPreview: text.substring(0, 500)
+      });
+    }
 
   } catch (error) {
     console.error('❌ Proxy error:', error);
     res.status(500).json({
       success: false,
-      error: error.message || 'Unknown error'
+      error: error.message || 'Unknown error',
+      type: error.name
     });
   }
 });
