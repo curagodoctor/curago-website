@@ -7,7 +7,7 @@ import { WhatsAppConfirmDialog } from './WhatsAppConfirmDialog';
 
 const PHONE_E164 = '+918062179639';
 const PHONE_DISPLAY = '+91 80621 79639';
-const WHATSAPP_E164 = '917021227203';
+const WHATSAPP_E164 = '918062179639';
 const WHATSAPP_TEXT = encodeURIComponent(
   'Hi! I came from Facebook. I want to book a service. Preferred date/time: __. Area: __.'
 );

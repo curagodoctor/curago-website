@@ -1006,19 +1006,18 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
             exit={{ scale: 0.9, opacity: 0 }}
             className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
           >
-            <div className="p-6 sm:p-8">
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">Unlock Your Full Analysis</h3>
+            <div className="p-4 sm:p-5">
+              <div className="mb-3">
+                <h3 className="text-xl font-semibold text-gray-800">Unlock Your Full Analysis</h3>
               </div>
 
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="text-sm text-gray-600 mb-3 leading-snug">
                 Your test is complete and your report is ready.<br />
                 To keep it secure and send it privately to you, we need to link your result to your verified WhatsApp number.<br /><br />
-                <strong>ONLY ENTER YOUR DETAILS IF YOU GENUINELY WANT TO UNDERSTAND YOUR RESULTS AND TAKE THE NEXT STEP TOWARD CLARITY.</strong><br /><br />
-               
+                ONLY ENTER YOUR DETAILS IF YOU GENUINELY WANT TO UNDERSTAND YOUR RESULTS AND TAKE THE NEXT STEP TOWARD CLARITY.
               </p>
 
-              <form onSubmit={handleFormSubmit} className="space-y-5">
+              <form onSubmit={handleFormSubmit} className="space-y-3">
                 {/* Name Field */}
                 <div>
                   <div className="flex items-center mb-2">
@@ -1233,7 +1232,7 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
               onClick={() => {
                 dlPush({ event: 'aura_results_cta_click', aura_event_id: eventIdRef.current, label: 'Chat Now on WhatsApp' });
                 trackButtonClick('Chat Now on WhatsApp', 'cta', 'results_bottom');
-                window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my AURA Index and would like to chat.'), '_blank', 'noopener,noreferrer');
+                window.open('https://wa.me/918062179639?text=' + encodeURIComponent('Hi! I completed my AURA Index and would like to chat.'), '_blank', 'noopener,noreferrer');
               }}
               className="sm:w-auto w-full rounded-xl bg-white/20 border border-white/30 text-white hover:bg-white/30"
             >
@@ -1370,7 +1369,7 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
                   onClick={() => {
                     dlPush({ event: 'aura_results_cta_click', aura_event_id: eventIdRef.current, label: 'Chat on WhatsApp (popup)' });
                     trackButtonClick('Chat on WhatsApp', 'popup', 'aura_results_clarity_popup');
-                    window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my AURA assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
+                    window.open('https://wa.me/918062179639?text=' + encodeURIComponent('Hi! I completed my AURA assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
                     setShowClarityCallPopup(false);
                   }}
                   className="w-full py-3 lg:py-4 rounded-lg font-medium text-sm lg:text-base bg-white border border-gray-300 text-gray-800 cursor-pointer hover:bg-gray-50 transition-all duration-300"

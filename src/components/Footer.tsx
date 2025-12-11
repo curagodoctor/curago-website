@@ -58,7 +58,7 @@ export function Footer() {
               </li>
               <li>
                 <button onClick={handleWhatsAppClick} className="hover:opacity-100 transition-opacity text-left">
-                  WhatsApp: +917021227203
+                  WhatsApp: +918062179639
                 </button>
               </li>
               <li>

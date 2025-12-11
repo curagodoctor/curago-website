@@ -13,7 +13,7 @@ interface WhatsAppConfirmDialogProps {
 export function WhatsAppConfirmDialog({ 
   isOpen, 
   onOpenChange, 
-  phoneNumber = '917021227203',
+  phoneNumber = '918062179639',
   message = 'Hi! I want to get in touch regarding CuraGo services.',
   source 
 }: WhatsAppConfirmDialogProps) {
