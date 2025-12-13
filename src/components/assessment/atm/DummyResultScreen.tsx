@@ -284,11 +284,11 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
     };
   }, [result.pattern, result.confidence]);
 
-  // Show first popup after 1 second
+  // Show first popup after 0.5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowFormPopup(true);
-    }, 1000);
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -397,13 +397,13 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
         // Don't block user experience if Google Sheets fails
       });
 
-      // Track form submission - FIRES SECOND
+      // Track form submission - FIRES SECOND (dummy/preview flow = ₹0)
       trackFormSubmission('lead', {
         name: formData.name,
         phone: formData.whatsapp,
         email: formData.email,
-        source: 'ATM Assessment Results',
-        value: 300.00,
+        source: 'ATM Preview Results',
+        value: 0.00,
         currency: 'INR',
       });
 
@@ -412,22 +412,22 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
 
       // Small delay to ensure other events fire first
       setTimeout(() => {
-        // ✅ Result Unlock Event (₹350 value) - High-value signal - FIRES LAST
+        // ✅ Result Unlock Event (₹0 value for dummy/preview) - FIRES LAST
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
           event: 'guard_rail_unlock',
-          test_type: 'atm_tool_form_submit',
-          proxy_value: 350.00,
+          test_type: 'atm_preview_form_submit',
+          proxy_value: 0.00,
           currency: 'INR',
           // PII Data for Advanced Matching
           userEmail: formData.email || '',
           userPhone: formData.whatsapp.startsWith('+91') ? formData.whatsapp.slice(3) : formData.whatsapp,
-          transactionId: `GR-ATM-${Date.now()}`,
+          transactionId: `GR-ATM-PREVIEW-${Date.now()}`,
           page_path: window.location.pathname,
           atm_event_id: eventIdRef.current,
           pattern: result.pattern,
         });
-        console.log('✅ guard_rail_unlock event pushed to dataLayer (ATM, ₹350) - FINAL EVENT');
+        console.log('✅ guard_rail_unlock event pushed to dataLayer (ATM Preview, ₹0) - FINAL EVENT');
       }, 100);
     }
   };

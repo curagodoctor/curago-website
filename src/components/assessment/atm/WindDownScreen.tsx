@@ -29,10 +29,10 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
     { text: "Let us start", duration: 2000 },      // 0-2s
     { text: "Breathe in....", duration: 2500 },    // 2-4.5s
     { text: "Breathe out....", duration: 3000 },   // 4.5-7.5s
-    { text: "", duration: 2000 },                  // 7.5-9.5s (pause)
-    { text: "Breathe in....", duration: 2500 },    // 9.5-12s
-    { text: "Breathe out....", duration: 3000 },   // 12-15s
-    { text: "", duration: 2000 },                  // 15-17s (pause)
+    { text: "", duration: 400 },                   // 7.5-7.9s (pause)
+    { text: "Breathe in....", duration: 2500 },    // 7.9-10.4s
+    { text: "Breathe out....", duration: 3000 },   // 10.4-13.4s
+    { text: "", duration: 400 },                   // 13.4-13.8s (pause)
   ];
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
 
       // Abandon event if user leaves before completion
       const currentElapsed = Date.now() - startTime.current;
-      if (currentElapsed < 17000 && !completedRef.current) {
+      if (currentElapsed < 13800 && !completedRef.current) {
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
           event: 'winddown_abandon',
@@ -127,8 +127,8 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
 
   // Skip button appears after first "Breathe in" (after phase 0 "Let us start")
   const isSkipVisible = currentPhase >= 1;
-  // Ready button appears after all phases complete (17 seconds)
-  const isReadyVisible = elapsed >= 17000;
+  // Ready button appears after all phases complete (13.8 seconds)
+  const isReadyVisible = elapsed >= 13800;
 
   // Determine breathing circle animation based on current phase
   const getCircleScale = () => {
