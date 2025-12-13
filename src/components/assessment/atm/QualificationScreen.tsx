@@ -68,12 +68,6 @@ export default function QualificationScreen({ onNavigateToActual, onNavigateToDu
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] flex flex-col items-center justify-start px-4 pt-32 md:pt-40 pb-12">
-      {/* Decorative background - calm and peaceful */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-[-10%] w-96 h-96 bg-white rounded-full opacity-5 blur-3xl animate-[pulse_12s_ease-in-out_infinite]" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#64CB81] rounded-full opacity-5 blur-3xl animate-[pulse_15s_ease-in-out_infinite]" />
-      </div>
-
       <div className="relative z-10 flex flex-col items-center max-w-2xl mx-auto text-center w-full">
         {/* Headline */}
         <motion.div

@@ -153,20 +153,14 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
   const isBreathingText = currentText.includes("Breathe");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] flex flex-col items-center justify-center px-4 pt-24">
-      {/* Decorative background - calm and peaceful */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-[-10%] w-96 h-96 bg-white rounded-full opacity-5 blur-3xl animate-[pulse_12s_ease-in-out_infinite]" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#64CB81] rounded-full opacity-5 blur-3xl animate-[pulse_15s_ease-in-out_infinite]" />
-      </div>
-
-      <div className="relative z-10 flex flex-col items-center max-w-3xl mx-auto text-center">
+    <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] flex flex-col items-center justify-center px-4 pt-24 relative">
+      <div className="relative z-20 flex flex-col items-center max-w-3xl mx-auto text-center">
         {/* Title - Appears First */}
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: showTitle ? 1 : 0, y: showTitle ? 0 : -20 }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="text-3xl md:text-4xl lg:text-5xl text-white font-bold mb-6"
+          className="text-3xl md:text-4xl lg:text-5xl text-white font-bold mb-6 relative z-20"
         >
           Wind down for accurate results
         </motion.h1>
@@ -176,14 +170,15 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: showInstruction ? 1 : 0, y: showInstruction ? 0 : -10 }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="text-xl md:text-2xl text-green-100 mb-12 font-medium"
+          className="text-xl md:text-2xl text-green-100 mb-12 font-medium relative z-20"
         >
           Follow the cue on the screen
         </motion.p>
 
         {/* Breathing Circle */}
         <motion.div
-          className="w-56 h-56 md:w-72 md:h-72 rounded-full bg-gradient-to-br from-[#64CB81] to-[#096b17] shadow-2xl mb-12 flex items-center justify-center my-8"
+          className="relative z-30 w-56 h-56 md:w-72 md:h-72 rounded-full shadow-2xl mb-12 flex items-center justify-center my-8 border-8 border-white"
+          style={{ backgroundColor: '#FFFDBD' }}
           animate={{
             scale: getCircleScale(),
           }}
@@ -193,7 +188,7 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
           }}
         >
           {/* Inner circle for depth */}
-          <div className="w-36 h-36 md:w-48 md:h-48 rounded-full bg-white/20 backdrop-blur-sm" />
+          <div className="w-36 h-36 md:w-48 md:h-48 rounded-full border-4 border-white" style={{ backgroundColor: '#ffffff' }} />
         </motion.div>
 
         {/* Breathing Text - Prominent and Animated */}
@@ -208,7 +203,7 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 className={`font-semibold ${
                   isBreathingText
-                    ? 'text-4xl md:text-5xl lg:text-6xl text-[#FFFDBD]'
+                    ? 'text-4xl md:text-5xl lg:text-6xl text-white'
                     : 'text-2xl md:text-3xl text-green-100'
                 }`}
               >
@@ -219,7 +214,7 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
         </div>
 
         {/* Buttons */}
-        <div className="mt-8 space-y-4 flex flex-col items-center">
+        <div className="mt-16 space-y-6 flex flex-col items-center">
           {/* Skip button - visible after "Breathe in" appears, hidden when Ready appears */}
           {isSkipVisible && !isReadyVisible && (
             <motion.div
@@ -230,7 +225,7 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
               <Button
                 onClick={handleSkip}
                 variant="outline"
-                className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/30 px-10 py-4 rounded-2xl cursor-pointer transition-all duration-700 ease-in-out text-base"
+                className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border-2 border-white/30 px-10 py-4 rounded-2xl cursor-pointer transition-all duration-700 ease-in-out text-base"
               >
                 Skip and continue
               </Button>
@@ -247,7 +242,7 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
               <Button
                 onClick={handleReady}
                 size="lg"
-                className="bg-white text-[#096b17] hover:bg-green-50 px-12 py-6 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-700 ease-in-out font-semibold cursor-pointer"
+                className="bg-white text-[#096b17] hover:bg-green-50 m-2 py-6 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-700 ease-in-out font-semibold cursor-pointer border-2 border-white/20"
               >
                 I'm ready to begin
               </Button>
