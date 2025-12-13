@@ -409,26 +409,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
 
       // Track button click - FIRES THIRD
       trackButtonClick('ATM Form Submitted', 'form', 'atm_results');
-
-      // Small delay to ensure other events fire first
-      setTimeout(() => {
-        // ✅ Result Unlock Event (₹0 value for dummy/preview) - FIRES LAST
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: 'guard_rail_unlock',
-          test_type: 'atm_preview_form_submit',
-          proxy_value: 0.00,
-          currency: 'INR',
-          // PII Data for Advanced Matching
-          userEmail: formData.email || '',
-          userPhone: formData.whatsapp.startsWith('+91') ? formData.whatsapp.slice(3) : formData.whatsapp,
-          transactionId: `GR-ATM-PREVIEW-${Date.now()}`,
-          page_path: window.location.pathname,
-          atm_event_id: eventIdRef.current,
-          pattern: result.pattern,
-        });
-        console.log('✅ guard_rail_unlock event pushed to dataLayer (ATM Preview, ₹0) - FINAL EVENT');
-      }, 100);
     }
   };
 
