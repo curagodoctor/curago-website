@@ -117,4 +117,21 @@ export const teamMembers: TeamMember[] = [
     registrationNumber: "MCI-90123",
     image: "/yeshwant.png",
   },
+  {
+    name: "Dr. Sucheta Saha",
+    designation: "Consultant Psychiatrist",
+    institute: "LGBRIMH, Tezpur | AIIMS Rishikesh",
+    qualification: "MBBS, MD Psychiatry",
+    expertise: [
+      "General Psychiatry",
+      "Anxiety Disorder",
+      "Burnout Management",
+      "Deaddiction",
+      "Child and Adolescent Psychiatry",
+      "Neuropsychiatry",
+    ],
+    languages: ["English", "Bengali", "Assamese", "Kannada"],
+    registrationNumber: "MCI-01234",
+    image: "/Dr Sucheta Saha.jpg",
+  },
 ];

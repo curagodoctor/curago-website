@@ -1268,7 +1268,7 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
       </div>
       
       {/* Floating Buttons */}
-      <FloatingButtons onBookNow={handleBookNow} />
+      <FloatingButtons onBookNow={handleBookNow} hideButtons={showFormPopup || showClarityCallPopup} />
         </div>
       )}
 

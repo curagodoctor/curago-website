@@ -39,10 +39,10 @@ export function MentalHealthTeam({ onViewAllTeam, onBookNow }: MentalHealthTeamP
         <div className="relative mb-8">
           <div className="overflow-x-auto scrollbar-hide pb-4">
             <div className="flex gap-6" style={{ width: 'max-content' }}>
-              {teamMembers.slice(0, 6).map((member, index) => (
+              {teamMembers.map((member, index) => (
                 <div key={index} className="w-[340px] flex-shrink-0">
-                  <DoctorCard 
-                    member={member} 
+                  <DoctorCard
+                    member={member}
                     onBookNow={handleBookNow}
                   />
                 </div>

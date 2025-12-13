@@ -27,6 +27,10 @@ import {
 } from './components/assessment';
 import {
   AtmLandingPage,
+  AtmWindDownScreen,
+  AtmQualificationScreen,
+  AtmDummyQuizFlow,
+  AtmDummyResultScreen,
   AtmQuizFlow,
   AtmResultScreen,
 } from './components/assessment/atm';
@@ -71,9 +75,12 @@ export default function App() {
 
   // ---------- ATM state ----------
   const [atmStage, setAtmStage] =
-    useState<'landing' | 'quiz' | 'results'>('landing');
+    useState<'landing' | 'winddown' | 'qualification' | 'dummy-quiz' | 'dummy-results' | 'quiz' | 'results'>('landing');
   const [atmAnswers, setAtmAnswers] = useState<AtmAnswers | null>(null);
   const [atmUserInfo, setAtmUserInfo] = useState<AtmUserInfo | null>(null);
+  const [isDummyFlow, setIsDummyFlow] = useState<boolean>(false);
+  const [dummyAnswers, setDummyAnswers] = useState<AtmAnswers | null>(null);
+  const [dummyUserInfo, setDummyUserInfo] = useState<AtmUserInfo | null>(null);
 
   // Which branch of the app are we on?
   const [isAuraRoute, setIsAuraRoute] = useState<boolean>(
@@ -187,6 +194,32 @@ export default function App() {
         });
 
         console.log('✅ GTM signal fired: atm_test_finished_signal');
+        return;
+      }
+      if (pathname === '/atm/wind-down') {
+        setAtmStage('winddown');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('ATM Wind-down', 'CuraGo - Wind Down');
+        return;
+      }
+      if (pathname === '/atm/qualification') {
+        setAtmStage('qualification');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('ATM Qualification', 'CuraGo - Intent Qualification');
+        return;
+      }
+      if (pathname === '/atm/preview') {
+        setAtmStage('dummy-quiz');
+        setIsDummyFlow(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('ATM Preview', 'CuraGo - Anxiety Assessment Preview');
+        return;
+      }
+      if (pathname === '/atm/preview-results') {
+        setAtmStage('dummy-results');
+        setIsDummyFlow(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('ATM Preview Results', 'CuraGo - Assessment Preview Results');
         return;
       }
 
@@ -353,7 +386,46 @@ export default function App() {
   const handleAtmRetake = () => {
     setAtmAnswers(null);
     setAtmUserInfo(null);
+    setIsDummyFlow(false);
+    setDummyAnswers(null);
+    setDummyUserInfo(null);
     goToAtm('landing');
+  };
+
+  const goToAtmWindDown = () => {
+    const path = '/atm/wind-down';
+    history.pushState(null, '', buildUrl(path));
+    setIsAtmRoute(true);
+    setAtmStage('winddown');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goToAtmQualification = () => {
+    const path = '/atm/qualification';
+    history.pushState(null, '', buildUrl(path));
+    setIsAtmRoute(true);
+    setAtmStage('qualification');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goToAtmDummy = (stage: 'dummy-quiz' | 'dummy-results') => {
+    const path = stage === 'dummy-quiz' ? '/atm/preview' : '/atm/preview-results';
+    history.pushState(null, '', buildUrl(path));
+    setIsAtmRoute(true);
+    setIsDummyFlow(true);
+    setAtmStage(stage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAtmWindDownComplete = () => goToAtmQualification();
+  const handleAtmWindDownSkip = () => goToAtmDummy('dummy-quiz');
+  const handleQualificationToDummy = () => goToAtmDummy('dummy-quiz');
+  const handleQualificationToActual = () => goToAtm('quiz');
+
+  const handleDummyQuizComplete = (answers: AtmAnswers, userInfo: AtmUserInfo) => {
+    setDummyAnswers(answers);
+    setDummyUserInfo(userInfo);
+    goToAtmDummy('dummy-results');
   };
 
   // ---------- Handle refresh on results pages without data ----------
@@ -418,7 +490,36 @@ export default function App() {
           onNavigate={handleNavigate}
         />
 
-        {atmStage === 'landing' && <AtmLandingPage onStart={handleStartAtmQuiz} />}
+        {atmStage === 'landing' && (
+          <AtmLandingPage
+            onStart={handleStartAtmQuiz}
+            onNavigateToWindDown={goToAtmWindDown}
+            onNavigateToDummy={() => goToAtmDummy('dummy-quiz')}
+          />
+        )}
+        {atmStage === 'winddown' && (
+          <AtmWindDownScreen
+            onComplete={handleAtmWindDownComplete}
+            onSkip={handleAtmWindDownSkip}
+          />
+        )}
+        {atmStage === 'qualification' && (
+          <AtmQualificationScreen
+            onNavigateToActual={handleQualificationToActual}
+            onNavigateToDummy={handleQualificationToDummy}
+          />
+        )}
+        {atmStage === 'dummy-quiz' && (
+          <AtmDummyQuizFlow onComplete={handleDummyQuizComplete} />
+        )}
+        {atmStage === 'dummy-results' && dummyAnswers && dummyUserInfo && (
+          <AtmDummyResultScreen
+            answers={dummyAnswers}
+            userInfo={dummyUserInfo}
+            onRetake={handleAtmRetake}
+            onUpgradeToFull={() => goToAtm('quiz')}
+          />
+        )}
         {atmStage === 'quiz' && <AtmQuizFlow onComplete={handleAtmQuizComplete} />}
         {atmStage === 'results' && atmAnswers && atmUserInfo && (
           <AtmResultScreen

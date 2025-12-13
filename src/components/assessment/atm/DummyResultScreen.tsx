@@ -53,6 +53,7 @@ interface ResultScreenProps {
   answers: AtmAnswers;
   userInfo: UserInfo;
   onRetake: () => void;
+  onUpgradeToFull?: () => void; // Navigate to actual quiz
 }
 
 const patternDetails: Record<
@@ -176,7 +177,7 @@ function determineAnxietyPattern(answers: AtmAnswers): {
   return { pattern: 'Mixed-pattern Anxiety', confidence: 0.55 };
 }
 
-export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
+export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: ResultScreenProps) {
   const result = useMemo(() => determineAnxietyPattern(answers), [answers]);
   const details = patternDetails[result.pattern];
   const { Icon, color } = details;
@@ -188,7 +189,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
   const lastHeartbeatRef = useRef(now());
 
   // Form and popup states
-  const [showFormPopup, setShowFormPopup] = useState(false);
+  const [showFormPopup, setShowFormPopup] = useState(false); // Always false for dummy - no form popup
   const [showClarityCallPopup, setShowClarityCallPopup] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   const [formPopupClosedTime, setFormPopupClosedTime] = useState<number | null>(null);
@@ -212,9 +213,9 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
     // ✅ Test Finish Event - Comprehensive payload with assessment data (₹10 value)
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
-      event: 'test_finish',
-      test_type: 'atm_tool',
-      proxy_value: 10.00,
+      event: 'dummy_done',
+      test_type: 'atm_preview',
+      proxy_value: 0.00,
       currency: 'INR',
       // REQUIRED: Unique event ID for deduplication
       event_id: eventIdRef.current,
@@ -237,7 +238,7 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
       page_path: window.location.pathname,
       timestamp: new Date().toISOString(),
     });
-    console.log('✅ test_finish event pushed to dataLayer (ATM, ₹10) with full results');
+    console.log('✅ dummy_done event pushed to dataLayer (ATM Preview, ₹0) with full results');
 
     // Heartbeat tracking
     const heartbeatInterval = setInterval(() => {
@@ -446,11 +447,24 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] pt-20">
-      <header className="container mx-auto px-4 sm:px-6 py-4 flex justify-end items-center">
+      <header className="container mx-auto px-4 sm:px-6 py-4 flex justify-end items-center gap-3">
+        {onUpgradeToFull && (
+          <Button
+            onClick={() => {
+              dlPush({ event: 'dummy_upgrade_click', atm_event_id: eventIdRef.current });
+              trackButtonClick('Upgrade to Full Assessment', 'cta', 'dummy_results_header');
+              onUpgradeToFull();
+            }}
+            size="sm"
+            className="rounded-full bg-[#64CB81] hover:bg-[#4CAF50] text-white shadow-md hover:shadow-lg transition-all duration-200 text-sm font-semibold px-6 py-2"
+          >
+            Get Full Assessment
+          </Button>
+        )}
         <Button
           onClick={() => {
-            dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Retake' });
-            trackButtonClick('Retake ATM', 'cta', 'atm_results_header');
+            dlPush({ event: 'dummy_results_retake_click', atm_event_id: eventIdRef.current });
+            trackButtonClick('Retake Preview', 'cta', 'dummy_results_header');
             onRetake();
           }}
           variant="outline"

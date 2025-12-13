@@ -21,9 +21,11 @@ import { FloatingButtons } from '../../FloatingButtons';
 
 interface LandingPageProps {
   onStart: () => void;
+  onNavigateToWindDown?: () => void;
+  onNavigateToDummy?: () => void;
 }
 
-export default function LandingPage({ onStart }: LandingPageProps) {
+export default function LandingPage({ onStart, onNavigateToWindDown, onNavigateToDummy }: LandingPageProps) {
   const whatHowRef = useRef<HTMLElement | null>(null);
   const whatHowTrackedRef = useRef(false);
 
@@ -51,6 +53,34 @@ export default function LandingPage({ onStart }: LandingPageProps) {
   const handleStartTop = () => {
     trackCTA('Start ATM Assessment', 'atm_landing');
     onStart();
+  };
+
+  const handleSkipToTest = () => {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'curiosity_exit',
+      proxy_value: 0,
+      currency: 'INR',
+      page_path: window.location.pathname,
+      timestamp: new Date().toISOString(),
+    });
+    console.log('⏭️ curiosity_exit event fired');
+    trackCTA('Skip to Test', 'atm_landing');
+    if (onNavigateToDummy) onNavigateToDummy();
+  };
+
+  const handleFollowRecommendation = () => {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'curiosity_pass',
+      proxy_value: 0,
+      currency: 'INR',
+      page_path: window.location.pathname,
+      timestamp: new Date().toISOString(),
+    });
+    console.log('✅ curiosity_pass event fired');
+    trackCTA('Follow Recommendation', 'atm_landing');
+    if (onNavigateToWindDown) onNavigateToWindDown();
   };
 
   const handleStartBottom = () => {
@@ -99,24 +129,32 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                 </Badge>
 
                 <h1 className="text-4xl md:text-5xl lg:text-6xl leading-tight animate-[fadeInUp_0.8s_ease-out_0.1s_both]">
-                  <span className="block">Anxiety Trigger Mapping Tool</span>
-
+                  <span className="block">Feeling anxious even on normal days?</span>
                 </h1>
 
                 <p className="text-lg md:text-xl text-green-50 leading-relaxed max-w-xl mx-auto md:mx-0 animate-[fadeInUp_0.8s_ease-out_0.2s_both]">
-                  A quick 2-minute assessment to help you understand the root of your anxiety
-                  and identify your personal anxiety patterns for clarity and control.
+                  Before the test, it is our medical recommendation that you take a short
+                  wind-down so your answers are accurate.
                 </p>
               </div>
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-[fadeInUp_0.8s_ease-out_0.3s_both]">
                 <Button
-                  onClick={handleStartTop}
+                  onClick={handleSkipToTest}
+                  variant="outline"
                   size="lg"
-                  className="bg-white text-xl text-[#096b17] hover:bg-gray-100 px-6 h-12 rounded-xl shadow-sm font-semibold transition-all duration-300 hover:scale-105"
+                  className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/20 px-6 h-12 rounded-xl font-semibold transition-all duration-300 cursor-pointer"
                 >
-                  Start ATM Tool
+                  Skip and Go to the test
+                </Button>
+
+                <Button
+                  onClick={handleFollowRecommendation}
+                  size="lg"
+                  className="bg-white text-xl text-[#096b17] hover:bg-gray-100 px-6 h-12 rounded-xl shadow-sm font-semibold transition-all duration-300 hover:scale-105 cursor-pointer"
+                >
+                  Follow CuraGo's recommendation
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
 
