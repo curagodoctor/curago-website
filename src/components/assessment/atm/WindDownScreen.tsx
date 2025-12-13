@@ -17,23 +17,47 @@ function simpleHash(str: string) {
 
 export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenProps) {
   const [elapsed, setElapsed] = useState(0);
-  const [phaseIndex, setPhaseIndex] = useState(0);
+  const [currentPhase, setCurrentPhase] = useState(0);
+  const [showTitle, setShowTitle] = useState(false);
+  const [showInstruction, setShowInstruction] = useState(false);
   const startTime = useRef(Date.now());
   const completedRef = useRef(false);
   const eventIdRef = useRef(simpleHash(Date.now().toString()));
 
-  const breathingPhases = ["Breathe in....", "Breathe out...."];
+  // Breathing sequence: Let us start → Breathe in → Breathe out → Pause → Breathe in → Breathe out → Pause
+  const breathingPhases = [
+    { text: "Let us start", duration: 2000 },      // 0-2s
+    { text: "Breathe in....", duration: 2500 },    // 2-4.5s
+    { text: "Breathe out....", duration: 2500 },   // 4.5-7s
+    { text: "", duration: 2000 },                  // 7-9s (pause)
+    { text: "Breathe in....", duration: 2500 },    // 9-11.5s
+    { text: "Breathe out....", duration: 2500 },   // 11.5-14s
+    { text: "", duration: 2000 },                  // 14-16s (pause)
+  ];
 
   useEffect(() => {
+    // Sequential animations for title and instruction
+    setTimeout(() => setShowTitle(true), 200);
+    setTimeout(() => setShowInstruction(true), 800);
+
     // Timer - update every 100ms for smooth UI
     const timer = setInterval(() => {
       setElapsed(Date.now() - startTime.current);
     }, 100);
 
-    // Breathing phase alternation - every 2 seconds
+    // Breathing phase progression
+    let phaseStartTime = Date.now();
+    let currentPhaseIndex = 0;
+
     const phaseTimer = setInterval(() => {
-      setPhaseIndex((prev) => (prev + 1) % 2);
-    }, 2000);
+      const phaseElapsed = Date.now() - phaseStartTime;
+
+      if (currentPhaseIndex < breathingPhases.length && phaseElapsed >= breathingPhases[currentPhaseIndex].duration) {
+        currentPhaseIndex++;
+        setCurrentPhase(currentPhaseIndex);
+        phaseStartTime = Date.now();
+      }
+    }, 100);
 
     // Heartbeat tracking - every 30 seconds
     const heartbeat = setInterval(() => {
@@ -55,7 +79,7 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
 
       // Abandon event if user leaves before completion
       const currentElapsed = Date.now() - startTime.current;
-      if (currentElapsed < 6000 && !completedRef.current) {
+      if (currentElapsed < 16000 && !completedRef.current) {
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
           event: 'winddown_abandon',
@@ -69,7 +93,7 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
         console.log('🔄 winddown_abandon event fired');
       }
     };
-  }, []); // Run only once on mount
+  }, []);
 
   const handleSkip = () => {
     window.dataLayer = window.dataLayer || [];
@@ -101,88 +125,129 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
     onComplete();
   };
 
-  const isSkipVisible = elapsed >= 1000;  // 1 second
-  const isReadyVisible = elapsed >= 6000; // 6 seconds
+  // Skip button appears after first "Breathe in" (after phase 0 "Let us start")
+  const isSkipVisible = currentPhase >= 1;
+  // Ready button appears after all phases complete (16 seconds)
+  const isReadyVisible = elapsed >= 16000;
+
+  // Determine breathing circle animation based on current phase
+  const getCircleScale = () => {
+    if (currentPhase === 1 || currentPhase === 4) {
+      // Breathe in - expand
+      return [1, 1.2, 1.2];
+    } else if (currentPhase === 2 || currentPhase === 5) {
+      // Breathe out - contract
+      return [1.2, 1, 1];
+    }
+    return [1, 1, 1]; // Static for "Let us start" and pauses
+  };
+
+  const getCircleDuration = () => {
+    if (currentPhase === 1 || currentPhase === 4 || currentPhase === 2 || currentPhase === 5) {
+      return 2.5; // Breathe in/out duration
+    }
+    return 2; // Let us start or pause
+  };
+
+  const currentText = currentPhase < breathingPhases.length ? breathingPhases[currentPhase].text : "";
+  const isBreathingText = currentText.includes("Breathe");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] flex flex-col items-center justify-center px-4 pt-24">
-      {/* Decorative background - match landing page */}
+      {/* Decorative background - calm and peaceful */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-[-10%] w-96 h-96 bg-white rounded-full opacity-10 blur-3xl animate-[pulse_8s_ease-in-out_infinite]" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#64CB81] rounded-full opacity-10 blur-3xl animate-[pulse_10s_ease-in-out_infinite]" />
+        <div className="absolute top-20 right-[-10%] w-96 h-96 bg-white rounded-full opacity-5 blur-3xl animate-[pulse_12s_ease-in-out_infinite]" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#64CB81] rounded-full opacity-5 blur-3xl animate-[pulse_15s_ease-in-out_infinite]" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center max-w-2xl mx-auto text-center">
-        {/* Title */}
-        <h2 className="text-2xl md:text-3xl lg:text-4xl text-white font-bold mb-4">
+      <div className="relative z-10 flex flex-col items-center max-w-3xl mx-auto text-center">
+        {/* Title - Appears First */}
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: showTitle ? 1 : 0, y: showTitle ? 0 : -20 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="text-3xl md:text-4xl lg:text-5xl text-white font-bold mb-6"
+        >
           Wind down for accurate results
-        </h2>
+        </motion.h1>
 
-        {/* Instructions */}
-        <p className="text-lg md:text-xl text-green-100 mb-2">
+        {/* Instruction - Appears Second */}
+        <motion.p
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: showInstruction ? 1 : 0, y: showInstruction ? 0 : -10 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="text-xl md:text-2xl text-green-100 mb-12 font-medium"
+        >
           Follow the cue on the screen
-        </p>
+        </motion.p>
 
         {/* Breathing Circle */}
         <motion.div
-          className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-[#64CB81] to-[#096b17] shadow-2xl mb-8 flex items-center justify-center my-8"
+          className="w-56 h-56 md:w-72 md:h-72 rounded-full bg-gradient-to-br from-[#64CB81] to-[#096b17] shadow-2xl mb-12 flex items-center justify-center my-8"
           animate={{
-            scale: [1, 1.15, 1],
+            scale: getCircleScale(),
           }}
           transition={{
-            duration: 2,
-            repeat: Infinity,
+            duration: getCircleDuration(),
             ease: "easeInOut",
           }}
         >
           {/* Inner circle for depth */}
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-white/20 backdrop-blur-sm" />
+          <div className="w-36 h-36 md:w-48 md:h-48 rounded-full bg-white/20 backdrop-blur-sm" />
         </motion.div>
 
-        {/* Breathing Text - Animated */}
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={phaseIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.5 }}
-            className="text-xl md:text-2xl text-white font-semibold mb-8"
-          >
-            {breathingPhases[phaseIndex]}
-          </motion.p>
-        </AnimatePresence>
+        {/* Breathing Text - Prominent and Animated */}
+        <div className="h-24 flex items-center justify-center mb-8">
+          <AnimatePresence mode="wait">
+            {currentText && (
+              <motion.p
+                key={currentPhase}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className={`font-semibold ${
+                  isBreathingText
+                    ? 'text-4xl md:text-5xl lg:text-6xl text-[#FFFDBD]'
+                    : 'text-2xl md:text-3xl text-green-100'
+                }`}
+              >
+                {currentText}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Buttons */}
-        <div className="mt-12 space-y-4 flex flex-col items-center">
-          {/* Skip button - visible after 1s, hidden when Ready appears */}
+        <div className="mt-8 space-y-4 flex flex-col items-center">
+          {/* Skip button - visible after "Breathe in" appears, hidden when Ready appears */}
           {isSkipVisible && !isReadyVisible && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
             >
               <Button
                 onClick={handleSkip}
                 variant="outline"
-                className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/20 px-8 py-3 rounded-xl cursor-pointer"
+                className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/30 px-10 py-4 rounded-2xl cursor-pointer transition-all duration-700 ease-in-out text-base"
               >
                 Skip and continue
               </Button>
             </motion.div>
           )}
 
-          {/* Ready button - visible after 6s */}
+          {/* Ready button - visible after all phases complete */}
           {isReadyVisible && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, type: "spring" }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
             >
               <Button
                 onClick={handleReady}
                 size="lg"
-                className="bg-white text-[#096b17] hover:bg-gray-100 px-10 py-6 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 font-semibold cursor-pointer"
+                className="bg-white text-[#096b17] hover:bg-green-50 px-12 py-6 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-700 ease-in-out font-semibold cursor-pointer"
               >
                 I'm ready to begin
               </Button>
