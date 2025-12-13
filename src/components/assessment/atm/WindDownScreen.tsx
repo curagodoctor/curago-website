@@ -28,11 +28,11 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
   const breathingPhases = [
     { text: "Let us start", duration: 2000 },      // 0-2s
     { text: "Breathe in....", duration: 2500 },    // 2-4.5s
-    { text: "Breathe out....", duration: 2500 },   // 4.5-7s
-    { text: "", duration: 2000 },                  // 7-9s (pause)
-    { text: "Breathe in....", duration: 2500 },    // 9-11.5s
-    { text: "Breathe out....", duration: 2500 },   // 11.5-14s
-    { text: "", duration: 2000 },                  // 14-16s (pause)
+    { text: "Breathe out....", duration: 3000 },   // 4.5-7.5s
+    { text: "", duration: 2000 },                  // 7.5-9.5s (pause)
+    { text: "Breathe in....", duration: 2500 },    // 9.5-12s
+    { text: "Breathe out....", duration: 3000 },   // 12-15s
+    { text: "", duration: 2000 },                  // 15-17s (pause)
   ];
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
 
       // Abandon event if user leaves before completion
       const currentElapsed = Date.now() - startTime.current;
-      if (currentElapsed < 16000 && !completedRef.current) {
+      if (currentElapsed < 17000 && !completedRef.current) {
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
           event: 'winddown_abandon',
@@ -127,8 +127,8 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
 
   // Skip button appears after first "Breathe in" (after phase 0 "Let us start")
   const isSkipVisible = currentPhase >= 1;
-  // Ready button appears after all phases complete (16 seconds)
-  const isReadyVisible = elapsed >= 16000;
+  // Ready button appears after all phases complete (17 seconds)
+  const isReadyVisible = elapsed >= 17000;
 
   // Determine breathing circle animation based on current phase
   const getCircleScale = () => {
@@ -143,8 +143,10 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
   };
 
   const getCircleDuration = () => {
-    if (currentPhase === 1 || currentPhase === 4 || currentPhase === 2 || currentPhase === 5) {
-      return 2.5; // Breathe in/out duration
+    if (currentPhase === 1 || currentPhase === 4) {
+      return 2.5; // Breathe in duration
+    } else if (currentPhase === 2 || currentPhase === 5) {
+      return 3; // Breathe out duration
     }
     return 2; // Let us start or pause
   };
@@ -192,20 +194,24 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
         </motion.div>
 
         {/* Breathing Text - Prominent and Animated */}
-        <div className="h-24 flex items-center justify-center mb-8">
-          <AnimatePresence mode="wait">
+        <div className="h-24 flex items-center justify-center mb-8 relative w-full">
+          <AnimatePresence mode="popLayout">
             {currentText && (
               <motion.p
                 key={currentPhase}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.8, ease: "easeInOut" }}
-                className={`font-semibold ${
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6, ease: "easeInOut" }}
+                className={`font-semibold absolute whitespace-nowrap ${
                   isBreathingText
-                    ? 'text-4xl md:text-5xl lg:text-6xl text-white'
-                    : 'text-2xl md:text-3xl text-green-100'
+                    ? 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white'
+                    : 'text-xl sm:text-2xl md:text-3xl text-green-100'
                 }`}
+                style={isBreathingText ? {
+                  textShadow: '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3), 0 0 60px rgba(255, 255, 255, 0.2)',
+                  filter: 'blur(0.3px)'
+                } : {}}
               >
                 {currentText}
               </motion.p>
