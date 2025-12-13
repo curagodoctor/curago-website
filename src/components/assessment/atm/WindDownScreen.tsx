@@ -125,8 +125,8 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
     onComplete();
   };
 
-  // Skip button appears after first "Breathe in" (after phase 0 "Let us start")
-  const isSkipVisible = currentPhase >= 1;
+  // Skip button appears after first "Breathe in" is over (after phase 1 completes)
+  const isSkipVisible = currentPhase >= 2;
   // Ready button appears after all phases complete (13.8 seconds)
   const isReadyVisible = elapsed >= 13800;
 
