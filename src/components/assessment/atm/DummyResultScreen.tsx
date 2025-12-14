@@ -185,8 +185,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
   // GTM tracking state
   const eventIdRef = useRef(simpleHash(JSON.stringify(answers) + Date.now()));
   const startTimeRef = useRef(now());
-  const scrollTrackedRef = useRef(new Set<number>());
-  const lastHeartbeatRef = useRef(now());
 
   // Form and popup states
   const [showFormPopup, setShowFormPopup] = useState(false); // Always false for dummy - no form popup
@@ -210,7 +208,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
 
   // GTM tracking effects
   useEffect(() => {
-    // ✅ Test Finish Event - Comprehensive payload with assessment data (₹10 value)
+    // ✅ Test Finish Event - Comprehensive payload with assessment data (₹0 value for preview)
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       event: 'dummy_done',
@@ -240,46 +238,14 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
     });
     console.log('✅ dummy_done event pushed to dataLayer (ATM Preview, ₹0) with full results');
 
-    // Heartbeat tracking
-    const heartbeatInterval = setInterval(() => {
-      dlPush({
-        event: 'atm_results_heartbeat',
-        atm_event_id: eventIdRef.current,
-        elapsed_s: secs(now() - startTimeRef.current),
-      });
-      lastHeartbeatRef.current = now();
-    }, 30000);
+    // No heartbeat or scroll tracking for dummy/preview test
 
-    // Scroll tracking
-    const handleScroll = () => {
-      const scrollPct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
-      const milestones = [25, 50, 75, 90];
-      
-      for (const milestone of milestones) {
-        if (scrollPct >= milestone && !scrollTrackedRef.current.has(milestone)) {
-          scrollTrackedRef.current.add(milestone);
-          dlPush({
-            event: 'atm_results_scroll',
-            atm_event_id: eventIdRef.current,
-            scroll_pct: milestone,
-          });
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-
-    // Cleanup
+    // Cleanup - track time spent on unmount
     return () => {
-      clearInterval(heartbeatInterval);
-      window.removeEventListener('scroll', handleScroll);
-      
-      // Time spent tracking
       dlPush({
         event: 'atm_results_time_spent',
         atm_event_id: eventIdRef.current,
         total_time_s: secs(now() - startTimeRef.current),
-        max_scroll_pct: Math.max(...Array.from(scrollTrackedRef.current), 0),
       });
     };
   }, [result.pattern, result.confidence]);
@@ -342,30 +308,14 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
       setShowFormPopup(false);
       setFormPopupClosedTime(Date.now());
 
-      // Send webhook with form data and ATM results - FIRES FIRST
+      // Send webhook with form data - FIRES FIRST (Dummy webhook with simplified payload)
       try {
         const webhookPayload = {
-          action: "atm_assessment",
-          contact: {
-            name: formData.name,
-            whatsapp: formData.whatsapp.startsWith('+91') ? formData.whatsapp : `+91${formData.whatsapp}`,
-            email: formData.email || ""
-          },
-          assessment: {
-            type: "ATM",
-            pattern: result.pattern,
-            confidence: result.confidence,
-            answers: answers,
-            explanation: details.explanation,
-            neurological: details.neurological,
-            impact: details.impact,
-            microAction: details.microAction,
-            cta: details.cta
-          },
-          timestamp: new Date().toISOString()
+          name: formData.name,
+          phoneNumber: formData.whatsapp.startsWith('+91') ? formData.whatsapp : `+91${formData.whatsapp}`
         };
 
-        await fetch('https://server.wylto.com/webhook/vSO7svt3bkRXqvZWUa', {
+        await fetch('https://server.wylto.com/webhook/Hacozq964ffmXsqE0y', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -373,9 +323,9 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
           body: JSON.stringify(webhookPayload)
         });
 
-        console.log('✅ ATM assessment webhook sent successfully');
+        console.log('✅ Dummy assessment webhook sent successfully');
       } catch (error) {
-        console.error('❌ Failed to send ATM assessment webhook:', error);
+        console.error('❌ Failed to send dummy assessment webhook:', error);
       }
 
       // Send to Google Sheets and trigger email (email is now required)

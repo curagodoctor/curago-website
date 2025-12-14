@@ -627,9 +627,13 @@ export default function ResultScreen({ answers, onRetake }: ResultScreenProps) {
                 </div>
 
                 <p className="text-sm text-gray-600 mb-3 leading-snug">
-                  Your test is complete and your report is ready.<br />
-                  To keep it secure and send it privately to you, we need to link your result to your verified WhatsApp number.<br /><br />
-                  ONLY ENTER YOUR DETAILS IF YOU GENUINELY WANT TO UNDERSTAND YOUR RESULTS AND TAKE THE NEXT STEP TOWARD CLARITY.
+                  Your assessment is complete and your personal report is ready.
+                  <br /><br />
+                  To deliver your detailed result securely and privately, we link it to your WhatsApp number and email. This allows us to send you your complete PDF report and ensures you can access it again anytime.
+                  <br /><br />
+                  <span className="font-semibold">Your information is safe with us</span>
+                  <br /><br />
+                  Enter your details below to unlock your full result.
                 </p>
 
                 <form onSubmit={handleFormSubmit} className="space-y-3">
