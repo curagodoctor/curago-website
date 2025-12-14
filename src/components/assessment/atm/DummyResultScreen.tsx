@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Button } from '../../ui/button';
 import { Card } from '../../ui/card';
 import { Badge } from '../../ui/badge';
@@ -8,46 +8,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Zap, Brain, Shield, Target, Clock, AlertTriangle, MessageCircle, X, Phone, User, Mail } from 'lucide-react';
 import { FloatingButtons } from '../../FloatingButtons';
 import { sendAtmResultsToGoogleSheets } from '../../../utils/googleSheets';
-
-// ---------- GTM tracking helpers ----------
-function simpleHash(str: string) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
-  const base36 = Math.abs(h).toString(36);
-  return base36.slice(0, 6).padEnd(6, '0');
-}
-const now = () => Date.now();
-const secs = (ms: number) => Math.round(ms / 1000);
-
-const dlPush = (obj: Record<string, any>) => {
-  try {
-    // GTM DataLayer
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    (window as any).dataLayer.push({
-      page_path: window.location.pathname + window.location.search + window.location.hash,
-      timestamp: new Date().toISOString(),
-      ...obj,
-    });
-    
-    // Meta Pixel equivalent
-    if ((window as any).fbq && obj.event) {
-      const eventName = obj.event.replace('atm_results_', '').replace('atm_', '');
-      const metaEventName = `ATM_${eventName.charAt(0).toUpperCase() + eventName.slice(1)}`;
-      
-      (window as any).fbq('trackCustom', metaEventName, {
-        atm_event_id: obj.atm_event_id,
-        event_type: obj.event,
-        page_path: window.location.pathname,
-        timestamp: new Date().toISOString(),
-        ...obj,
-      });
-      
-      console.log('✅ Meta Pixel: ATM event sent -', metaEventName, obj.atm_event_id);
-    }
-  } catch (e) {
-    console.warn('❌ ATM tracking error:', e);
-  }
-};
 
 interface ResultScreenProps {
   answers: AtmAnswers;
@@ -182,10 +142,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
   const details = patternDetails[result.pattern];
   const { Icon, color } = details;
 
-  // GTM tracking state
-  const eventIdRef = useRef(simpleHash(JSON.stringify(answers) + Date.now()));
-  const startTimeRef = useRef(now());
-
   // Form and popup states
   const [showFormPopup, setShowFormPopup] = useState(false); // Always false for dummy - no form popup
   const [showClarityCallPopup, setShowClarityCallPopup] = useState(false);
@@ -206,49 +162,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
-  // GTM tracking effects
-  useEffect(() => {
-    // ✅ Test Finish Event - Comprehensive payload with assessment data (₹0 value for preview)
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: 'dummy_done',
-      test_type: 'atm_preview',
-      proxy_value: 0.00,
-      currency: 'INR',
-      // REQUIRED: Unique event ID for deduplication
-      event_id: eventIdRef.current,
-      // REQUIRED FOR HIGH MATCH RATE: User data for CAPI matching (will be populated after form submission)
-      user_data: {
-        email_address: '',
-        phone_number: '',
-        external_id: eventIdRef.current
-      },
-      // Assessment Results
-      atm_event_id: eventIdRef.current,
-      pattern: result.pattern,
-      confidence: result.confidence,
-      // Detailed Information
-      explanation: details.explanation,
-      neurological: details.neurological,
-      impact: details.impact.join(', '),
-      micro_action_title: details.microAction.title,
-      micro_action_description: details.microAction.description,
-      page_path: window.location.pathname,
-      timestamp: new Date().toISOString(),
-    });
-    console.log('✅ dummy_done event pushed to dataLayer (ATM Preview, ₹0) with full results');
-
-    // No heartbeat or scroll tracking for dummy/preview test
-
-    // Cleanup - track time spent on unmount
-    return () => {
-      dlPush({
-        event: 'atm_results_time_spent',
-        atm_event_id: eventIdRef.current,
-        total_time_s: secs(now() - startTimeRef.current),
-      });
-    };
-  }, [result.pattern, result.confidence]);
+  // No tracking for dummy/preview test
 
   // Show first popup after 0.5 seconds
   useEffect(() => {
@@ -330,7 +244,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
 
       // Send to Google Sheets and trigger email (email is now required)
       sendAtmResultsToGoogleSheets({
-        testType: 'atm_tool',
+        testType: 'atm_preview',
         name: formData.name,
         email: formData.email,
         phoneNumber: formData.whatsapp.startsWith('+91') ? formData.whatsapp : `+91${formData.whatsapp}`,
@@ -341,7 +255,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
         impact: details.impact,
         microActionTitle: details.microAction.title,
         microActionDescription: details.microAction.description,
-        eventId: eventIdRef.current,
+        eventId: Date.now().toString(),
       }).catch(err => {
         console.error('❌ Failed to send to Google Sheets:', err);
         // Don't block user experience if Google Sheets fails
@@ -381,7 +295,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
         {onUpgradeToFull && (
           <Button
             onClick={() => {
-              dlPush({ event: 'dummy_upgrade_click', atm_event_id: eventIdRef.current });
               trackButtonClick('Upgrade to Full Assessment', 'cta', 'dummy_results_header');
               onUpgradeToFull();
             }}
@@ -393,7 +306,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
         )}
         <Button
           onClick={() => {
-            dlPush({ event: 'dummy_results_retake_click', atm_event_id: eventIdRef.current });
             trackButtonClick('Retake Preview', 'cta', 'dummy_results_header');
             onRetake();
           }}
@@ -510,7 +422,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
               <Button
                 onClick={() => {
-                  dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Free Clarity Call' });
                   trackButtonClick('Book Free Clarity Call', 'cta', 'atm_results_bottom');
                   window.location.href = '/contact';
                 }}
@@ -520,7 +431,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
               </Button>
               <Button
                 onClick={() => {
-                  dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Chat Now on WhatsApp' });
                   trackButtonClick('Chat Now on WhatsApp', 'cta', 'atm_results_bottom');
                   window.open('https://wa.me/918062179639?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
                 }}
@@ -531,7 +441,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
               </Button>
               <Button
                 onClick={() => {
-                  dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Our Mental Health Team' });
                   trackButtonClick('Our Mental Health Team', 'cta', 'atm_results_bottom');
                   const el = document.getElementById('team');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -543,7 +452,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
               </Button>
               <Button
                 onClick={() => {
-                  dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Consultation Now' });
                   trackButtonClick('Book Consultation Now', 'cta', 'atm_results_bottom');
                   const el = document.getElementById('home');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -711,21 +619,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                 <div className="space-y-3 lg:space-y-4">
                   <Button
                     onClick={() => {
-                      // ✅ Clarity Call CTA Click (₹350 value intent)
-                      window.dataLayer = window.dataLayer || [];
-                      window.dataLayer.push({
-                        event: 'contact_form_submission',
-                        form_type: 'clarity_call_cta_click',
-                        proxy_value: 350.00,
-                        currency: 'INR',
-                        page_path: window.location.pathname,
-                        source: 'atm_clarity_popup',
-                        atm_event_id: eventIdRef.current,
-                        pattern: result.pattern,
-                      });
-                      console.log('✅ contact_form_submission event (CTA click) pushed to dataLayer (₹350)');
-
-                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Free Clarity Call (popup)' });
                       trackButtonClick('Book Free Clarity Call', 'popup', 'atm_results_clarity_popup');
                       window.location.href = '/contact';
                       setShowClarityCallPopup(false);
@@ -738,7 +631,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
 
                   <Button
                     onClick={() => {
-                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Mental Health Team (popup)' });
                       trackButtonClick('Mental Health Team', 'popup', 'atm_results_clarity_popup');
                       window.location.href = '/team';
                       setShowClarityCallPopup(false);
@@ -750,7 +642,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
 
                   <Button
                     onClick={() => {
-                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Appointment (popup)' });
                       trackButtonClick('Book Appointment', 'popup', 'atm_results_clarity_popup');
                       window.location.href = '/contact';
                       setShowClarityCallPopup(false);
@@ -762,7 +653,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
 
                   <Button
                     onClick={() => {
-                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Chat on WhatsApp (popup)' });
                       trackButtonClick('Chat on WhatsApp', 'popup', 'atm_results_clarity_popup');
                       window.open('https://wa.me/918062179639?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
                       setShowClarityCallPopup(false);
