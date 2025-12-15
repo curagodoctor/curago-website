@@ -52,13 +52,13 @@ export function Footer() {
             <h4 className="mb-4" style={{ color: '#096b17' }}>Contact Us</h4>
             <ul className="space-y-2.5 text-sm" style={{ color: '#096b17', opacity: 0.8 }}>
               <li>
-                <a href="tel:+918062179639" onClick={() => trackPhoneClick('footer')} className="hover:opacity-100 transition-opacity">
-                  +918062179639
+                <a href="tel:+917021227203" onClick={() => trackPhoneClick('footer')} className="hover:opacity-100 transition-opacity">
+                  +917021227203
                 </a>
               </li>
               <li>
                 <button onClick={handleWhatsAppClick} className="hover:opacity-100 transition-opacity text-left">
-                  WhatsApp: +918062179639
+                  WhatsApp: +917021227203
                 </button>
               </li>
               <li>

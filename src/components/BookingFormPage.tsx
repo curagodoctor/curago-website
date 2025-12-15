@@ -86,7 +86,7 @@ export function BookingFormPage() {
             <p className="text-sm text-green-100 mb-2">Need help immediately?</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a
-                href="https://wa.me/918062179639"
+                href="https://wa.me/917021227203"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20BA5A] text-white px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105"
@@ -97,7 +97,7 @@ export function BookingFormPage() {
                 Chat on WhatsApp
               </a>
               <a
-                href="tel:+918062179639"
+                href="tel:+917021227203"
                 className="inline-flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 border border-white/30"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

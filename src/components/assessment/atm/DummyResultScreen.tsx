@@ -143,14 +143,17 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
   const { Icon, color } = details;
 
   // Form and popup states
-  const [showFormPopup, setShowFormPopup] = useState(false); // Always false for dummy - no form popup
+  const [showLoadingAnimation, setShowLoadingAnimation] = useState(true);
+  const [showFormPopup, setShowFormPopup] = useState(false);
+  const [showAcknowledgmentPopup, setShowAcknowledgmentPopup] = useState(false);
   const [showClarityCallPopup, setShowClarityCallPopup] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
-  const [formPopupClosedTime, setFormPopupClosedTime] = useState<number | null>(null);
+  const [acknowledgmentClosedTime, setAcknowledgmentClosedTime] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     whatsapp: '',
-    email: ''
+    email: '',
+    callbackTime: ''
   });
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
@@ -172,26 +175,49 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
     return () => clearTimeout(timer);
   }, []);
 
-  // Show clarity call popup 8 seconds after first popup is closed (or after 8 seconds if not opened)
+  // Hide loading animation after 1.5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoadingAnimation(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Show first popup after 2.5 seconds (1.5s animation + 1s delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowFormPopup(true);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Show acknowledgment popup for 2 seconds after form submission
+  useEffect(() => {
+    if (isFormSubmitted && !showAcknowledgmentPopup) {
+      setShowAcknowledgmentPopup(true);
+      const timer = setTimeout(() => {
+        setShowAcknowledgmentPopup(false);
+        setAcknowledgmentClosedTime(Date.now());
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFormSubmitted, showAcknowledgmentPopup]);
+
+  // Show clarity call popup 10 seconds after acknowledgment closes
   useEffect(() => {
     let timer: NodeJS.Timeout;
 
-    if (formPopupClosedTime) {
-      // If form popup was closed, start timer from that moment
+    if (acknowledgmentClosedTime) {
+      // If acknowledgment was shown and closed, start timer from that moment
       timer = setTimeout(() => {
         setShowClarityCallPopup(true);
-      }, 8000);
-    } else {
-      // If form popup was never opened, show after 8 seconds total
-      timer = setTimeout(() => {
-        if (!showFormPopup && !isFormSubmitted) {
-          setShowClarityCallPopup(true);
-        }
-      }, 8000);
+      }, 10000);
     }
 
-    return () => clearTimeout(timer);
-  }, [formPopupClosedTime, showFormPopup, isFormSubmitted]);
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [acknowledgmentClosedTime]);
 
   const validateForm = () => {
     const errors: {[key: string]: string} = {};
@@ -206,10 +232,14 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
       errors.whatsapp = 'Please enter a valid 10-digit mobile number';
     }
 
-    // Email is optional, but validate format if provided
-    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    // Email is now required
+    if (!formData.email.trim()) {
+      errors.email = 'Email address is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
     }
+
+    // Callback time is optional, no validation needed
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -220,7 +250,6 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
     if (validateForm()) {
       setIsFormSubmitted(true);
       setShowFormPopup(false);
-      setFormPopupClosedTime(Date.now());
 
       // Send webhook with form data - FIRES FIRST (Dummy webhook with simplified payload)
       try {
@@ -290,6 +319,40 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
   };
 
   return (
+    <>
+      {/* Loading Animation */}
+      {showLoadingAnimation && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b]"
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-center"
+          >
+            <div className="mb-4">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="w-16 h-16 border-4 border-white border-t-transparent rounded-full mx-auto"
+              />
+            </div>
+            <motion.p
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="text-xl md:text-2xl text-white font-medium"
+            >
+              Analyzing the responses...
+            </motion.p>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {!showLoadingAnimation && (
     <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] pt-20">
       <header className="container mx-auto px-4 sm:px-6 py-4 flex justify-end items-center gap-3">
         {onUpgradeToFull && (
@@ -432,7 +495,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
               <Button
                 onClick={() => {
                   trackButtonClick('Chat Now on WhatsApp', 'cta', 'atm_results_bottom');
-                  window.open('https://wa.me/918062179639?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
+                  window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
                 }}
                 className="w-full h-12 sm:h-14 rounded-xl bg-white text-[#096b17] border border-white/20 hover:bg-gray-50 transition-all duration-300 font-semibold text-sm sm:text-base"
               >
@@ -473,7 +536,8 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(12px)' }}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -482,19 +546,27 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
               className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
             >
               <div className="p-4 sm:p-5">
-                <div className="mb-3">
-                  <h3 className="text-xl font-semibold text-gray-800">Unlock Your Full Analysis</h3>
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-gray-800">Your Clinical Analysis Is Ready</h3>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-3 leading-snug">
-                  Your assessment is complete and your personal report is ready.
-                  <br /><br />
-                  To deliver your detailed result securely and privately, we link it to your WhatsApp number and email. This allows us to send you your complete PDF report and ensures you can access it again anytime.
-                  <br /><br />
-                  <span className="font-semibold">Your information is safe with us</span>
-                  <br /><br />
-                  Enter your details below to unlock your full result.
-                </p>
+                <div className="text-sm text-gray-600 mb-4 leading-relaxed space-y-4">
+                  <p>Your assessment has been completed and a detailed analysis has been generated.</p>
+
+                  <p>Because these results involve psychological and behavioral patterns, CuraGo does not release them as a standalone report. Interpreting such findings without context can lead to misunderstanding or unnecessary distress.</p>
+
+                  <p>As part of our medical protocol, a CuraGo Care Expert reviews the results with you personally to ensure they are explained accurately and responsibly.</p>
+
+                  <p>To proceed, please verify your WhatsApp number and email. This allows us to:</p>
+
+                  <ol className="list-decimal pl-5 space-y-2">
+                    <li>Securely link your report to you</li>
+                    <li>Schedule a brief clinical callback</li>
+                    <li>Review your results and clarify the appropriate next steps</li>
+                  </ol>
+
+                  <p>Your information is confidential and handled strictly as part of your care.</p>
+                </div>
 
                 <form onSubmit={handleFormSubmit} className="space-y-3">
                   {/* Name Field */}
@@ -548,7 +620,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                     <div className="flex items-center mb-2">
                       <Mail className="w-4 h-4 text-gray-500 mr-2" />
                       <label className="text-sm font-medium text-gray-700">
-                        Email Address
+                        Email Address *
                       </label>
                     </div>
                     <input
@@ -561,6 +633,26 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                       placeholder="Enter your email address"
                     />
                     {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
+                  </div>
+
+                  {/* Preferred Callback Time Field */}
+                  <div>
+                    <div className="flex items-center mb-2">
+                      <Clock className="w-4 h-4 text-gray-500 mr-2" />
+                      <label className="text-sm font-medium text-gray-700">
+                        Preferred Callback Time
+                      </label>
+                    </div>
+                    <input
+                      type="text"
+                      value={formData.callbackTime}
+                      onChange={(e) => handleInputChange('callbackTime', e.target.value)}
+                      className={`w-full px-4 py-3 border focus:ring-2 focus:ring-[#64CB81] focus:border-[#64CB81] outline-none transition-colors ${
+                        formErrors.callbackTime ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="e.g., Morning 10-12, Evening 5-7"
+                    />
+                    {formErrors.callbackTime && <p className="text-red-500 text-sm mt-1">{formErrors.callbackTime}</p>}
                   </div>
 
                   <Button
@@ -579,11 +671,12 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
       {/* Clarity Call Popup - Responsive Design */}
       <AnimatePresence>
         {showClarityCallPopup && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(12px)' }}
             onClick={(e) => e.target === e.currentTarget && setShowClarityCallPopup(false)}
           >
             <motion.div
@@ -654,7 +747,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                   <Button
                     onClick={() => {
                       trackButtonClick('Chat on WhatsApp', 'popup', 'atm_results_clarity_popup');
-                      window.open('https://wa.me/918062179639?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
+                      window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
                       setShowClarityCallPopup(false);
                     }}
                     className="w-full py-3 lg:py-4 rounded-lg font-medium text-sm lg:text-base bg-white border border-gray-300 text-gray-800 cursor-pointer hover:bg-gray-50 transition-all duration-300"
@@ -673,7 +766,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                     <Button
                       onClick={() => {
                         trackButtonClick('Chat Now on WhatsApp', 'popup', 'atm_results_clarity_popup');
-                        window.open('https://wa.me/918062179639?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
+                        window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
                         setShowClarityCallPopup(false);
                       }}
                       variant="outline"
@@ -685,7 +778,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                     <Button
                       onClick={() => {
                         trackPhoneClick('atm_results_clarity_popup');
-                        window.open('tel:+918062179639', '_self');
+                        window.open('tel:+917021227203', '_self');
                         setShowClarityCallPopup(false);
                       }}
                       variant="outline"
@@ -701,9 +794,38 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
           </motion.div>
         )}
       </AnimatePresence>
-      
+
+      {/* Acknowledgment Popup */}
+      <AnimatePresence>
+        {showAcknowledgmentPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(12px)' }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 text-center"
+            >
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Thank You</h3>
+              <div className="space-y-3 text-gray-700">
+                <p>You will receive the <strong>ATM Tool Analysis Report PDF</strong> on your mail/WhatsApp number.</p>
+                <p>Sit tight and our CuraGo Care Expert will call you at your preferred time.</p>
+                <p className="text-sm italic mt-4">*If you haven't received the PDF, do reach out to us</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Floating Buttons */}
       <FloatingButtons onBookNow={handleBookNow} hideButtons={showFormPopup || showClarityCallPopup} />
     </div>
+      )}
+    </>
   );
 }

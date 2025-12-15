@@ -152,8 +152,8 @@ export function TermsOfUse({ trigger }: TermsOfUseProps) {
               <h3 className="text-lg mb-3 text-gray-900">Contact:</h3>
               <ul className="space-y-1">
                 <li>📧 <a href="mailto:help@curago.in" className="text-[#096b17] hover:underline">help@curago.in</a></li>
-                <li>📞 Phone: +918062179639</li>
-                <li>💬 WhatsApp: +918062179639</li>
+                <li>📞 Phone: +917021227203</li>
+                <li>💬 WhatsApp: +917021227203</li>
                 <li>🏢 Curago Health Networking Private Limited</li>
                 <li>2/82 B, Thangavel Nagar, Alagapuram, Salem – 636016</li>
               </ul>

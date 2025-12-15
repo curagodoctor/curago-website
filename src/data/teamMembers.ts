@@ -27,6 +27,23 @@ export const teamMembers: TeamMember[] = [
     image: "/image.png",
   },
   {
+    name: "Dr. Sucheta Saha",
+    designation: "Consultant Psychiatrist",
+    institute: "LGBRIMH, Tezpur | AIIMS Rishikesh",
+    qualification: "MBBS, MD Psychiatry",
+    expertise: [
+      "General Psychiatry",
+      "Anxiety Disorder",
+      "Burnout Management",
+      "Deaddiction",
+      "Child and Adolescent Psychiatry",
+      "Neuropsychiatry",
+    ],
+    languages: ["English", "Bengali", "Assamese", "Kannada"],
+    registrationNumber: "MCI-01234",
+    image: "/Dr Sucheta Saha.jpg",
+  },
+  {
     name: "Dr. Ekaansh Sharmad",
     designation: "Consultant Psychiatrist",
     institute: "RMCH, Bareilly | IHBAS",
@@ -44,7 +61,6 @@ export const teamMembers: TeamMember[] = [
     registrationNumber: "MCI-23456",
     image: "/image1.png",
   },
- 
   {
     name: "Dr. Harshali Sunil More",
     designation: "Consultant Psychiatrist",
@@ -116,22 +132,5 @@ export const teamMembers: TeamMember[] = [
     languages: ["Hindi", "Marathi", "English"],
     registrationNumber: "MCI-90123",
     image: "/yeshwant.png",
-  },
-  {
-    name: "Dr. Sucheta Saha",
-    designation: "Consultant Psychiatrist",
-    institute: "LGBRIMH, Tezpur | AIIMS Rishikesh",
-    qualification: "MBBS, MD Psychiatry",
-    expertise: [
-      "General Psychiatry",
-      "Anxiety Disorder",
-      "Burnout Management",
-      "Deaddiction",
-      "Child and Adolescent Psychiatry",
-      "Neuropsychiatry",
-    ],
-    languages: ["English", "Bengali", "Assamese", "Kannada"],
-    registrationNumber: "MCI-01234",
-    image: "/Dr Sucheta Saha.jpg",
   },
 ];

@@ -74,8 +74,8 @@ export function WebsiteDisclaimer({ trigger }: WebsiteDisclaimerProps) {
               </p>
               <ul className="list-none space-y-1 mt-2">
                 <li>📧 Email: help@curago.in</li>
-                <li>📞 Phone: +918062179639</li>
-                <li>💬 WhatsApp: +918062179639</li>
+                <li>📞 Phone: +917021227203</li>
+                <li>💬 WhatsApp: +917021227203</li>
               </ul>
             </section>
           </div>
