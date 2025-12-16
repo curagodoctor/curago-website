@@ -162,9 +162,9 @@ export default function WindDownScreen({ onComplete, onSkip }: WindDownScreenPro
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: showTitle ? 1 : 0, y: showTitle ? 0 : -20 }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="text-4xl md:text-5xl lg:text-6xl text-white font-bold mb-6 relative z-20"
+          className="text-3xl md:text-4xl lg:text-5xl text-white font-bold mb-6 relative z-20"
         >
-          It is our <span className="font-extrabold">medical recommendation</span> that you take a short wind down
+          Wind down for accurate results
         </motion.h1>
 
         {/* Instruction - Appears Second */}

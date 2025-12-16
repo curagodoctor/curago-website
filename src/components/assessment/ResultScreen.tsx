@@ -582,25 +582,21 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
     return () => clearTimeout(timer);
   }, []);
 
-  // Show acknowledgment popup for 2 seconds after form submission
+  // Show acknowledgment popup after form submission (no auto-close)
   useEffect(() => {
-    if (isFormSubmitted && !showAcknowledgmentPopup) {
+    if (isFormSubmitted && !showAcknowledgmentPopup && !acknowledgmentClosedTime) {
       setShowAcknowledgmentPopup(true);
-      const timer = setTimeout(() => {
-        setShowAcknowledgmentPopup(false);
-        setAcknowledgmentClosedTime(Date.now());
-      }, 2000);
-      return () => clearTimeout(timer);
     }
-  }, [isFormSubmitted, showAcknowledgmentPopup]);
+  }, [isFormSubmitted]);
 
-  // Show clarity call popup 10 seconds after acknowledgment closes
+  // Show clarity call popup 10 seconds after form submission
   useEffect(() => {
     let timer: NodeJS.Timeout;
 
-    if (acknowledgmentClosedTime) {
-      // If acknowledgment was shown and closed, start timer from that moment
+    if (isFormSubmitted) {
+      // Start timer immediately when form is submitted
       timer = setTimeout(() => {
+        setShowAcknowledgmentPopup(false); // Close acknowledgement popup if still open
         setShowClarityCallPopup(true);
       }, 10000);
     }
@@ -608,7 +604,7 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [acknowledgmentClosedTime]);
+  }, [isFormSubmitted]);
 
   // ---- Referral code/link ----
   const referralCode = useMemo(() => {
@@ -1199,8 +1195,19 @@ export default function ResultScreen({ scores, userInfo, onRetake, answers }: Re
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 text-center"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 text-center relative"
           >
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowAcknowledgmentPopup(false);
+                setAcknowledgmentClosedTime(Date.now());
+              }}
+              className="absolute top-4 right-4 rounded-full w-8 h-8 p-0 border-gray-200 hover:bg-gray-50"
+            >
+              <X className="w-4 h-4" />
+            </Button>
             <h3 className="text-2xl font-bold text-gray-800 mb-4">Thank You</h3>
             <div className="space-y-3 text-gray-700">
               <p>You will receive the <strong>AURA Index Analysis Report PDF</strong> on your mail/WhatsApp number.</p>
