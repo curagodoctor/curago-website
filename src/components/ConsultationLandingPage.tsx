@@ -177,7 +177,7 @@ export default function ConsultationLandingPage() {
             <div className="text-center">
               <a
                 onClick={handleATMRedirect}
-                className="text-sm text-gray-600 hover:text-[#096b17] underline cursor-pointer transition-colors"
+                className="text-base md:text-lg text-gray-700 hover:text-[#096b17] underline cursor-pointer transition-colors font-medium"
               >
                 Not sure yet? Take a quick anxiety self-assessment
               </a>
