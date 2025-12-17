@@ -87,7 +87,7 @@ export default function LandingPage({ onStart, onNavigateToWindDown, onNavigateT
                 </Button>
 
                 <Button
-                  onClick={handleFollowRecommendation}
+                  onClick={() => setShowConsentPopup(true)}
                   size="lg"
                   className="w-full sm:w-auto bg-white hover:bg-[#FFFDBD] text-[#096b17] px-6 sm:px-8 h-12 sm:h-14 rounded-2xl font-semibold transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl border-2 border-white/50 text-sm sm:text-base"
                 >

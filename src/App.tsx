@@ -48,7 +48,7 @@ const getPathname = () =>
 
 const isAuraPath = (p: string) => p.startsWith('/aura-rise-index');
 const isAtmPath = (p: string) => p.startsWith('/atm');
-const isConsultationPath = (p: string) => p === '/bookconsultation' || p === '/consultation';
+const isConsultationPath = (p: string) => p === '/bookconsultation' || p === '/paymentSuccess';
 
 /** =========================
  *  Referral-safe URL helpers
@@ -238,17 +238,17 @@ export default function App() {
         return;
       }
 
-      // Consultation landing page route
-      if (pathname === '/consultation') {
+      // Book consultation landing page route
+      if (pathname === '/bookconsultation') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('Consultation', 'CuraGo - Talk to an Anxiety Specialist');
+        trackPageView('Book Consultation', 'CuraGo - Talk to an Anxiety Specialist');
         return;
       }
 
-      // Book consultation thank you route
-      if (pathname === '/bookconsultation') {
+      // Payment success thank you route
+      if (pathname === '/paymentSuccess') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('Book Consultation', 'CuraGo - Booking Confirmed');
+        trackPageView('Payment Success', 'CuraGo - Booking Confirmed');
         return;
       }
 
@@ -274,7 +274,7 @@ export default function App() {
   const navigateToBooking = () => {
     trackButtonClick('Book Now', 'navigation', window.location.hash);
     // Redirect to consultation landing page with Razorpay payment
-    window.location.href = buildUrl('/consultation');
+    window.location.href = buildUrl('/bookconsultation');
   };
 
   const handleNavigate = (page: string) => {
@@ -567,8 +567,8 @@ export default function App() {
     return (
       <div className="min-h-screen bg-white scroll-smooth">
         <Toaster />
-        {pathname === '/consultation' && <ConsultationLandingPage />}
-        {pathname === '/bookconsultation' && <ConsultationThankYouPage />}
+        {pathname === '/bookconsultation' && <ConsultationLandingPage />}
+        {pathname === '/paymentSuccess' && <ConsultationThankYouPage />}
       </div>
     );
   }

@@ -30,7 +30,7 @@ export default function ConsultationLandingPage() {
   };
 
   return (
-    <section className="min-h-screen pt-32 pb-16 bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] relative overflow-hidden">
+    <section className="min-h-screen pt-24 pb-16 bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0">
         <motion.div
@@ -68,13 +68,13 @@ export default function ConsultationLandingPage() {
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-12"
+          className="text-center mb-8"
         >
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
             Talk to an Anxiety Specialist.<br />Get Clarity in One Session.
           </h1>
 
-          <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-green-100 max-w-3xl mx-auto leading-relaxed">
             If anxiety is affecting your daily life, this session helps you understand what's happening and what to do next.
           </p>
         </motion.div>
@@ -88,31 +88,31 @@ export default function ConsultationLandingPage() {
           style={{ backgroundColor: '#FFFDBD' }}
         >
           {/* What We Offer */}
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold mb-6 text-center" style={{ color: '#096b17' }}>
+          <div className="mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold mb-5 text-center" style={{ color: '#096b17' }}>
               What We Offer
             </h2>
 
-            <div className="space-y-4 mb-8">
-              <div className="flex items-start gap-4">
-                <Video className="w-6 h-6 flex-shrink-0 mt-1" style={{ color: '#096b17' }} />
-                <p className="text-lg text-gray-800">
+            <div className="space-y-3 mb-6">
+              <div className="flex items-start gap-3">
+                <Video className="w-5 h-5 flex-shrink-0 mt-1" style={{ color: '#096b17' }} />
+                <p className="text-base text-gray-800">
                   <strong>45-minute 1-on-1 video consultation</strong>
                 </p>
               </div>
 
-              <div className="flex items-start gap-4">
-                <CheckCircle className="w-6 h-6 flex-shrink-0 mt-1" style={{ color: '#096b17' }} />
-                <p className="text-lg text-gray-800">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 flex-shrink-0 mt-1" style={{ color: '#096b17' }} />
+                <p className="text-base text-gray-800">
                   <strong>Conducted by a qualified mental health professional</strong>
                 </p>
               </div>
 
-              <div className="flex items-start gap-4">
-                <TrendingUp className="w-6 h-6 flex-shrink-0 mt-1" style={{ color: '#096b17' }} />
-                <div className="text-lg text-gray-800">
-                  <p className="font-semibold mb-2">Understand:</p>
-                  <ul className="list-disc list-inside space-y-1 ml-4">
+              <div className="flex items-start gap-3">
+                <TrendingUp className="w-5 h-5 flex-shrink-0 mt-1" style={{ color: '#096b17' }} />
+                <div className="text-base text-gray-800">
+                  <p className="font-semibold mb-1">Understand:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-4 text-sm">
                     <li>Why your anxiety keeps recurring</li>
                     <li>Whether this needs treatment or not</li>
                     <li>Clear next steps (therapy, lifestyle, or reassurance)</li>
@@ -122,38 +122,45 @@ export default function ConsultationLandingPage() {
             </div>
 
             {/* Feature Icons */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-white/80 rounded-xl p-5 border-2 border-[#096b17]/20 text-center">
-                <Shield className="w-8 h-8 mx-auto mb-2" style={{ color: '#096b17' }} />
-                <p className="font-semibold text-gray-800">Private & Confidential</p>
+            <div className="flex flex-row gap-3 mb-6 overflow-x-auto">
+              <div className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20 text-center flex-1 min-w-[140px]">
+                <Shield className="w-6 h-6 mx-auto mb-1" style={{ color: '#096b17' }} />
+                <p className="font-semibold text-gray-800 text-xs md:text-sm">Private & Confidential</p>
               </div>
-              <div className="bg-white/80 rounded-xl p-5 border-2 border-[#096b17]/20 text-center">
-                <Clock className="w-8 h-8 mx-auto mb-2" style={{ color: '#096b17' }} />
-                <p className="font-semibold text-gray-800">Same Day Consultations</p>
+              <div className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20 text-center flex-1 min-w-[140px]">
+                <Clock className="w-6 h-6 mx-auto mb-1" style={{ color: '#096b17' }} />
+                <p className="font-semibold text-gray-800 text-xs md:text-sm">Same Day Consultations</p>
               </div>
-              <div className="bg-white/80 rounded-xl p-5 border-2 border-[#096b17]/20 text-center">
-                <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: '#096b17' }} />
-                <p className="font-semibold text-gray-800">Evidence-Based Approach</p>
+              <div className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20 text-center flex-1 min-w-[140px]">
+                <Calendar className="w-6 h-6 mx-auto mb-1" style={{ color: '#096b17' }} />
+                <p className="font-semibold text-gray-800 text-xs md:text-sm">Evidence-Based Approach</p>
               </div>
             </div>
 
             {/* Primary CTA - Razorpay Button */}
-            <div className="text-center mb-8 mt-8">
+            <div className="text-center mb-6 mt-6">
               <style>
                 {`
                   .razorpay-embed-btn button {
-                    font-size: 24px !important;
-                    padding: 24px 48px !important;
-                    border-radius: 16px !important;
-                    font-weight: 700 !important;
-                    box-shadow: 0 10px 30px rgba(11, 132, 25, 0.3) !important;
+                    font-size: 28px !important;
+                    padding: 28px 56px !important;
+                    border-radius: 20px !important;
+                    font-weight: 800 !important;
+                    box-shadow: 0 12px 35px rgba(11, 132, 25, 0.4) !important;
                     transition: all 0.3s ease !important;
-                    min-width: 350px !important;
+                    min-width: 400px !important;
                     height: auto !important;
                   }
+                  @media (max-width: 640px) {
+                    .razorpay-embed-btn button {
+                      font-size: 22px !important;
+                      padding: 22px 40px !important;
+                      min-width: 320px !important;
+                    }
+                  }
                   .razorpay-embed-btn button:hover {
-                    transform: translateY(-2px) !important;
-                    box-shadow: 0 15px 40px rgba(11, 132, 25, 0.4) !important;
+                    transform: translateY(-3px) !important;
+                    box-shadow: 0 18px 45px rgba(11, 132, 25, 0.5) !important;
                   }
                 `}
               </style>
@@ -168,42 +175,35 @@ export default function ConsultationLandingPage() {
 
             {/* Secondary CTA */}
             <div className="text-center">
-              <Button
+              <a
                 onClick={handleATMRedirect}
-                variant="outline"
-                className="text-lg px-8 py-6 h-14 rounded-xl border-2"
-                style={{ borderColor: '#096b17', color: '#096b17' }}
+                className="text-sm text-gray-600 hover:text-[#096b17] underline cursor-pointer transition-colors"
               >
                 Not sure yet? Take a quick anxiety self-assessment
-              </Button>
+              </a>
             </div>
           </div>
 
           {/* How This Works */}
-          <div className="mt-12 pt-10 border-t-2 border-[#096b17]/20">
-            <h2 className="text-3xl font-bold mb-8 text-center" style={{ color: '#096b17' }}>
+          <div className="mt-8 pt-6 border-t-2 border-[#096b17]/20">
+            <h2 className="text-2xl md:text-3xl font-bold mb-5 text-center" style={{ color: '#096b17' }}>
               How This Works
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 }}
-                className="bg-white/80 rounded-xl p-6 border-2 border-[#096b17]/20"
+                className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20"
               >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-lg" style={{ backgroundColor: '#096b17' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-base" style={{ backgroundColor: '#096b17' }}>
                     1
                   </div>
-                  <div>
-                    <h3 className="font-bold text-lg mb-2" style={{ color: '#096b17' }}>
-                      Book your session – ₹1200
-                    </h3>
-                    <p className="text-gray-700">
-                      Click the button above to securely pay and confirm your consultation.
-                    </p>
-                  </div>
+                  <h3 className="font-bold text-base" style={{ color: '#096b17' }}>
+                    Book your session – ₹1200
+                  </h3>
                 </div>
               </motion.div>
 
@@ -211,20 +211,15 @@ export default function ConsultationLandingPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6 }}
-                className="bg-white/80 rounded-xl p-6 border-2 border-[#096b17]/20"
+                className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20"
               >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-lg" style={{ backgroundColor: '#096b17' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-base" style={{ backgroundColor: '#096b17' }}>
                     2
                   </div>
-                  <div>
-                    <h3 className="font-bold text-lg mb-2" style={{ color: '#096b17' }}>
-                      Fill a short form
-                    </h3>
-                    <p className="text-gray-700">
-                      Share your details so the therapist understands your concern.
-                    </p>
-                  </div>
+                  <h3 className="font-bold text-base" style={{ color: '#096b17' }}>
+                    Fill a short form
+                  </h3>
                 </div>
               </motion.div>
 
@@ -232,20 +227,15 @@ export default function ConsultationLandingPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7 }}
-                className="bg-white/80 rounded-xl p-6 border-2 border-[#096b17]/20"
+                className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20"
               >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-lg" style={{ backgroundColor: '#096b17' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-base" style={{ backgroundColor: '#096b17' }}>
                     3
                   </div>
-                  <div>
-                    <h3 className="font-bold text-lg mb-2" style={{ color: '#096b17' }}>
-                      Schedule at your convenience
-                    </h3>
-                    <p className="text-gray-700">
-                      Choose a video consultation time that works for you.
-                    </p>
-                  </div>
+                  <h3 className="font-bold text-base" style={{ color: '#096b17' }}>
+                    Schedule at your convenience
+                  </h3>
                 </div>
               </motion.div>
 
@@ -253,20 +243,15 @@ export default function ConsultationLandingPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.8 }}
-                className="bg-white/80 rounded-xl p-6 border-2 border-[#096b17]/20"
+                className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20"
               >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-lg" style={{ backgroundColor: '#096b17' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-base" style={{ backgroundColor: '#096b17' }}>
                     4
                   </div>
-                  <div>
-                    <h3 className="font-bold text-lg mb-2" style={{ color: '#096b17' }}>
-                      Get clarity on what to do next
-                    </h3>
-                    <p className="text-gray-700">
-                      Speak to a professional and understand your path forward.
-                    </p>
-                  </div>
+                  <h3 className="font-bold text-base" style={{ color: '#096b17' }}>
+                    Get clarity on what to do next
+                  </h3>
                 </div>
               </motion.div>
             </div>
