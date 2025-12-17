@@ -46,6 +46,7 @@ export default function ConsultationThankYouPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,7 +207,7 @@ export default function ConsultationThankYouPage() {
   }
 
   return (
-    <section className="min-h-screen pt-32 pb-16 bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] relative overflow-hidden">
+    <section className="min-h-screen pt-20 md:pt-32 pb-8 md:pb-16 bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0">
         <motion.div
@@ -244,23 +245,23 @@ export default function ConsultationThankYouPage() {
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-10"
+          className="text-center mb-6 md:mb-10"
         >
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-            className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full mb-6"
+            className="inline-flex items-center justify-center w-14 h-14 md:w-20 md:h-20 rounded-full mb-4 md:mb-6"
             style={{ backgroundColor: '#FFFDBD' }}
           >
-            <CheckCircle2 className="w-10 h-10 md:w-12 md:h-12" style={{ color: '#096b17' }} />
+            <CheckCircle2 className="w-8 h-8 md:w-12 md:h-12" style={{ color: '#096b17' }} />
           </motion.div>
 
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-3 md:mb-4 px-4">
             Your Consultation Booking Is Confirmed
           </h1>
 
-          <p className="text-lg md:text-xl text-green-100 max-w-2xl mx-auto">
+          <p className="text-base md:text-xl text-green-100 max-w-2xl mx-auto px-4">
             Please fill the details below so we can prepare for your session and schedule it smoothly.
           </p>
         </motion.div>
@@ -270,10 +271,10 @@ export default function ConsultationThankYouPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
-          className="bg-white rounded-3xl shadow-2xl p-6 md:p-10"
+          className="bg-white rounded-3xl shadow-2xl p-4 md:p-10"
           style={{ backgroundColor: '#FFFDBD' }}
         >
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Full Name */}
               <div>
@@ -438,20 +439,40 @@ export default function ConsultationThankYouPage() {
             </div>
 
             {/* Help Text */}
-            <div className="bg-white/80 border-2 border-[#096b17]/20 rounded-xl p-4">
+            <div className="bg-white/80 border-2 border-[#096b17]/20 rounded-xl p-3 md:p-4">
               <div className="flex items-start gap-3">
-                <Sparkles className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#096b17' }} />
-                <p className="text-gray-700 italic text-sm md:text-base">
+                <Sparkles className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5" style={{ color: '#096b17' }} />
+                <p className="text-gray-700 italic text-xs md:text-base">
                   "This helps our expert to understand your situation better."
                 </p>
               </div>
             </div>
 
+            {/* Terms and Conditions Checkbox */}
+            <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-4">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  required
+                  className="mt-0.5 w-5 h-5 flex-shrink-0 text-[#096b17] bg-white border-gray-300 rounded focus:ring-[#096b17] focus:ring-2 cursor-pointer"
+                />
+                <span className="text-sm md:text-base text-gray-800 group-hover:text-gray-900 leading-snug">
+                  I agree to the{' '}
+                  <a href="/terms" target="_blank" className="text-[#096b17] underline hover:text-[#064d11]">
+                    terms and conditions
+                  </a>{' '}
+                  of CuraGo <span className="text-red-500">*</span>
+                </span>
+              </label>
+            </div>
+
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full h-14 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              disabled={isSubmitting || !termsAccepted}
+              className="w-full h-12 md:h-14 text-base md:text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#096b17' }}
             >
               {isSubmitting ? (
@@ -470,10 +491,10 @@ export default function ConsultationThankYouPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="mt-8 p-5 rounded-2xl text-center shadow-lg"
+            className="mt-4 md:mt-8 p-4 md:p-5 rounded-2xl text-center shadow-lg"
             style={{ backgroundColor: '#096b17', color: 'white' }}
           >
-            <p className="text-base md:text-lg leading-relaxed">
+            <p className="text-sm md:text-lg leading-relaxed">
               Our team will contact you shortly to confirm the appointment and share the video consultation link.
             </p>
           </motion.div>
@@ -481,7 +502,7 @@ export default function ConsultationThankYouPage() {
 
         {/* Additional Info Cards */}
         <motion.div
-          className="mt-10 text-center text-white space-y-4"
+          className="mt-6 md:mt-10 text-center text-white space-y-4"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.8 }}
