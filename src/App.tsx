@@ -567,8 +567,14 @@ export default function App() {
     return (
       <div className="min-h-screen bg-white scroll-smooth">
         <Toaster />
+        <Navbar
+          onBookAppointment={navigateToBooking}
+          currentPage="booking"
+          onNavigate={handleNavigate}
+        />
         {pathname === '/bookconsultation' && <ConsultationLandingPage />}
         {pathname === '/paymentSuccess' && <ConsultationThankYouPage />}
+        <Footer />
       </div>
     );
   }

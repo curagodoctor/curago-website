@@ -5,12 +5,12 @@ import './index.css';
 import './styles/globals.css';
 
 interface LandingPageProps {
-  onStart: () => void;
+  onStart?: () => void;
   onNavigateToWindDown?: () => void;
   onNavigateToDummy?: () => void;
 }
 
-export default function LandingPage({ onStart, onNavigateToWindDown, onNavigateToDummy }: LandingPageProps) {
+export default function LandingPage({ onNavigateToWindDown, onNavigateToDummy }: LandingPageProps) {
   const [showConsentPopup, setShowConsentPopup] = useState(false);
   const [consentChecked, setConsentChecked] = useState(false);
 
