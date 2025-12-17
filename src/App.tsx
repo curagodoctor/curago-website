@@ -34,6 +34,8 @@ import {
   AtmQuizFlow,
   AtmResultScreen,
 } from './components/assessment/atm';
+import ConsultationThankYouPage from './components/ConsultationThankYouPage';
+import ConsultationLandingPage from './components/ConsultationLandingPage';
 
 // ✅ Single source of truth for types (new 8-pillar model)
 import type { QuizAnswers, UserInfo, AuraScores } from './types/aura';
@@ -46,6 +48,7 @@ const getPathname = () =>
 
 const isAuraPath = (p: string) => p.startsWith('/aura-rise-index');
 const isAtmPath = (p: string) => p.startsWith('/atm');
+const isConsultationPath = (p: string) => p === '/bookconsultation' || p === '/consultation';
 
 /** =========================
  *  Referral-safe URL helpers
@@ -89,6 +92,9 @@ export default function App() {
   const [isAtmRoute, setIsAtmRoute] = useState<boolean>(
     isAtmPath(getPathname())
   );
+  const [isConsultationRoute, setIsConsultationRoute] = useState<boolean>(
+    isConsultationPath(getPathname())
+  );
 
   // ---------- Record referral once (captures ?ref=...) ----------
   useEffect(() => {
@@ -98,7 +104,7 @@ export default function App() {
 
   // ---------- Hash routing (marketing pages) ----------
   useEffect(() => {
-    if (isAuraRoute) return;
+    if (isAuraRoute || isConsultationRoute) return;
 
     const handleHashChange = () => {
       // Ensure /contact#... becomes just /#... to keep single-shell SPA feel
@@ -133,9 +139,10 @@ export default function App() {
     const syncFromPath = () => {
       const { pathname, hash } = window.location;
       console.log('🔄 syncFromPath:', { pathname, hash, isAuraRoute, isAtmRoute });
-      
+
       setIsAuraRoute(isAuraPath(pathname));
       setIsAtmRoute(isAtmPath(pathname));
+      setIsConsultationRoute(isConsultationPath(pathname));
 
       // AURA routes
       if (pathname === '/aura-rise-index') {
@@ -231,6 +238,20 @@ export default function App() {
         return;
       }
 
+      // Consultation landing page route
+      if (pathname === '/consultation') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('Consultation', 'CuraGo - Talk to an Anxiety Specialist');
+        return;
+      }
+
+      // Book consultation thank you route
+      if (pathname === '/bookconsultation') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('Book Consultation', 'CuraGo - Booking Confirmed');
+        return;
+      }
+
       // Handle home route (root path with no hash or #home)
       if (pathname === '/' || pathname === '') {
         if (!window.location.hash || window.location.hash === '#home') {
@@ -252,10 +273,8 @@ export default function App() {
   // ---------- Marketing nav helpers (hash) ----------
   const navigateToBooking = () => {
     trackButtonClick('Book Now', 'navigation', window.location.hash);
-    history.pushState(null, '', buildUrl('/', '#booking'));
-    setIsAuraRoute(false);
-    setCurrentPage('booking');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Redirect to consultation landing page with Razorpay payment
+    window.location.href = buildUrl('/consultation');
   };
 
   const handleNavigate = (page: string) => {
@@ -538,6 +557,18 @@ export default function App() {
         )}
 
         <Footer />
+      </div>
+    );
+  }
+
+  // Consultation routes
+  if (isConsultationRoute) {
+    const pathname = getPathname();
+    return (
+      <div className="min-h-screen bg-white scroll-smooth">
+        <Toaster />
+        {pathname === '/consultation' && <ConsultationLandingPage />}
+        {pathname === '/bookconsultation' && <ConsultationThankYouPage />}
       </div>
     );
   }

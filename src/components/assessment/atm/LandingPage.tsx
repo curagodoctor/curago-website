@@ -46,7 +46,7 @@ export default function LandingPage({ onStart, onNavigateToWindDown, onNavigateT
       timestamp: new Date().toISOString(),
     });
     console.log('✅ curiosity_pass event fired');
-    if (onNavigateToWindDown) onNavigateToWindDown();
+    // Just close the popup, stay on /atm landing page
   };
 
   const handleProceed = () => {
