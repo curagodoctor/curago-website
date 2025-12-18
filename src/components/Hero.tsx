@@ -1,5 +1,4 @@
 import { Smartphone, Award, MessageSquare } from 'lucide-react';
-import { BookingForm } from './BookingForm';
 import { Button } from './ui/button';
 import { motion } from 'framer-motion';
 import { trackButtonClick } from '../utils/tracking';
@@ -160,8 +159,8 @@ export function Hero({ onBookAppointment }: HeroProps) {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-          {/* Left column */}
+        <div className="max-w-4xl mx-auto">
+          {/* Main content */}
           <div className="text-white pt-8">
             <motion.h1
               className="text-4xl md:text-5xl lg:text-6xl mb-6 leading-tight"
@@ -242,7 +241,7 @@ export function Hero({ onBookAppointment }: HeroProps) {
 
             {/* Buttons: 2×2 grid */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1, duration: 0.8 }}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl mx-auto">
                 {/* Row 1 */}
                 <Button
                   onClick={handleBookNow}
@@ -282,17 +281,6 @@ export function Hero({ onBookAppointment }: HeroProps) {
               </div>
             </motion.div>
           </div>
-
-          {/* Right column: Booking form (restored) */}
-          <motion.div
-            id="booking-section"
-            initial={{ opacity: 0, x: 50, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ delay: 0.5, duration: 0.8, type: 'spring', stiffness: 100 }}
-            className="w-full"
-          >
-            <BookingForm />
-          </motion.div>
         </div>
       </div>
 
