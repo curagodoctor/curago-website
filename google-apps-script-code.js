@@ -14,8 +14,10 @@
 const CONFIG = {
   AURA_SHEET_NAME: 'AURA Results',
   ATM_SHEET_NAME: 'ATM Results',
+  CALM_SHEET_NAME: 'CALM Results',
   EMAIL_SUBJECT_AURA: 'Your AURA Index Results from CuraGo',
   EMAIL_SUBJECT_ATM: 'Your ATM Assessment Results from CuraGo',
+  EMAIL_SUBJECT_CALM: 'Your CALM 1.0 Assessment Results from CuraGo',
   FROM_NAME: 'CuraGo Team',
   COMPANY_WEBSITE: 'https://curago.in',
   SUPPORT_EMAIL: 'curagodoctor@gmail.com',
@@ -64,6 +66,8 @@ function doPost(e) {
       response = handleAuraSubmission(data);
     } else if (data.testType === 'atm_tool') {
       response = handleAtmSubmission(data);
+    } else if (data.testType === 'calm_tool') {
+      response = handleCalmSubmission(data);
     } else {
       throw new Error('Invalid test type: ' + data.testType);
     }
