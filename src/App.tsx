@@ -36,10 +36,16 @@ import {
 } from './components/assessment/atm';
 import ConsultationThankYouPage from './components/ConsultationThankYouPage';
 import ConsultationLandingPage from './components/ConsultationLandingPage';
+import CalmLandingPage from './components/CalmLandingPage';
+import QuizFlow from './components/assessment/calm/QuizFlow';
+import ResultScreen from './components/assessment/calm/ResultScreen';
+import { calculateCalmResult } from './components/assessment/calm/scoringEngine';
+import { sendCalmResultsToGoogleSheets } from './utils/googleSheets';
 
 // ✅ Single source of truth for types (new 8-pillar model)
 import type { QuizAnswers, UserInfo, AuraScores } from './types/aura';
 import type { AtmAnswers, AtmUserInfo } from './types/atm';
+import type { CalmAnswers, CalmUserInfo, CalmResult } from './types/calm';
 
 type SitePage = 'home' | 'team' | 'booking' | 'contact';
 
@@ -48,6 +54,7 @@ const getPathname = () =>
 
 const isAuraPath = (p: string) => p.startsWith('/aura-rise-index');
 const isAtmPath = (p: string) => p.startsWith('/atm');
+const isCalmPath = (p: string) => p.startsWith('/calm');
 const isConsultationPath = (p: string) => p === '/bookconsultation' || p === '/paymentSuccess';
 
 /** =========================
@@ -85,12 +92,21 @@ export default function App() {
   const [dummyAnswers, setDummyAnswers] = useState<AtmAnswers | null>(null);
   const [dummyUserInfo, setDummyUserInfo] = useState<AtmUserInfo | null>(null);
 
+  // ---------- CALM state ----------
+  const [calmStage, setCalmStage] = useState<'landing' | 'quiz' | 'results'>('landing');
+  const [calmAnswers, setCalmAnswers] = useState<CalmAnswers | null>(null);
+  const [calmUserInfo, setCalmUserInfo] = useState<CalmUserInfo | null>(null);
+  const [calmResult, setCalmResult] = useState<CalmResult | null>(null);
+
   // Which branch of the app are we on?
   const [isAuraRoute, setIsAuraRoute] = useState<boolean>(
     isAuraPath(getPathname())
   );
   const [isAtmRoute, setIsAtmRoute] = useState<boolean>(
     isAtmPath(getPathname())
+  );
+  const [isCalmRoute, setIsCalmRoute] = useState<boolean>(
+    isCalmPath(getPathname())
   );
   const [isConsultationRoute, setIsConsultationRoute] = useState<boolean>(
     isConsultationPath(getPathname())
@@ -104,7 +120,7 @@ export default function App() {
 
   // ---------- Hash routing (marketing pages) ----------
   useEffect(() => {
-    if (isAuraRoute || isConsultationRoute) return;
+    if (isAuraRoute || isAtmRoute || isCalmRoute || isConsultationRoute) return;
 
     const handleHashChange = () => {
       // Ensure /contact#... becomes just /#... to keep single-shell SPA feel
@@ -132,7 +148,7 @@ export default function App() {
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [isAuraRoute, isAtmRoute]);
+  }, [isAuraRoute, isAtmRoute, isCalmRoute]);
 
   // ---------- Path routing (/contact and /aura-rise-index*) ----------
   useEffect(() => {
@@ -142,6 +158,7 @@ export default function App() {
 
       setIsAuraRoute(isAuraPath(pathname));
       setIsAtmRoute(isAtmPath(pathname));
+      setIsCalmRoute(isCalmPath(pathname));
       setIsConsultationRoute(isConsultationPath(pathname));
 
       // AURA routes
@@ -230,6 +247,36 @@ export default function App() {
         return;
       }
 
+      // CALM 1.0 routes
+      if (pathname === '/calm') {
+        setCalmStage('landing');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('CALM Landing', 'CuraGo - Clinical Anxiety Loop Mapping');
+        return;
+      }
+      if (pathname === '/calm/quiz') {
+        setCalmStage('quiz');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('CALM Quiz', 'CuraGo - CALM Quiz');
+        return;
+      }
+      if (pathname === '/calm/results') {
+        setCalmStage('results');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('CALM Results', 'CuraGo - CALM Results');
+
+        // ✅ Developer-added GTM signal for CompleteRegistration (CALM finish)
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'calm_test_finished_signal',
+          page_path: pathname,
+          timestamp: new Date().toISOString(),
+        });
+
+        console.log('✅ GTM signal fired: calm_test_finished_signal');
+        return;
+      }
+
       // Contact route (full page)
       if (pathname === '/contact') {
         setCurrentPage('contact');
@@ -278,12 +325,13 @@ export default function App() {
   };
 
   const handleNavigate = (page: string) => {
-    console.log('🧭 Navigating to:', page, 'from current route:', { isAuraRoute, isAtmRoute, currentPage });
-    
+    console.log('🧭 Navigating to:', page, 'from current route:', { isAuraRoute, isAtmRoute, isCalmRoute, currentPage });
+
     if (page === 'home') {
       history.pushState(null, '', buildUrl('/', '#home'));
       setIsAuraRoute(false);
       setIsAtmRoute(false);
+      setIsCalmRoute(false);
       setCurrentPage('home');
       // Force a popstate event to trigger route sync
       window.dispatchEvent(new PopStateEvent('popstate'));
@@ -291,16 +339,18 @@ export default function App() {
       history.pushState(null, '', buildUrl('/', '#mental-health-team'));
       setIsAuraRoute(false);
       setIsAtmRoute(false);
+      setIsCalmRoute(false);
       setCurrentPage('team');
       window.dispatchEvent(new PopStateEvent('popstate'));
     } else if (page === 'booking') {
       history.pushState(null, '', buildUrl('/', '#booking'));
       setIsAuraRoute(false);
       setIsAtmRoute(false);
+      setIsCalmRoute(false);
       setCurrentPage('booking');
       window.dispatchEvent(new PopStateEvent('popstate'));
     } else if (page === 'contact') {
-      console.log('🧭 Navigating to contact page from:', { isAuraRoute, isAtmRoute, currentPage });
+      console.log('🧭 Navigating to contact page from:', { isAuraRoute, isAtmRoute, isCalmRoute, currentPage });
       // Use window.location.href for clean navigation
       const contactUrl = buildUrl('/contact');
       window.location.href = contactUrl;
@@ -447,6 +497,65 @@ export default function App() {
     goToAtmDummy('dummy-results');
   };
 
+  // ---------- CALM nav helpers (path) ----------
+  const goToCalm = (stage: 'landing' | 'quiz' | 'results') => {
+    const path =
+      stage === 'landing'
+        ? '/calm'
+        : stage === 'quiz'
+        ? '/calm/quiz'
+        : '/calm/results';
+
+    history.pushState(null, '', buildUrl(path));
+    setIsCalmRoute(true);
+    setCalmStage(stage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleStartCalmQuiz = () => goToCalm('quiz');
+
+  const handleCalmQuizComplete = async (userInfo: CalmUserInfo, answers: CalmAnswers) => {
+    setCalmUserInfo(userInfo);
+    setCalmAnswers(answers);
+
+    // Calculate the result using the scoring engine
+    const result = calculateCalmResult(answers);
+    setCalmResult(result);
+
+    // Generate event ID for tracking
+    const eventId = `calm-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+    // Send to Google Sheets
+    try {
+      await sendCalmResultsToGoogleSheets({
+        testType: 'calm_tool',
+        name: userInfo.name,
+        email: userInfo.email || '',
+        phoneNumber: userInfo.whatsapp,
+        primaryLoop: result.primaryLoop,
+        secondaryLoop: result.secondaryLoop,
+        triggerType: result.triggerType,
+        reinforcement: result.reinforcement,
+        loadCapacityBand: result.loadCapacityBand,
+        stability: result.stability,
+        loopScores: result.loopScores,
+        eventId: eventId,
+      });
+      console.log('✅ CALM results sent to Google Sheets');
+    } catch (error) {
+      console.error('❌ Failed to send CALM results:', error);
+    }
+
+    goToCalm('results');
+  };
+
+  const handleCalmRetake = () => {
+    setCalmAnswers(null);
+    setCalmUserInfo(null);
+    setCalmResult(null);
+    goToCalm('landing');
+  };
+
   // ---------- Handle refresh on results pages without data ----------
   useEffect(() => {
     // If we're on ATM results page but have no answers, redirect to landing
@@ -462,7 +571,14 @@ export default function App() {
       goToAura('landing');
       return;
     }
-  }, [isAtmRoute, atmStage, atmAnswers, isAuraRoute, auraStage, scores]);
+
+    // If we're on CALM results page but have no result, redirect to landing
+    if (isCalmRoute && calmStage === 'results' && !calmResult) {
+      console.log('🔄 CALM Results page accessed without data, redirecting to landing');
+      goToCalm('landing');
+      return;
+    }
+  }, [isAtmRoute, atmStage, atmAnswers, isAuraRoute, auraStage, scores, isCalmRoute, calmStage, calmResult]);
 
   // ---------- Render ----------
   if (isAuraRoute) {
@@ -558,6 +674,53 @@ export default function App() {
 
         <Footer />
       </div>
+    );
+  }
+
+  // CALM 1.0 route
+  if (isCalmRoute) {
+    // Quiz stage - full screen, no navbar/footer
+    if (calmStage === 'quiz') {
+      return (
+        <>
+          <Toaster />
+          <QuizFlow onComplete={handleCalmQuizComplete} />
+        </>
+      );
+    }
+
+    // Landing and results - with navbar/footer but NO white background
+    return (
+      <>
+        <Toaster />
+        <Navbar
+          onBookAppointment={navigateToBooking}
+          currentPage="calm"
+          onNavigate={handleNavigate}
+        />
+
+        {calmStage === 'landing' && (
+          <CalmLandingPage onStartAssessment={handleStartCalmQuiz} />
+        )}
+
+        {calmStage === 'results' && calmResult && calmUserInfo && (
+          <ResultScreen
+            result={calmResult}
+            userName={calmUserInfo.name}
+          />
+        )}
+
+        {calmStage === 'results' && (!calmResult || !calmUserInfo) && (
+          <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b]">
+            <div className="text-center">
+              <p className="text-white mb-4">Redirecting to start...</p>
+              <div className="animate-spin w-8 h-8 border-4 border-white/30 border-t-[#64CB81] rounded-full mx-auto"></div>
+            </div>
+          </div>
+        )}
+
+        {calmStage === 'landing' && <Footer />}
+      </>
     );
   }
 

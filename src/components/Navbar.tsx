@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Button } from './ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { trackButtonClick } from '../utils/tracking';
 import { WhatsAppConfirmDialog } from './WhatsAppConfirmDialog';
+import { ChevronDown } from 'lucide-react';
 
 interface NavbarProps {
   onBookAppointment: () => void;
@@ -15,12 +16,28 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false);
+  const [showFreeToolsDropdown, setShowFreeToolsDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowFreeToolsDropdown(false);
+      }
+    };
+
+    if (showFreeToolsDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showFreeToolsDropdown]);
 
   // Track which section is currently in view
   useEffect(() => {
@@ -155,11 +172,11 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
               <span className={underline(currentPage === 'team')} />
             </a>
 
-            <a 
-              href="/#services" 
+            <a
+              href="/#services"
               onClick={(e) => {
                 e.preventDefault();
-                if (currentPage === 'aura' || currentPage === 'atm') {
+                if (currentPage === 'aura' || currentPage === 'atm' || currentPage === 'calm') {
                   // Navigate away from assessment pages to home
                   window.location.href = '/#services';
                 } else if (onNavigate) {
@@ -177,11 +194,11 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
               <span className={underline(activeSection === 'services')} />
             </a>
 
-            <a 
-              href="/#about" 
+            <a
+              href="/#about"
               onClick={(e) => {
                 e.preventDefault();
-                if (currentPage === 'aura' || currentPage === 'atm') {
+                if (currentPage === 'aura' || currentPage === 'atm' || currentPage === 'calm') {
                   // Navigate away from assessment pages to home
                   window.location.href = '/#about';
                 } else if (onNavigate) {
@@ -199,34 +216,79 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
               <span className={underline(activeSection === 'about')} />
             </a>
 
-            {/* AURA Index - path route */}
+            {/* Free Tools Dropdown */}
+            <div ref={dropdownRef} className="relative">
+              <button
+                onClick={() => setShowFreeToolsDropdown(!showFreeToolsDropdown)}
+                className={`${baseLink} flex items-center gap-1 ${
+                  currentPage === 'aura' || currentPage === 'atm' ? 'text-[#096b17]' : ''
+                }`}
+              >
+                Free Tools
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-300 ${
+                    showFreeToolsDropdown ? 'rotate-180' : ''
+                  }`}
+                />
+                <span className={underline(currentPage === 'aura' || currentPage === 'atm')} />
+              </button>
+
+              {/* Dropdown Menu */}
+              <AnimatePresence>
+                {showFreeToolsDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+                  >
+                    <a
+                      href="/aura-rise-index"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        goToAssessment('/aura-rise-index');
+                        setShowFreeToolsDropdown(false);
+                      }}
+                      className={`block px-4 py-3 hover:bg-[#096b17]/10 transition-colors ${
+                        currentPage === 'aura' ? 'bg-[#096b17]/5 text-[#096b17] font-semibold' : 'text-gray-700'
+                      }`}
+                    >
+                      AURA Index
+                    </a>
+                    <a
+                      href="/atm"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        goToAssessment('/atm');
+                        setShowFreeToolsDropdown(false);
+                      }}
+                      className={`block px-4 py-3 hover:bg-[#096b17]/10 transition-colors ${
+                        currentPage === 'atm' ? 'bg-[#096b17]/5 text-[#096b17] font-semibold' : 'text-gray-700'
+                      }`}
+                    >
+                      ATM Tool
+                    </a>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* CALM 1.0 - path route */}
             <a
-              href="/aura-rise-index"
+              href="/calm"
               onClick={(e) => {
                 e.preventDefault();
-                goToAssessment('/aura-rise-index');
+                goToAssessment('/calm');
               }}
-              className={`${baseLink} ${currentPage === 'aura' ? 'text-[#096b17]' : ''}`}
+              className={`${baseLink} ${currentPage === 'calm' ? 'text-[#096b17]' : ''}`}
             >
-              AURA Index
-              <span className={underline(currentPage === 'aura')} />
+              CALM 1.0
+              <span className={underline(currentPage === 'calm')} />
             </a>
 
-            {/* ATM Tool - path route */}
             <a
-              href="/atm"
-              onClick={(e) => {
-                e.preventDefault();
-                goToAssessment('/atm');
-              }}
-              className={`${baseLink} ${currentPage === 'atm' ? 'text-[#096b17]' : ''}`}
-            >
-              ATM Tool  
-              <span className={underline(currentPage === 'atm')} />
-            </a>
-
-            <a 
-              href="/contact" 
+              href="/contact"
               onClick={(e) => {
                 trackButtonClick('Contact Us', 'navigation', 'navbar');
                 if (onNavigate) {
@@ -337,12 +399,12 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
                     Mental Health Team
                   </a>
 
-                  <a 
-                    href="/#services" 
+                  <a
+                    href="/#services"
                     onClick={(e) => {
                       e.preventDefault();
                       setMobileOpen(false);
-                      if (currentPage === 'aura' || currentPage === 'atm') {
+                      if (currentPage === 'aura' || currentPage === 'atm' || currentPage === 'calm') {
                         // Navigate away from assessment pages to home
                         window.location.href = '/#services';
                       } else if (onNavigate) {
@@ -355,18 +417,18 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
                           document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
                         }, 100);
                       }
-                    }} 
+                    }}
                     className="py-2 text-gray-800"
                   >
                     Our Services
                   </a>
 
-                  <a 
-                    href="/#about" 
+                  <a
+                    href="/#about"
                     onClick={(e) => {
                       e.preventDefault();
                       setMobileOpen(false);
-                      if (currentPage === 'aura' || currentPage === 'atm') {
+                      if (currentPage === 'aura' || currentPage === 'atm' || currentPage === 'calm') {
                         // Navigate away from assessment pages to home
                         window.location.href = '/#about';
                       } else if (onNavigate) {
@@ -379,36 +441,52 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
                           document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
                         }, 100);
                       }
-                    }} 
+                    }}
                     className="py-2 text-gray-800"
                   >
                     About Us
                   </a>
 
+                  {/* Free Tools Section */}
+                  <div className="py-2">
+                    <div className="text-gray-600 text-sm font-semibold mb-2">Free Tools</div>
+                    <div className="pl-4 space-y-2">
+                      <a
+                        href="/aura-rise-index"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          goToAssessment('/aura-rise-index');
+                        }}
+                        className="block py-1.5 text-gray-800"
+                      >
+                        AURA Index
+                      </a>
+                      <a
+                        href="/atm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          goToAssessment('/atm');
+                        }}
+                        className="block py-1.5 text-gray-800"
+                      >
+                        ATM Tool
+                      </a>
+                    </div>
+                  </div>
+
                   <a
-                    href="/aura-rise-index"
+                    href="/calm"
                     onClick={(e) => {
                       e.preventDefault();
-                      goToAssessment('/aura-rise-index');
+                      goToAssessment('/calm');
                     }}
                     className="py-2 text-gray-800"
                   >
-                    AURA Index
+                    CALM 1.0
                   </a>
 
                   <a
-                    href="/atm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      goToAssessment('/atm');
-                    }}
-                    className="py-2 text-gray-800"
-                  >
-                    ATM Tool  
-                  </a>
-
-                  <a 
-                    href="/contact" 
+                    href="/contact"
                     onClick={(e) => {
                       trackButtonClick('Contact Us', 'navigation', 'navbar_mobile');
                       if (onNavigate) {
@@ -416,7 +494,7 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
                         onNavigate('contact');
                       }
                       setMobileOpen(false);
-                    }} 
+                    }}
                     className="py-2 text-gray-800"
                   >
                     Contact Us
