@@ -38,6 +38,7 @@ import ConsultationThankYouPage from './components/ConsultationThankYouPage';
 import ConsultationLandingPage from './components/ConsultationLandingPage';
 import CalmLandingPage from './components/CalmLandingPage';
 import QuizFlow from './components/assessment/calm/QuizFlow';
+import AnalyzingScreen from './components/assessment/calm/AnalyzingScreen';
 import ResultScreen from './components/assessment/calm/ResultScreen';
 import { calculateCalmResult } from './components/assessment/calm/scoringEngine';
 import { sendCalmResultsToGoogleSheets } from './utils/googleSheets';
@@ -93,7 +94,7 @@ export default function App() {
   const [dummyUserInfo, setDummyUserInfo] = useState<AtmUserInfo | null>(null);
 
   // ---------- CALM state ----------
-  const [calmStage, setCalmStage] = useState<'landing' | 'quiz' | 'results'>('landing');
+  const [calmStage, setCalmStage] = useState<'landing' | 'quiz' | 'analyzing' | 'results'>('landing');
   const [calmAnswers, setCalmAnswers] = useState<CalmAnswers | null>(null);
   const [calmUserInfo, setCalmUserInfo] = useState<CalmUserInfo | null>(null);
   const [calmResult, setCalmResult] = useState<CalmResult | null>(null);
@@ -258,6 +259,12 @@ export default function App() {
         setCalmStage('quiz');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         trackPageView('CALM Quiz', 'CuraGo - CALM Quiz');
+        return;
+      }
+      if (pathname === '/calm/analyzing') {
+        setCalmStage('analyzing');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('CALM Analyzing', 'CuraGo - Analyzing CALM Results');
         return;
       }
       if (pathname === '/calm/results') {
@@ -498,12 +505,14 @@ export default function App() {
   };
 
   // ---------- CALM nav helpers (path) ----------
-  const goToCalm = (stage: 'landing' | 'quiz' | 'results') => {
+  const goToCalm = (stage: 'landing' | 'quiz' | 'analyzing' | 'results') => {
     const path =
       stage === 'landing'
         ? '/calm'
         : stage === 'quiz'
         ? '/calm/quiz'
+        : stage === 'analyzing'
+        ? '/calm/analyzing'
         : '/calm/results';
 
     history.pushState(null, '', buildUrl(path));
@@ -518,34 +527,44 @@ export default function App() {
     setCalmUserInfo(userInfo);
     setCalmAnswers(answers);
 
-    // Calculate the result using the scoring engine
+    // Calculate the result immediately
     const result = calculateCalmResult(answers);
     setCalmResult(result);
+
+    // Navigate to analyzing screen immediately (non-blocking)
+    goToCalm('analyzing');
 
     // Generate event ID for tracking
     const eventId = `calm-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-    // Send to Google Sheets
-    try {
-      await sendCalmResultsToGoogleSheets({
-        testType: 'calm_tool',
-        name: userInfo.name,
-        email: userInfo.email || '',
-        phoneNumber: userInfo.whatsapp,
-        primaryLoop: result.primaryLoop,
-        secondaryLoop: result.secondaryLoop,
-        triggerType: result.triggerType,
-        reinforcement: result.reinforcement,
-        loadCapacityBand: result.loadCapacityBand,
-        stability: result.stability,
-        loopScores: result.loopScores,
-        eventId: eventId,
-      });
-      console.log('✅ CALM results sent to Google Sheets');
-    } catch (error) {
-      console.error('❌ Failed to send CALM results:', error);
-    }
+    // Minimum wait time for analyzing screen (5 seconds for better UX)
+    const minWaitTime = new Promise(resolve => setTimeout(resolve, 5000));
 
+    // Send to Google Sheets in background (async, non-blocking)
+    const apiCall = sendCalmResultsToGoogleSheets({
+      testType: 'calm_tool',
+      name: userInfo.name,
+      email: userInfo.email || '',
+      phoneNumber: userInfo.whatsapp,
+      primaryLoop: result.primaryLoop,
+      secondaryLoop: result.secondaryLoop,
+      triggerType: result.triggerType,
+      reinforcement: result.reinforcement,
+      loadCapacityBand: result.loadCapacityBand,
+      stability: result.stability,
+      loopScores: result.loopScores,
+      eventId: eventId,
+    }).then(() => {
+      console.log('✅ CALM results sent to Google Sheets');
+    }).catch((error) => {
+      console.error('❌ Failed to send CALM results:', error);
+      // Continue to results even if API fails
+    });
+
+    // Wait for both minimum time and API call to complete
+    await Promise.all([minWaitTime, apiCall]);
+
+    // Navigate to results
     goToCalm('results');
   };
 
@@ -685,6 +704,16 @@ export default function App() {
         <>
           <Toaster />
           <QuizFlow onComplete={handleCalmQuizComplete} />
+        </>
+      );
+    }
+
+    // Analyzing stage - full screen, no navbar/footer
+    if (calmStage === 'analyzing') {
+      return (
+        <>
+          <Toaster />
+          <AnalyzingScreen userName={calmUserInfo?.name || 'there'} />
         </>
       );
     }

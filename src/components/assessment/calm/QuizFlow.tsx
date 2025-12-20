@@ -79,7 +79,12 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
     setFormErrors(prev => ({ ...prev, [field]: '' }));
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleAnswer = (questionId: string, answerId: string) => {
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+
     const newAnswers = { ...answers, [questionId]: answerId };
     setAnswers(newAnswers);
     setSelectedValue(answerId);
@@ -90,6 +95,7 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
         setSelectedValue(null);
       } else {
         // Quiz complete - submit with collected user info
+        setIsSubmitting(true);
         onComplete(userInfo, newAnswers as CalmAnswers);
       }
     }, 450);
