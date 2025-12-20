@@ -26,45 +26,103 @@ interface CalmLandingPageProps {
 
 export default function CalmLandingPage({ onStartAssessment }: CalmLandingPageProps) {
   const [price] = React.useState(299);
+  const whyExistsScrollRef = React.useRef<HTMLDivElement>(null);
+  const whatYouGetScrollRef = React.useRef<HTMLDivElement>(null);
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  return (
-    <div className="min-h-screen bg-[#F5F5DC] relative overflow-hidden" style={{ fontFamily: 'Poppins, sans-serif' }}>
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-20 right-[-10%] w-96 h-96 bg-[#096b17] rounded-full opacity-5 blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 30, 0],
-            y: [0, -20, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#64CB81] rounded-full opacity-5 blur-3xl"
-          animate={{
-            scale: [1, 1.3, 1],
-            x: [0, -40, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-        />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-[#096b17] rounded-full opacity-5 blur-3xl animate-[pulse_12s_ease-in-out_infinite]" />
-      </div>
+  // Auto-scroll effect for "Why CALM exists" section
+  React.useEffect(() => {
+    const scrollContainer = whyExistsScrollRef.current;
+    if (!scrollContainer) return;
 
+    let scrollInterval: NodeJS.Timeout;
+    let isPaused = false;
+
+    const startAutoScroll = () => {
+      scrollInterval = setInterval(() => {
+        if (!isPaused && scrollContainer) {
+          const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+          const currentScroll = scrollContainer.scrollLeft;
+
+          if (currentScroll >= maxScroll) {
+            scrollContainer.scrollLeft = 0;
+          } else {
+            scrollContainer.scrollLeft += 1;
+          }
+        }
+      }, 30);
+    };
+
+    const handleMouseEnter = () => { isPaused = true; };
+    const handleMouseLeave = () => { isPaused = false; };
+    const handleTouchStart = () => { isPaused = true; };
+    const handleTouchEnd = () => { isPaused = false; };
+
+    scrollContainer.addEventListener('mouseenter', handleMouseEnter);
+    scrollContainer.addEventListener('mouseleave', handleMouseLeave);
+    scrollContainer.addEventListener('touchstart', handleTouchStart);
+    scrollContainer.addEventListener('touchend', handleTouchEnd);
+
+    startAutoScroll();
+
+    return () => {
+      clearInterval(scrollInterval);
+      scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
+      scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
+      scrollContainer.removeEventListener('touchstart', handleTouchStart);
+      scrollContainer.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
+
+  // Auto-scroll effect for "What you get" section
+  React.useEffect(() => {
+    const scrollContainer = whatYouGetScrollRef.current;
+    if (!scrollContainer) return;
+
+    let scrollInterval: NodeJS.Timeout;
+    let isPaused = false;
+
+    const startAutoScroll = () => {
+      scrollInterval = setInterval(() => {
+        if (!isPaused && scrollContainer) {
+          const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+          const currentScroll = scrollContainer.scrollLeft;
+
+          if (currentScroll >= maxScroll) {
+            scrollContainer.scrollLeft = 0;
+          } else {
+            scrollContainer.scrollLeft += 1;
+          }
+        }
+      }, 30);
+    };
+
+    const handleMouseEnter = () => { isPaused = true; };
+    const handleMouseLeave = () => { isPaused = false; };
+    const handleTouchStart = () => { isPaused = true; };
+    const handleTouchEnd = () => { isPaused = false; };
+
+    scrollContainer.addEventListener('mouseenter', handleMouseEnter);
+    scrollContainer.addEventListener('mouseleave', handleMouseLeave);
+    scrollContainer.addEventListener('touchstart', handleTouchStart);
+    scrollContainer.addEventListener('touchend', handleTouchEnd);
+
+    startAutoScroll();
+
+    return () => {
+      clearInterval(scrollInterval);
+      scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
+      scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
+      scrollContainer.removeEventListener('touchstart', handleTouchStart);
+      scrollContainer.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-[#F5F5DC] relative" style={{ fontFamily: 'Poppins, sans-serif' }}>
       {/* FRAME 1 — HERO / ENTRY */}
       <section className="container mx-auto px-4 sm:px-6 pt-32 md:pt-36 lg:pt-40 pb-20 relative z-10">
         <div className="max-w-4xl mx-auto">
@@ -169,7 +227,8 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
       </section>
 
       {/* FRAME 3 — WHY CALM EXISTS */}
-      <section className="container mx-auto px-4 sm:px-6 py-20 relative z-10">
+      <section className="bg-[#FFFDBD] py-20">
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -179,11 +238,8 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
           >
             <div className="space-y-8">
               <div className="text-center">
-                <h2 className="text-2xl md:text-3xl font-bold mb-2" style={{ color: '#096b17' }}>
-                  Why CALM
-                </h2>
                 <h2 className="text-2xl md:text-3xl font-bold mb-6" style={{ color: '#096b17' }}>
-                  1.0 exists
+                  Why CALM 1.0 exists
                 </h2>
               </div>
 
@@ -195,12 +251,23 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                 </p>
               </div>
 
-              {/* Scrollable Cards Container */}
+              {/* Auto-scrolling Cards Container */}
               <div className="relative">
-                <div className="overflow-x-auto pb-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <div
+                  ref={whyExistsScrollRef}
+                  className="overflow-x-auto pb-4 scrollbar-hide"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
                   <style>{`
                     .scrollbar-hide::-webkit-scrollbar {
                       display: none;
+                    }
+                    @keyframes auto-scroll {
+                      0% { scroll-behavior: smooth; }
+                      100% { scroll-behavior: smooth; }
+                    }
+                    .auto-scroll-container {
+                      animation: none;
                     }
                   `}</style>
                   <div className="flex gap-4 min-w-min">
@@ -210,7 +277,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                       { icon: TrendingUp, text: 'How stable or escalatory it is' },
                       { icon: CheckCircle2, text: 'What usually helps this pattern' },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-3 bg-[#F5F5DC] rounded-xl p-5 border-2 border-[#096b17]/20 min-w-[280px] md:min-w-[320px] flex-shrink-0">
+                      <div key={idx} className="flex items-center gap-3 bg-[#F5F5DC] rounded-xl p-5 border-2 border-[#096b17]/20 min-w-[240px] md:min-w-[280px] flex-shrink-0">
                         <div className="w-12 h-12 rounded-lg bg-[#096b17] flex items-center justify-center flex-shrink-0">
                           <item.icon className="w-6 h-6 text-white" />
                         </div>
@@ -228,6 +295,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
               </div>
             </div>
           </motion.div>
+        </div>
         </div>
       </section>
 
@@ -258,15 +326,22 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
               </div>
             </div>
 
-            {/* Scrollable Cards Container */}
+            {/* Auto-scrolling Cards Container */}
             <div className="relative mt-8">
-              <div className="overflow-x-auto pb-6 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              <div
+                className="overflow-x-auto pb-6 scrollbar-hide auto-scroll-container"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                onMouseEnter={(e) => e.currentTarget.style.animationPlayState = 'paused'}
+                onMouseLeave={(e) => e.currentTarget.style.animationPlayState = 'running'}
+                onTouchStart={(e) => e.currentTarget.style.animationPlayState = 'paused'}
+                onTouchEnd={(e) => e.currentTarget.style.animationPlayState = 'running'}
+              >
                 <style>{`
                   .scrollbar-hide::-webkit-scrollbar {
                     display: none;
                   }
                 `}</style>
-                <div className="flex gap-8 min-w-min px-2">
+                <div className="flex gap-4 md:gap-6 min-w-min px-2">
                   {[
                     {
                       icon: Brain,
@@ -305,16 +380,16 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.4, delay: idx * 0.1 }}
-                      className="min-w-[280px] md:min-w-[320px] flex-shrink-0"
+                      className="min-w-[240px] md:min-w-[280px] flex-shrink-0"
                     >
-                      <Card className="p-6 bg-[#096b17] border-2 border-[#075110] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:bg-[#096b17] h-full rounded-2xl group">
-                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-white mb-4">
-                          <item.icon className="w-7 h-7 text-[#096b17]" />
+                      <Card className="p-5 md:p-6 bg-[#096b17] border-2 border-[#075110] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:bg-[#096b17] h-full rounded-2xl group">
+                        <div className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-xl bg-white mb-3 md:mb-4">
+                          <item.icon className="w-6 h-6 md:w-7 md:h-7 text-[#096b17]" />
                         </div>
-                        <h3 className="text-lg font-bold text-white group-hover:text-white mb-3">
+                        <h3 className="text-base md:text-lg font-bold text-white group-hover:text-white mb-2 md:mb-3">
                           {item.title}
                         </h3>
-                        <p className="text-sm text-white group-hover:text-white leading-relaxed">
+                        <p className="text-xs md:text-sm text-white group-hover:text-white leading-relaxed">
                           {item.description}
                         </p>
                       </Card>
@@ -333,7 +408,8 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
       </section>
 
       {/* FRAME 5 — WHY IT IS PAID */}
-      <section className="container mx-auto px-4 sm:px-6 py-20 relative z-10">
+      <section className="bg-[#FFFDBD] py-20">
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -410,6 +486,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
             </div>
           </motion.div>
         </div>
+        </div>
       </section>
 
       {/* FRAME 6 — PRICING & SAFETY NET */}
@@ -463,7 +540,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                     <CheckCircle2 className="w-6 h-6 flex-shrink-0 mt-0.5 text-white group-hover:text-white" />
                     <p className="text-sm text-white group-hover:text-white leading-relaxed text-left">
                       <strong className="text-base">Special Offer:</strong> If you book a consult with Curago within 7 days,
-                      <span className="font-bold"> 20% of the amount (₹{(price * 0.2).toFixed(2)}) will be adjusted</span> against your consultation cost
+                      <span className="font-bold"> 50% off of the amount ₹150</span> against your consultation cost
                     </p>
                   </div>
                 </div>
@@ -478,45 +555,49 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
       </section>
 
       {/* FINAL CTA */}
-      <section className="container mx-auto px-4 sm:px-6 py-20 pb-32 relative z-10">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <Card className="relative overflow-hidden border-2 border-[#075110] shadow-2xl bg-[#096b17] rounded-2xl hover:bg-[#096b17] group">
-              <div className="p-12 md:p-16 text-center text-white group-hover:text-white">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-sm mb-6">
-                  <Sparkles className="w-4 h-4 group-hover:text-white" />
-                  <span className="group-hover:text-white">Start Your Journey Today</span>
+      <section className="bg-[#FFFDBD] py-20 pb-32">
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <Card className="relative overflow-hidden border-2 border-[#075110] shadow-2xl bg-[#096b17] rounded-2xl hover:bg-[#096b17] group">
+                <div className="p-12 md:p-16 text-center text-white group-hover:text-white">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-sm mb-6">
+                    <Sparkles className="w-4 h-4 group-hover:text-white" />
+                    <span className="group-hover:text-white">Start Your Journey Today</span>
+                  </div>
+
+                  <h2 className="text-3xl md:text-5xl mb-6 leading-tight font-bold group-hover:text-white">
+                    This is the safest place to start<br />
+                    when you don't know where to start.
+                  </h2>
+
+                  <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto group-hover:text-white">
+                    Gain clarity on your anxiety pattern in just 10 minutes.
+                  </p>
+
+                  <div className="flex justify-center mb-6">
+                    <RazorpayButton
+                      className="bg-[#096b17] text-white hover:bg-[#075110] border-4 border-white px-12 py-8 h-auto rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 transition-all duration-300"
+                    />
+                  </div>
+
+                  <p className="text-sm flex items-center justify-center gap-2 font-medium flex-wrap group-hover:text-white">
+                    <CheckCircle2 className="w-4 h-4 group-hover:text-white" />
+                    <span>Takes ~10 minutes</span>
+                    <span>•</span>
+                    <span>No obligation</span>
+                    <span>•</span>
+                    <span>Clinically grounded</span>
+                  </p>
                 </div>
-
-                <h2 className="text-3xl md:text-5xl mb-6 leading-tight font-bold group-hover:text-white">
-                  This is the safest place to start<br />
-                  when you don't know where to start.
-                </h2>
-
-                <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto group-hover:text-white">
-                  Gain clarity on your anxiety pattern in just 10 minutes.
-                </p>
-
-                <div className="flex justify-center mb-6">
-                  <RazorpayButton />
-                </div>
-
-                <p className="text-sm flex items-center justify-center gap-2 font-medium flex-wrap group-hover:text-white">
-                  <CheckCircle2 className="w-4 h-4 group-hover:text-white" />
-                  <span>Takes ~10 minutes</span>
-                  <span>•</span>
-                  <span>No obligation</span>
-                  <span>•</span>
-                  <span>Clinically grounded</span>
-                </p>
-              </div>
-            </Card>
-          </motion.div>
+              </Card>
+            </motion.div>
+          </div>
         </div>
       </section>
     </div>

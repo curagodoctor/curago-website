@@ -265,11 +265,8 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
               transition={{ duration: 0.4, ease: "easeInOut" }}
               className="space-y-8 sm:space-y-10 md:space-y-12"
             >
-              {/* Dimension Tag and Question */}
-              <div className="text-center space-y-4 md:space-y-6">
-                <div className="inline-block px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-semibold shadow-lg">
-                  {currentQuestionData.dimension}
-                </div>
+              {/* Question */}
+              <div className="text-center">
                 <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white font-bold max-w-3xl mx-auto leading-tight px-4">
                   {currentQuestionData.text}
                 </h2>
@@ -289,24 +286,17 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
                       transition={{ duration: 0.4, delay: index * 0.08, ease: "easeOut" }}
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
-                      className={`w-full p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl text-left transition-all duration-300 ${
+                      className={`w-full p-4 sm:p-5 md:p-8 rounded-2xl md:rounded-3xl text-center transition-all duration-300 ${
                         isSelected
                           ? 'bg-[#64CB81] text-white shadow-xl border-2 border-[#64CB81]'
-                          : 'bg-white/40 backdrop-blur-md border-2 border-white/30 hover:bg-white/50 hover:border-white/40 text-white shadow-lg hover:shadow-xl'
+                          : 'bg-white/95 backdrop-blur-md border-2 border-white/50 hover:bg-white hover:border-white/60 text-[#075110] shadow-lg hover:shadow-xl'
                       }`}
                     >
-                      <div className="flex items-start gap-3 sm:gap-4 md:gap-6">
-                        <div className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm sm:text-base font-bold transition-all duration-300 ${
-                          isSelected
-                            ? 'bg-white text-[#64CB81] scale-110 shadow-lg'
-                            : 'bg-white/30 backdrop-blur-sm text-white border-2 border-white/20'
-                        }`}>
-                          {option.id}
-                        </div>
-                        <p className="text-sm sm:text-base md:text-lg leading-relaxed font-medium text-white">
-                          {option.text}
-                        </p>
-                      </div>
+                      <p className={`text-sm sm:text-base md:text-lg leading-relaxed font-medium ${
+                        isSelected ? 'text-white' : 'text-[#075110]'
+                      }`}>
+                        {option.text}
+                      </p>
                     </motion.button>
                   );
                 })}

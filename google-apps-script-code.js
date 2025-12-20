@@ -695,3 +695,296 @@ ${CONFIG.COMPANY_WEBSITE}
 
   Logger.log('ATM email with PDF sent to: ' + data.email);
 }
+
+// ============================================================
+// CALM SUBMISSION HANDLER
+// ============================================================
+function handleCalmSubmission(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(CONFIG.CALM_SHEET_NAME);
+
+  if (!sheet) {
+    throw new Error('Sheet "' + CONFIG.CALM_SHEET_NAME + '" not found. Please create it.');
+  }
+
+  // Generate PDF and save to Drive
+  const pdfFile = savePdfToDrive(generateCalmPdf(data), 'CALM_Results_' + data.name.replace(/\s+/g, '_'));
+  const pdfUrl = pdfFile.getUrl();
+
+  // Save to Google Sheet with PDF link
+  const rowData = [
+    new Date(),
+    data.name,
+    data.email || '',
+    data.phoneNumber,
+    data.primaryLoop,
+    data.secondaryLoop || 'None',
+    data.triggerType,
+    data.reinforcement,
+    data.loadCapacityBand,
+    data.stability,
+    data.loopScores.anticipatory,
+    data.loopScores.control,
+    data.loopScores.reassurance,
+    data.loopScores.avoidance,
+    data.loopScores.somatic,
+    data.loopScores.cognitiveOverload,
+    data.eventId,
+    pdfUrl // PDF link in last column
+  ];
+
+  sheet.appendRow(rowData);
+  Logger.log('Data saved to sheet with PDF link');
+
+  // Send email with PDF
+  if (data.email && data.email.trim() !== '') {
+    sendCalmPdfEmail(data, pdfFile);
+    Logger.log('Email sent to: ' + data.email);
+  } else {
+    Logger.log('No email provided, skipping email send');
+  }
+
+  return { success: true, message: 'CALM results saved and email sent', pdfUrl: pdfUrl };
+}
+
+// ============================================================
+// CALM PDF GENERATOR
+// ============================================================
+function generateCalmPdf(data) {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header {
+      background: #096b17;
+      color: white;
+      padding: 30px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+      font-weight: normal;
+    }
+    .header p {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .greeting {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #096b17;
+      font-weight: bold;
+    }
+    .section {
+      background: #f8f9fa;
+      padding: 25px;
+      margin-bottom: 20px;
+      border-left: 4px solid #096b17;
+    }
+    .section h2 {
+      margin-top: 0;
+      color: #096b17;
+      font-size: 20px;
+    }
+    .loop-box {
+      background: white;
+      padding: 20px;
+      margin: 15px 0;
+      border: 1px solid #e0e0e0;
+    }
+    .loop-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #096b17;
+      margin-bottom: 10px;
+    }
+    .detail-row {
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .detail-label {
+      font-weight: bold;
+      color: #666;
+    }
+    .cta-box {
+      background: #096b17;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      margin: 25px 0;
+    }
+    .cta-box h3 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #e0e0e0;
+      color: #666;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Your CALM 1.0 Report</h1>
+    <p>Clinical Anxiety Loop Mapping</p>
+  </div>
+
+  <p class="greeting">Hi ${data.name}!</p>
+  <p>Thank you for completing the CALM 1.0 assessment. Here is your personalized clinical report:</p>
+
+  <div class="section">
+    <h2>Section 1: Your Anxiety Loop Map</h2>
+    <div class="loop-box">
+      <div class="loop-name">Primary Loop: ${data.primaryLoop}</div>
+      ${data.secondaryLoop ? '<div class="detail-row">Secondary Loop: ' + data.secondaryLoop + '</div>' : ''}
+      <p style="margin-top: 10px; color: #666;">Your anxiety follows ${data.secondaryLoop ? 'a dual loop' : 'a single loop'} pattern.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Section 2: Trigger Architecture</h2>
+    <div class="loop-box">
+      <div class="detail-row">
+        <span class="detail-label">Trigger Pattern:</span> ${data.triggerType}
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Section 3: What Keeps the Loop Going</h2>
+    <div class="loop-box">
+      <div class="detail-row">
+        <span class="detail-label">Reinforcement Pattern:</span> ${data.reinforcement}
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Section 4: Load vs Recovery Capacity</h2>
+    <div class="loop-box">
+      <div class="detail-row">
+        <span class="detail-label">Status:</span> ${data.loadCapacityBand}
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Section 5: Stability & Escalation Risk</h2>
+    <div class="loop-box">
+      <div class="detail-row">
+        <span class="detail-label">Stability Pattern:</span> ${data.stability}
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-box">
+    <h3>Ready to take your next step?</h3>
+    <p>Book a consultation to apply this insight to your specific situation</p>
+    <p><strong>Visit:</strong> ${CONFIG.COMPANY_WEBSITE}/contact</p>
+    <p><strong>WhatsApp:</strong> ${CONFIG.WHATSAPP_NUMBER}</p>
+  </div>
+
+  <div class="footer">
+    <strong>CuraGo - Your Partner in Emotional Wellness</strong>
+    <p>${CONFIG.COMPANY_WEBSITE} | ${CONFIG.SUPPORT_EMAIL}</p>
+    <p style="margin-top: 10px;">
+      Report generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+    </p>
+  </div>
+</body>
+</html>
+  `;
+
+  return Utilities.newBlob(html, 'text/html', 'temp.html').getAs('application/pdf');
+}
+
+// ============================================================
+// SEND CALM EMAIL WITH PDF
+// ============================================================
+function sendCalmPdfEmail(data, pdfFile) {
+  const plainBody = `
+Hi ${data.name}!
+
+Thank you for completing the CALM 1.0 assessment.
+
+Your detailed results are attached as a PDF document.
+
+QUICK SUMMARY:
+Primary Loop: ${data.primaryLoop}
+${data.secondaryLoop ? 'Secondary Loop: ' + data.secondaryLoop : ''}
+Trigger Pattern: ${data.triggerType}
+Reinforcement: ${data.reinforcement}
+Load vs Recovery: ${data.loadCapacityBand}
+Stability: ${data.stability}
+
+Next Steps:
+- Book a consultation: ${CONFIG.COMPANY_WEBSITE}/contact
+- Chat with us on WhatsApp: ${CONFIG.WHATSAPP_NUMBER}
+
+Best regards,
+CuraGo Team
+${CONFIG.COMPANY_WEBSITE}
+  `;
+
+  const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+    .header { background: #096b17; color: white; padding: 30px; text-align: center; }
+    .content { padding: 30px; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; background: #f8f9fa; }
+    .cta-button { background: #64CB81; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Your CALM 1.0 Results</h1>
+  </div>
+  <div class="content">
+    <h2>Hi ${data.name}!</h2>
+    <p>Thank you for completing the CALM 1.0 assessment.</p>
+    <p><strong>Your detailed results are attached as a PDF document.</strong></p>
+    <p>Primary Loop: <strong>${data.primaryLoop}</strong></p>
+    <p style="text-align: center;">
+      <a href="${CONFIG.COMPANY_WEBSITE}/contact" class="cta-button">Book Consultation</a>
+    </p>
+  </div>
+  <div class="footer">
+    <p><strong>CuraGo Team</strong></p>
+    <p>${CONFIG.COMPANY_WEBSITE} | ${CONFIG.WHATSAPP_NUMBER}</p>
+  </div>
+</body>
+</html>
+  `;
+
+  GmailApp.sendEmail(
+    data.email,
+    CONFIG.EMAIL_SUBJECT_CALM,
+    plainBody,
+    {
+      htmlBody: htmlBody,
+      name: CONFIG.FROM_NAME,
+      attachments: [pdfFile.getBlob()]
+    }
+  );
+
+  Logger.log('CALM email with PDF sent to: ' + data.email);
+}

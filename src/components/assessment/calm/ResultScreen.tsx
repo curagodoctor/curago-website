@@ -1,16 +1,6 @@
 import React from 'react';
 import { Card } from '../../ui/card';
-import { Badge } from '../../ui/badge';
 import { motion } from 'framer-motion';
-import {
-  Brain,
-  Target,
-  Activity,
-  TrendingUp,
-  AlertTriangle,
-  CheckCircle2,
-  Info,
-} from 'lucide-react';
 import type { CalmResult, LoopType, TriggerType, LoadCapacityBand, StabilityType, ReinforcementMechanism } from '../../../types/calm';
 
 interface ResultScreenProps {
@@ -39,7 +29,7 @@ export default function ResultScreen({ result, userName }: ResultScreenProps) {
         </motion.div>
 
         {/* Section 1: Anxiety Loop Map */}
-        <Section number={1} title="YOUR ANXIETY LOOP MAP" icon={Brain}>
+        <Section number={1} title="YOUR ANXIETY LOOP MAP">
           <LoopTypeDescriptions />
 
           <Card className="p-8 bg-[#096b17] border-2 border-[#075110] mt-8 hover:bg-[#096b17] group">
@@ -81,27 +71,27 @@ export default function ResultScreen({ result, userName }: ResultScreenProps) {
         </Section>
 
         {/* Section 2: Trigger Architecture */}
-        <Section number={2} title="TRIGGER ARCHITECTURE" icon={Target}>
+        <Section number={2} title="TRIGGER ARCHITECTURE">
           <TriggerContent pattern={triggerType} />
         </Section>
 
         {/* Section 3: What Keeps the Loop Going */}
-        <Section number={3} title="WHAT KEEPS THE LOOP GOING" icon={Activity}>
+        <Section number={3} title="WHAT KEEPS THE LOOP GOING">
           <ReinforcementContent pattern={reinforcement} />
         </Section>
 
         {/* Section 4: Load vs Recovery Capacity */}
-        <Section number={4} title="LOAD VS RECOVERY CAPACITY" icon={TrendingUp}>
+        <Section number={4} title="LOAD VS RECOVERY CAPACITY">
           <LoadContent pattern={loadCapacityBand} />
         </Section>
 
         {/* Section 5: Stability & Escalation Risk */}
-        <Section number={5} title="STABILITY & ESCALATION RISK" icon={AlertTriangle}>
+        <Section number={5} title="STABILITY & ESCALATION RISK">
           <StabilityContent pattern={stability} />
         </Section>
 
         {/* Section 6: Clinical Pathways */}
-        <Section number={6} title="CLINICAL PATHWAYS" icon={Info}>
+        <Section number={6} title="CLINICAL PATHWAYS">
           <Card className="p-8 bg-white border-2 border-[#096b17]/20">
             <div className="space-y-4" style={{ color: '#096b17' }}>
               <p>
@@ -119,7 +109,7 @@ export default function ResultScreen({ result, userName }: ResultScreenProps) {
         </Section>
 
         {/* Section 7: Next Step */}
-        <Section number={7} title="NEXT STEP" icon={CheckCircle2}>
+        <Section number={7} title="NEXT STEP">
           <div className="grid md:grid-cols-2 gap-6">
             <Card className="p-6 bg-[#096b17] border-2 border-[#075110] hover:bg-[#096b17] group">
               <h3 className="text-xl font-bold text-white group-hover:text-white mb-4">
@@ -153,10 +143,9 @@ export default function ResultScreen({ result, userName }: ResultScreenProps) {
 
 // Helper Components
 
-function Section({ number, title, icon: Icon, children }: {
+function Section({ number, title, children }: {
   number: number;
   title: string;
-  icon: any;
   children: React.ReactNode;
 }) {
   return (
@@ -166,13 +155,9 @@ function Section({ number, title, icon: Icon, children }: {
       viewport={{ once: true }}
       className="space-y-6"
     >
-      <div className="flex items-center gap-3">
-        <Badge className="px-4 py-2 bg-[#096b17] text-white border-2 border-[#096b17] hover:bg-[#096b17] group">
-          <Icon className="w-4 h-4 mr-2 group-hover:text-white" />
-          <span className="group-hover:text-white">Section {number}</span>
-        </Badge>
+      <div>
         <h2 className="text-2xl md:text-3xl font-bold" style={{ color: '#096b17' }}>
-          {title}
+          Section {number}: {title}
         </h2>
       </div>
       {children}
