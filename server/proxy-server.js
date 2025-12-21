@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Your Google Apps Script Web App URL
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxrMLXOgbqa343auc_OHJETBKeoSfVCjX6z_jMlyEvNqSPq3qxFGCZ4qFGxIC7xTp57/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAlttxxgXZTAe7DrnTzoEoXoqAQbvLemRpCEhvE_EIhrXr2xc7SLZ6MTE0pXkWPSDs/exec';
 
 // Enable CORS for all origins (you can restrict this to your domain)
 app.use(cors());

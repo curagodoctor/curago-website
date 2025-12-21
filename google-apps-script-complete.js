@@ -323,8 +323,11 @@ function generateCalmPdf(data) {
       page-break-after: avoid;
     }
     .logo-img {
-      height: 50px;
-      margin: 0 0 10px 0;
+      height: 60px;
+      margin: 0 0 12px 0;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
     .header h1 {
       margin: 0 0 8px 0;
@@ -480,7 +483,7 @@ function generateCalmPdf(data) {
 </head>
 <body>
   <div class="header">
-    <img src="${CONFIG.COMPANY_WEBSITE}/Logo.svg" alt="CuraGo" class="logo-img" />
+    <img src="${CONFIG.COMPANY_WEBSITE}/logo.png" alt="CuraGo" class="logo-img" />
     <h1>Your CALM 1.0 Report</h1>
     <p>Personalized Clinical Assessment for ${data.name}</p>
   </div>
@@ -715,7 +718,7 @@ ${CONFIG.COMPANY_WEBSITE}
   <style>
     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
     .header { background: #096b17; color: white; padding: 30px; text-align: center; }
-    .logo-img { height: 50px; margin-bottom: 10px; }
+    .logo-img { height: 60px; margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto; }
     .content { padding: 30px; }
     .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; background: #f8f9fa; }
     .cta-button { background: #096b17; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
@@ -726,7 +729,7 @@ ${CONFIG.COMPANY_WEBSITE}
 </head>
 <body>
   <div class="header">
-    <img src="${CONFIG.COMPANY_WEBSITE}/Logo.svg" alt="CuraGo" class="logo-img" />
+    <img src="${CONFIG.COMPANY_WEBSITE}/logo.png" alt="CuraGo" class="logo-img" />
     <h1>Your CALM 1.0 Results</h1>
   </div>
   <div class="content">
