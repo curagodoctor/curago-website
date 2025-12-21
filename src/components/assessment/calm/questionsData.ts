@@ -194,8 +194,8 @@ export const CALM_QUESTIONS: CalmQuestion[] = [
     dimension: 'PHYSIOLOGICAL LOAD',
     text: 'When you rest or sleep, what effect does it usually have on your anxiety?',
     options: [
-      { id: 'A', text: 'It clearly reduces it', scores: [{ variable: 'RC', points: -2 }] }, // inverse
-      { id: 'B', text: 'It helps a little', scores: [{ variable: 'RC', points: -1 }] }, // inverse
+      { id: 'A', text: 'It clearly reduces it', scores: [{ variable: 'RC', points: 2 }] },
+      { id: 'B', text: 'It helps a little', scores: [{ variable: 'RC', points: 1 }] },
       { id: 'C', text: 'It doesn\'t help much', scores: [{ variable: 'PS', points: 2 }] },
       { id: 'D', text: 'Sometimes it actually makes it worse', scores: [{ variable: 'PS', points: 3 }] },
     ],

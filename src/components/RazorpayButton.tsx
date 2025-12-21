@@ -33,6 +33,18 @@ export default function RazorpayButton({ buttonId = 'pl_Rtue8bSVIson8p', classNa
   const handlePayment = () => {
     setIsLoading(true);
 
+    // Track initiate checkout event
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'initiatecheckout',
+      test_type: 'calm_tool',
+      amount: 299,
+      currency: 'INR',
+      page_path: window.location.pathname,
+      timestamp: new Date().toISOString(),
+    });
+    console.log('✅ initiatecheckout event pushed to dataLayer (CALM, ₹299)');
+
     // Open Razorpay payment link
     const paymentUrl = `https://razorpay.com/payment-button/${buttonId}/view/?amount=29900`;
     window.open(paymentUrl, '_blank');

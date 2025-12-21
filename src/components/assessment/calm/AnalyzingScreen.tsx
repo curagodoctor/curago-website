@@ -31,13 +31,13 @@ export default function AnalyzingScreen({ userName }: AnalyzingScreenProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-2xl w-full"
       >
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 border-2 border-white/20 shadow-2xl">
+        <div className="bg-white rounded-2xl p-8 md:p-12 border-2 border-[#096b17]/20 shadow-2xl">
           <div className="text-center space-y-8">
             {/* Header */}
             <div className="space-y-4">
@@ -46,12 +46,12 @@ export default function AnalyzingScreen({ userName }: AnalyzingScreenProps) {
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 className="inline-block"
               >
-                <Brain className="w-16 h-16 text-[#64CB81]" />
+                <Brain className="w-16 h-16 text-[#096b17]" />
               </motion.div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white">
+              <h2 className="text-3xl md:text-4xl font-bold" style={{ color: '#096b17' }}>
                 Analyzing Your Responses
               </h2>
-              <p className="text-white/80 text-lg">
+              <p className="text-lg" style={{ color: '#096b17' }}>
                 Hi {userName}, we're creating your personalized CALM report
               </p>
             </div>
@@ -69,15 +69,15 @@ export default function AnalyzingScreen({ userName }: AnalyzingScreenProps) {
                   className="flex items-center gap-3 text-left"
                 >
                   {index < stage ? (
-                    <CheckCircle2 className="w-5 h-5 text-[#64CB81] flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-[#096b17] flex-shrink-0" />
                   ) : index === stage ? (
-                    <Loader2 className="w-5 h-5 text-[#64CB81] flex-shrink-0 animate-spin" />
+                    <Loader2 className="w-5 h-5 text-[#096b17] flex-shrink-0 animate-spin" />
                   ) : (
-                    <div className="w-5 h-5 rounded-full border-2 border-white/30 flex-shrink-0" />
+                    <div className="w-5 h-5 rounded-full border-2 border-[#096b17]/30 flex-shrink-0" />
                   )}
                   <span className={`text-sm md:text-base ${
-                    index <= stage ? 'text-white font-medium' : 'text-white/50'
-                  }`}>
+                    index <= stage ? 'font-medium' : ''
+                  }`} style={{ color: index <= stage ? '#096b17' : 'rgba(9, 107, 23, 0.5)' }}>
                     {text}
                   </span>
                 </motion.div>
@@ -86,9 +86,9 @@ export default function AnalyzingScreen({ userName }: AnalyzingScreenProps) {
 
             {/* Loading Bar */}
             <div className="relative">
-              <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-[#F5F5DC] rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-[#64CB81] to-[#4CAF50] rounded-full"
+                  className="h-full bg-[#096b17] rounded-full"
                   initial={{ width: '0%' }}
                   animate={{ width: `${((stage + 1) / stages.length) * 100}%` }}
                   transition={{ duration: 0.5 }}
@@ -97,7 +97,7 @@ export default function AnalyzingScreen({ userName }: AnalyzingScreenProps) {
             </div>
 
             {/* Info Text */}
-            <p className="text-white/70 text-sm">
+            <p className="text-sm" style={{ color: 'rgba(9, 107, 23, 0.7)' }}>
               This usually takes 5-10 seconds. Please don't close this window.
             </p>
           </div>

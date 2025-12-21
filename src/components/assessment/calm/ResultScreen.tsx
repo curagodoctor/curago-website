@@ -12,7 +12,7 @@ export default function ResultScreen({ result, userName }: ResultScreenProps) {
   const { primaryLoop, secondaryLoop, triggerType, reinforcement, loadCapacityBand, stability } = result;
 
   return (
-    <div className="min-h-screen bg-[#F5F5DC] py-12 px-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="min-h-screen bg-[#F5F5DC] pt-24 pb-12 px-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
       <div className="max-w-4xl mx-auto space-y-12">
         {/* Header */}
         <motion.div

@@ -537,6 +537,42 @@ export default function App() {
     // Generate event ID for tracking
     const eventId = `calm-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
+    // Send webhook with form data and CALM results - FIRES FIRST
+    try {
+      const webhookPayload = {
+        action: "calm_assessment",
+        contact: {
+          name: userInfo.name,
+          whatsapp: userInfo.whatsapp.startsWith('+91') ? userInfo.whatsapp : `+91${userInfo.whatsapp}`,
+          email: userInfo.email || ""
+        },
+        assessment: {
+          type: "CALM",
+          primaryLoop: result.primaryLoop,
+          secondaryLoop: result.secondaryLoop,
+          triggerType: result.triggerType,
+          reinforcement: result.reinforcement,
+          loadCapacityBand: result.loadCapacityBand,
+          stability: result.stability,
+          loopScores: result.loopScores,
+          answers: answers
+        },
+        timestamp: new Date().toISOString()
+      };
+
+      await fetch('https://server.wylto.com/webhook/878qqFtbh3oZYJjbEc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookPayload)
+      });
+
+      console.log('✅ CALM assessment webhook sent successfully');
+    } catch (error) {
+      console.error('❌ Failed to send CALM assessment webhook:', error);
+    }
+
     // Minimum wait time for analyzing screen (5 seconds for better UX)
     const minWaitTime = new Promise(resolve => setTimeout(resolve, 5000));
 

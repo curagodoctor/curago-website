@@ -9,7 +9,6 @@ import {
   Shield,
   TrendingUp,
   Sparkles,
-  ArrowRight,
   CheckCircle2,
   Clock,
   Target,
@@ -17,7 +16,6 @@ import {
   AlertCircle,
   Activity,
   Lightbulb,
-  X,
 } from 'lucide-react';
 
 interface CalmLandingPageProps {
@@ -26,100 +24,10 @@ interface CalmLandingPageProps {
 
 export default function CalmLandingPage({ onStartAssessment }: CalmLandingPageProps) {
   const [price] = React.useState(299);
-  const whyExistsScrollRef = React.useRef<HTMLDivElement>(null);
-  const whatYouGetScrollRef = React.useRef<HTMLDivElement>(null);
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
-
-  // Auto-scroll effect for "Why CALM exists" section
-  React.useEffect(() => {
-    const scrollContainer = whyExistsScrollRef.current;
-    if (!scrollContainer) return;
-
-    let scrollInterval: NodeJS.Timeout;
-    let isPaused = false;
-
-    const startAutoScroll = () => {
-      scrollInterval = setInterval(() => {
-        if (!isPaused && scrollContainer) {
-          const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-          const currentScroll = scrollContainer.scrollLeft;
-
-          if (currentScroll >= maxScroll) {
-            scrollContainer.scrollLeft = 0;
-          } else {
-            scrollContainer.scrollLeft += 1;
-          }
-        }
-      }, 30);
-    };
-
-    const handleMouseEnter = () => { isPaused = true; };
-    const handleMouseLeave = () => { isPaused = false; };
-    const handleTouchStart = () => { isPaused = true; };
-    const handleTouchEnd = () => { isPaused = false; };
-
-    scrollContainer.addEventListener('mouseenter', handleMouseEnter);
-    scrollContainer.addEventListener('mouseleave', handleMouseLeave);
-    scrollContainer.addEventListener('touchstart', handleTouchStart);
-    scrollContainer.addEventListener('touchend', handleTouchEnd);
-
-    startAutoScroll();
-
-    return () => {
-      clearInterval(scrollInterval);
-      scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
-      scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
-      scrollContainer.removeEventListener('touchstart', handleTouchStart);
-      scrollContainer.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, []);
-
-  // Auto-scroll effect for "What you get" section
-  React.useEffect(() => {
-    const scrollContainer = whatYouGetScrollRef.current;
-    if (!scrollContainer) return;
-
-    let scrollInterval: NodeJS.Timeout;
-    let isPaused = false;
-
-    const startAutoScroll = () => {
-      scrollInterval = setInterval(() => {
-        if (!isPaused && scrollContainer) {
-          const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-          const currentScroll = scrollContainer.scrollLeft;
-
-          if (currentScroll >= maxScroll) {
-            scrollContainer.scrollLeft = 0;
-          } else {
-            scrollContainer.scrollLeft += 1;
-          }
-        }
-      }, 30);
-    };
-
-    const handleMouseEnter = () => { isPaused = true; };
-    const handleMouseLeave = () => { isPaused = false; };
-    const handleTouchStart = () => { isPaused = true; };
-    const handleTouchEnd = () => { isPaused = false; };
-
-    scrollContainer.addEventListener('mouseenter', handleMouseEnter);
-    scrollContainer.addEventListener('mouseleave', handleMouseLeave);
-    scrollContainer.addEventListener('touchstart', handleTouchStart);
-    scrollContainer.addEventListener('touchend', handleTouchEnd);
-
-    startAutoScroll();
-
-    return () => {
-      clearInterval(scrollInterval);
-      scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
-      scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
-      scrollContainer.removeEventListener('touchstart', handleTouchStart);
-      scrollContainer.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, []);
 
   return (
     <div className="min-h-screen bg-[#F5F5DC] relative" style={{ fontFamily: 'Poppins, sans-serif' }}>
@@ -144,7 +52,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                 </p>
 
                 <h2 className="text-xl md:text-2xl leading-relaxed max-w-2xl mx-auto animate-[fadeInUp_0.8s_ease-out_0.3s_both]" style={{ color: '#096b17' }}>
-                  A clear starting point for people who feel anxious but don't know what to do next.
+                  A clear starting point at just ₹299 for people who feel anxious but don't know what to do next.
                 </h2>
 
                 <p className="text-base animate-[fadeInUp_0.8s_ease-out_0.4s_both]" style={{ color: '#096b17' }}>
@@ -153,17 +61,31 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-[fadeInUp_0.8s_ease-out_0.5s_both]">
-                <RazorpayButton />
+              <div className="flex flex-col items-center justify-center gap-6 animate-[fadeInUp_0.8s_ease-out_0.5s_both]">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <RazorpayButton />
 
-                <Button
-                  onClick={() => scrollToSection('what-you-get')}
-                  variant="outline"
-                  size="lg"
-                  className="bg-[#096b17] text-white hover:bg-[#075110] border-2 border-[#096b17] px-8 h-14 rounded-xl font-semibold transition-all duration-300"
-                >
-                  What exactly will I receive?
-                </Button>
+                  <Button
+                    onClick={() => scrollToSection('what-you-get')}
+                    variant="outline"
+                    size="lg"
+                    className="bg-[#096b17] text-white hover:bg-[#075110] border-2 border-[#096b17] px-8 h-14 rounded-xl font-semibold transition-all duration-300"
+                  >
+                    What exactly will I receive?
+                  </Button>
+                </div>
+
+                <p className="text-xs text-center max-w-md" style={{ color: '#096b17' }}>
+                  By clicking Start CALM 1.0, you are agreeing to our{' '}
+                  <a
+                    href="/terms-and-conditions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-[#075110] transition-colors"
+                  >
+                    terms and conditions
+                  </a>
+                </p>
               </div>
 
               <p className="text-2xl md:text-3xl font-bold flex items-center justify-center gap-2 animate-[fadeInUp_0.8s_ease-out_0.6s_both]" style={{ color: '#096b17' }}>
@@ -184,14 +106,18 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            {/* Fixed Heading */}
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center bg-[#096b17] py-6 px-8 rounded-t-2xl">
-              If you're here, this might sound familiar
-            </h2>
+            {/* Fixed Text Box */}
+            <div className="bg-[#096b17] rounded-2xl shadow-2xl border-4 border-[#075110] overflow-hidden">
+              {/* Fixed Heading */}
+              <div className="bg-[#075110] py-6 px-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-white text-center">
+                  If you're here, this might sound familiar
+                </h2>
+              </div>
 
-            {/* Scrollable Content Box */}
-            <div className="bg-[#096b17] rounded-b-2xl p-8 md:p-12 max-h-[500px] overflow-y-auto border-t-4 border-white/20">
-              <div className="space-y-5 text-white leading-relaxed">
+              {/* Scrollable Content Box with Fixed Height */}
+              <div className="p-8 md:p-12 h-[500px] overflow-y-auto">
+                <div className="space-y-5 text-white leading-relaxed">
                 <p className="text-base">You've been feeling anxious — maybe for weeks, maybe for years.</p>
                 <p className="text-base">You've read articles. You've watched videos. You've spoken to people.</p>
 
@@ -220,6 +146,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                     But where do you start — without guessing?
                   </p>
                 </div>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -227,7 +154,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
       </section>
 
       {/* FRAME 3 — WHY CALM EXISTS */}
-      <section className="bg-[#FFFDBD] py-20">
+      <section className="bg-[#FFFDBD] py-20 overflow-x-hidden">
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -251,40 +178,53 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                 </p>
               </div>
 
-              {/* Auto-scrolling Cards Container */}
-              <div className="relative">
-                <div
-                  ref={whyExistsScrollRef}
-                  className="overflow-x-auto pb-4 scrollbar-hide"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                  <style>{`
-                    .scrollbar-hide::-webkit-scrollbar {
-                      display: none;
+              {/* Auto-scrolling Cards Container - Marquee */}
+              <div className="relative w-full overflow-hidden">
+                <style>{`
+                  @keyframes scroll-left {
+                    0% {
+                      transform: translateX(0);
                     }
-                    @keyframes auto-scroll {
-                      0% { scroll-behavior: smooth; }
-                      100% { scroll-behavior: smooth; }
+                    100% {
+                      transform: translateX(-50%);
                     }
-                    .auto-scroll-container {
-                      animation: none;
-                    }
-                  `}</style>
-                  <div className="flex gap-4 min-w-min">
-                    {[
-                      { icon: Target, text: 'Your anxiety pattern' },
-                      { icon: Activity, text: 'The triggers that sustain it' },
-                      { icon: TrendingUp, text: 'How stable or escalatory it is' },
-                      { icon: CheckCircle2, text: 'What usually helps this pattern' },
-                    ].map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-3 bg-[#F5F5DC] rounded-xl p-5 border-2 border-[#096b17]/20 min-w-[240px] md:min-w-[280px] flex-shrink-0">
-                        <div className="w-12 h-12 rounded-lg bg-[#096b17] flex items-center justify-center flex-shrink-0">
-                          <item.icon className="w-6 h-6 text-white" />
-                        </div>
-                        <span className="text-left font-medium" style={{ color: '#096b17' }}>{item.text}</span>
+                  }
+                  .animate-scroll {
+                    animation: scroll-left 30s linear infinite;
+                  }
+                  .animate-scroll:hover {
+                    animation-play-state: paused;
+                  }
+                `}</style>
+                <div className="flex gap-4 animate-scroll" style={{ width: 'max-content' }}>
+                  {/* First set of cards */}
+                  {[
+                    { icon: Target, text: 'Your anxiety pattern' },
+                    { icon: Activity, text: 'The triggers that sustain it' },
+                    { icon: TrendingUp, text: 'How stable or escalatory it is' },
+                    { icon: CheckCircle2, text: 'What usually helps this pattern' },
+                  ].map((item, idx) => (
+                    <div key={`set1-${idx}`} className="flex flex-col items-center justify-center gap-3 bg-[#F5F5DC] rounded-xl p-5 border-2 border-[#096b17]/20 w-[200px] h-[200px] flex-shrink-0">
+                      <div className="w-12 h-12 rounded-lg bg-[#096b17] flex items-center justify-center flex-shrink-0">
+                        <item.icon className="w-6 h-6 text-white" />
                       </div>
-                    ))}
-                  </div>
+                      <span className="text-center font-medium text-sm leading-tight" style={{ color: '#096b17' }}>{item.text}</span>
+                    </div>
+                  ))}
+                  {/* Duplicate set for seamless loop */}
+                  {[
+                    { icon: Target, text: 'Your anxiety pattern' },
+                    { icon: Activity, text: 'The triggers that sustain it' },
+                    { icon: TrendingUp, text: 'How stable or escalatory it is' },
+                    { icon: CheckCircle2, text: 'What usually helps this pattern' },
+                  ].map((item, idx) => (
+                    <div key={`set2-${idx}`} className="flex flex-col items-center justify-center gap-3 bg-[#F5F5DC] rounded-xl p-5 border-2 border-[#096b17]/20 w-[200px] h-[200px] flex-shrink-0">
+                      <div className="w-12 h-12 rounded-lg bg-[#096b17] flex items-center justify-center flex-shrink-0">
+                        <item.icon className="w-6 h-6 text-white" />
+                      </div>
+                      <span className="text-center font-medium text-sm leading-tight" style={{ color: '#096b17' }}>{item.text}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -300,7 +240,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
       </section>
 
       {/* FRAME 4 — WHAT YOU GET */}
-      <section id="what-you-get" className="container mx-auto px-4 sm:px-6 py-20 relative z-10">
+      <section id="what-you-get" className="container mx-auto px-4 sm:px-6 py-20 relative z-10 overflow-x-hidden">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -326,76 +266,115 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
               </div>
             </div>
 
-            {/* Auto-scrolling Cards Container */}
-            <div className="relative mt-8">
-              <div
-                className="overflow-x-auto pb-6 scrollbar-hide auto-scroll-container"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                onMouseEnter={(e) => e.currentTarget.style.animationPlayState = 'paused'}
-                onMouseLeave={(e) => e.currentTarget.style.animationPlayState = 'running'}
-                onTouchStart={(e) => e.currentTarget.style.animationPlayState = 'paused'}
-                onTouchEnd={(e) => e.currentTarget.style.animationPlayState = 'running'}
-              >
-                <style>{`
-                  .scrollbar-hide::-webkit-scrollbar {
-                    display: none;
+            {/* Auto-scrolling Cards Container - Marquee */}
+            <div className="relative w-full overflow-hidden mt-8">
+              <style>{`
+                @keyframes scroll-left-slow {
+                  0% {
+                    transform: translateX(0);
                   }
-                `}</style>
-                <div className="flex gap-4 md:gap-6 min-w-min px-2">
-                  {[
-                    {
-                      icon: Brain,
-                      title: 'Your Anxiety Loop Map',
-                      description: 'How your anxiety forms, repeats, and sustains itself.'
-                    },
-                    {
-                      icon: Target,
-                      title: 'Trigger Architecture',
-                      description: 'Why anxiety spikes "without reason" on some days.'
-                    },
-                    {
-                      icon: Activity,
-                      title: 'Reinforcement Mechanisms',
-                      description: 'What unintentionally keeps the loop active. (This is where most people have their "oh" moment.)'
-                    },
-                    {
-                      icon: TrendingUp,
-                      title: 'Load vs Capacity Index',
-                      description: 'Whether anxiety is driven by overload, recovery failure, or both.'
-                    },
-                    {
-                      icon: Shield,
-                      title: 'Stability & Escalation Risk',
-                      description: 'Whether your pattern is stable, fluctuating, or likely to worsen.'
-                    },
-                    {
-                      icon: Lightbulb,
-                      title: 'Clinical Pathways',
-                      description: 'What approaches usually work for this pattern — and what usually doesn\'t.'
-                    }
-                  ].map((item, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.4, delay: idx * 0.1 }}
-                      className="min-w-[240px] md:min-w-[280px] flex-shrink-0"
-                    >
-                      <Card className="p-5 md:p-6 bg-[#096b17] border-2 border-[#075110] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:bg-[#096b17] h-full rounded-2xl group">
-                        <div className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-xl bg-white mb-3 md:mb-4">
-                          <item.icon className="w-6 h-6 md:w-7 md:h-7 text-[#096b17]" />
-                        </div>
-                        <h3 className="text-base md:text-lg font-bold text-white group-hover:text-white mb-2 md:mb-3">
-                          {item.title}
-                        </h3>
-                        <p className="text-xs md:text-sm text-white group-hover:text-white leading-relaxed">
-                          {item.description}
-                        </p>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
+                  100% {
+                    transform: translateX(-50%);
+                  }
+                }
+                .animate-scroll-slow {
+                  animation: scroll-left-slow 40s linear infinite;
+                }
+                .animate-scroll-slow:hover {
+                  animation-play-state: paused;
+                }
+              `}</style>
+              <div className="flex gap-6 animate-scroll-slow pb-6" style={{ width: 'max-content' }}>
+                {/* First set of cards */}
+                {[
+                  {
+                    icon: Brain,
+                    title: 'Your Anxiety Loop Map',
+                    description: 'How your anxiety forms, repeats, and sustains itself.'
+                  },
+                  {
+                    icon: Target,
+                    title: 'Trigger Architecture',
+                    description: 'Why anxiety spikes "without reason" on some days.'
+                  },
+                  {
+                    icon: Activity,
+                    title: 'Reinforcement Mechanisms',
+                    description: 'What unintentionally keeps the loop active.'
+                  },
+                  {
+                    icon: TrendingUp,
+                    title: 'Load vs Capacity Index',
+                    description: 'Whether anxiety is driven by overload, recovery failure, or both.'
+                  },
+                  {
+                    icon: Shield,
+                    title: 'Stability & Escalation Risk',
+                    description: 'Whether your pattern is stable, fluctuating, or likely to worsen.'
+                  },
+                  {
+                    icon: Lightbulb,
+                    title: 'Clinical Pathways',
+                    description: 'What approaches usually work for this pattern.'
+                  }
+                ].map((item, idx) => (
+                  <Card key={`set1-${idx}`} className="p-6 bg-[#096b17] border-2 border-[#075110] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:bg-[#096b17] rounded-2xl group w-[280px] h-[280px] flex flex-col flex-shrink-0">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-white mb-4 flex-shrink-0">
+                      <item.icon className="w-7 h-7 text-[#096b17]" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white group-hover:text-white mb-3">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-white group-hover:text-white leading-relaxed">
+                      {item.description}
+                    </p>
+                  </Card>
+                ))}
+                {/* Duplicate set for seamless loop */}
+                {[
+                  {
+                    icon: Brain,
+                    title: 'Your Anxiety Loop Map',
+                    description: 'How your anxiety forms, repeats, and sustains itself.'
+                  },
+                  {
+                    icon: Target,
+                    title: 'Trigger Architecture',
+                    description: 'Why anxiety spikes "without reason" on some days.'
+                  },
+                  {
+                    icon: Activity,
+                    title: 'Reinforcement Mechanisms',
+                    description: 'What unintentionally keeps the loop active.'
+                  },
+                  {
+                    icon: TrendingUp,
+                    title: 'Load vs Capacity Index',
+                    description: 'Whether anxiety is driven by overload, recovery failure, or both.'
+                  },
+                  {
+                    icon: Shield,
+                    title: 'Stability & Escalation Risk',
+                    description: 'Whether your pattern is stable, fluctuating, or likely to worsen.'
+                  },
+                  {
+                    icon: Lightbulb,
+                    title: 'Clinical Pathways',
+                    description: 'What approaches usually work for this pattern.'
+                  }
+                ].map((item, idx) => (
+                  <Card key={`set2-${idx}`} className="p-6 bg-[#096b17] border-2 border-[#075110] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:bg-[#096b17] rounded-2xl group w-[280px] h-[280px] flex flex-col flex-shrink-0">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-white mb-4 flex-shrink-0">
+                      <item.icon className="w-7 h-7 text-[#096b17]" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white group-hover:text-white mb-3">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-white group-hover:text-white leading-relaxed">
+                      {item.description}
+                    </p>
+                  </Card>
+                ))}
               </div>
             </div>
 
@@ -421,60 +400,51 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
               <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: '#096b17' }}>
                 Why CALM is a paid assessment
               </h2>
-              <p className="text-lg max-w-2xl mx-auto" style={{ color: '#096b17' }}>
+              <p className="text-lg max-w-2xl mx-auto mb-8" style={{ color: '#096b17' }}>
                 We charge a small fee to maintain independence and clinical neutrality
               </p>
             </div>
 
-            {/* Side-by-side comparison - always 2 columns even on mobile */}
-            <div className="grid grid-cols-2 gap-3 md:gap-6">
-              {/* Free Tools Card */}
-              <Card className="p-4 md:p-8 bg-[#096b17] border-2 border-[#075110] rounded-2xl hover:bg-[#096b17] group">
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-3 mb-4 md:mb-6">
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-red-500/30 flex items-center justify-center flex-shrink-0">
-                    <X className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white" />
-                  </div>
-                  <h3 className="text-sm md:text-xl font-bold text-white group-hover:text-white">
-                    Free tools are designed to:
-                  </h3>
-                </div>
-                <ul className="space-y-2 md:space-y-4">
-                  {[
-                    'Maximise completion',
-                    'Increase engagement',
-                    'Push everyone toward the same outcome'
-                  ].map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2 md:gap-3 text-white group-hover:text-white">
-                      <span className="text-base md:text-xl flex-shrink-0">•</span>
-                      <span className="text-xs md:text-base">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-
-              {/* CALM Card */}
-              <div className="p-4 md:p-8 rounded-2xl border-2 border-[#075110] shadow-xl hover:bg-[#096b17] group" style={{ backgroundColor: '#096b17' }}>
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-3 mb-4 md:mb-6">
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-white/30 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white" />
-                  </div>
-                  <h3 className="text-sm md:text-xl font-bold text-white group-hover:text-white">
-                    CALM is designed to:
-                  </h3>
-                </div>
-                <ul className="space-y-2 md:space-y-4">
-                  {[
-                    'Be honest',
-                    'Say "you don\'t need a consultation" when that\'s true',
-                    'Avoid bias toward therapy or medication'
-                  ].map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2 md:gap-3 text-white group-hover:text-white">
-                      <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5 text-white group-hover:text-white" />
-                      <span className="text-xs md:text-base font-semibold">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            {/* Table with visible borders */}
+            <div className="bg-[#096b17] rounded-2xl shadow-2xl border-4 border-[#075110] overflow-hidden">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th className="p-6 md:p-8 border-2 border-white text-white text-lg md:text-2xl font-bold text-center">
+                      Free tools are designed to:
+                    </th>
+                    <th className="p-6 md:p-8 border-2 border-white text-white text-lg md:text-2xl font-bold text-center">
+                      CALM 1.0 is designed to:
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="p-6 md:p-8 border-2 border-white text-white text-base md:text-lg text-center">
+                      Maximise completion
+                    </td>
+                    <td className="p-6 md:p-8 border-2 border-white text-white text-base md:text-lg font-semibold italic text-center">
+                      Be honest
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 md:p-8 border-2 border-white text-white text-base md:text-lg text-center">
+                      Increase engagement
+                    </td>
+                    <td className="p-6 md:p-8 border-2 border-white text-white text-base md:text-lg font-semibold italic text-center">
+                      Help people who really need clarity
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 md:p-8 border-2 border-white text-white text-base md:text-lg text-center">
+                      Push everyone towards therapy or a consultation
+                    </td>
+                    <td className="p-6 md:p-8 border-2 border-white text-white text-base md:text-lg font-semibold italic text-center">
+                      Say "you don't need a consultation" when that's true
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             <div className="mt-8 text-center">
@@ -539,8 +509,8 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="w-6 h-6 flex-shrink-0 mt-0.5 text-white group-hover:text-white" />
                     <p className="text-sm text-white group-hover:text-white leading-relaxed text-left">
-                      <strong className="text-base">Special Offer:</strong> If you book a consult with Curago within 7 days,
-                      <span className="font-bold"> 50% off of the amount ₹150</span> against your consultation cost
+                      <strong className="text-base">Special Offer:</strong> If you book a consult with CuraGo within 7 days
+                      <span className="font-bold"> 50% (₹150)</span> of the amount will be adjusted with your consultation fee 
                     </p>
                   </div>
                 </div>
@@ -580,10 +550,22 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                     Gain clarity on your anxiety pattern in just 10 minutes.
                   </p>
 
-                  <div className="flex justify-center mb-6">
+                  <div className="flex flex-col items-center gap-4 mb-6">
                     <RazorpayButton
-                      className="bg-[#096b17] text-white hover:bg-[#075110] border-4 border-white px-12 py-8 h-auto rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 transition-all duration-300"
+                      className="bg-white text-[#096b17] hover:bg-white border-4 border-white px-12 py-8 h-auto rounded-2xl font-bold text-xl shadow-2xl hover:scale-105 transition-all duration-300"
                     />
+
+                    <p className="text-xs text-white text-center max-w-md group-hover:text-white">
+                      By clicking Start CALM 1.0, you are agreeing to our{' '}
+                      <a
+                        href="/terms-and-conditions"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:opacity-80 transition-opacity"
+                      >
+                        terms and conditions
+                      </a>
+                    </p>
                   </div>
 
                   <p className="text-sm flex items-center justify-center gap-2 font-medium flex-wrap group-hover:text-white">
