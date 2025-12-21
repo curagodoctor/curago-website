@@ -1,14 +1,36 @@
-# VPS Deployment Guide with Razorpay Payment Verification
+# VPS Deployment Guide
 
-This guide covers deploying the payment verification feature to your production VPS.
+Complete guide for deploying updates to the CuraGo website on production VPS.
 
-## Prerequisites
+## Server Details
 
-- SSH access to VPS: `root@93.127.213.204`
-- Razorpay account with Key ID and Secret
-- GitHub repository access
+- **VPS IP:** `93.127.213.204`
+- **SSH User:** `root`
+- **Project Path:** `/opt/curago-website`
+- **Domain:** `https://curago.in`
+- **Git Branch:** `main`
 
-## Step-by-Step Deployment
+---
+
+## Quick Deployment (Most Common)
+
+```bash
+# Connect to VPS
+ssh root@93.127.213.204
+
+# Navigate to project
+cd /opt/curago-website
+
+# Deploy
+git pull origin main && docker compose down && docker compose up -d --build
+
+# Verify
+docker compose ps
+```
+
+---
+
+## Standard Deployment Process
 
 ### Step 1: Connect to VPS
 
@@ -16,354 +38,468 @@ This guide covers deploying the payment verification feature to your production 
 ssh root@93.127.213.204
 ```
 
-### Step 2: Navigate to Website Directory
+### Step 2: Navigate to Project Directory
 
 ```bash
 cd /opt/curago-website
 ```
 
-### Step 3: Create/Update .env File on VPS
+### Step 3: Update Environment Variables (If Needed)
 
-The `.env` file on the VPS needs Razorpay credentials. Create or update it:
+If your changes require new environment variables:
 
 ```bash
-# Edit the .env file
+# Edit .env file
 nano .env
+
+# Add/update variables, then save:
+# Ctrl+O, Enter, Ctrl+X
 ```
 
-Add the following content (replace with your actual Razorpay credentials):
-
-```env
-# Google Apps Script Configuration
-VITE_GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/AKfycbwAlttxxgXZTAe7DrnTzoEoXoqAQbvLemRpCEhvE_EIhrXr2xc7SLZ6MTE0pXkWPSDs/exec
-VITE_USE_PROXY=true
-GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/AKfycbwAlttxxgXZTAe7DrnTzoEoXoqAQbvLemRpCEhvE_EIhrXr2xc7SLZ6MTE0pXkWPSDs/exec
-
-# Razorpay Configuration (PRODUCTION)
-# Get these from: https://dashboard.razorpay.com/app/keys
-# ⚠️ USE LIVE MODE CREDENTIALS FOR PRODUCTION
-RAZORPAY_KEY_ID=rzp_live_xxxxxxxxxxxxx
-RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxx
-```
-
-**Important:**
-- For production, use **Live Mode** credentials (starts with `rzp_live_`)
-- For testing, use **Test Mode** credentials (starts with `rzp_test_`)
-- Never commit this file to git
-
-Save and exit:
-- Press `Ctrl + O` to save
-- Press `Enter` to confirm
-- Press `Ctrl + X` to exit
-
-### Step 4: Update Code from GitHub
+### Step 4: Pull Latest Code
 
 ```bash
 # Check current status
 git status
 
-# Stash any local changes (like .env file and logs)
-git stash
-
-# Pull latest changes from GitHub
+# Pull latest changes
 git pull origin main
-
-# Restore the stashed .env file
-git stash pop
-
-# If there's a conflict, keep the local .env file
-# (The .env file should be in .gitignore anyway)
 ```
 
-**Alternative (if .env gets overwritten):**
+### Step 5: Deploy
 
+**Standard deployment:**
 ```bash
-# Just pull the code
-git pull origin main
-
-# Re-create .env with production credentials
-nano .env
-```
-
-### Step 5: Deploy Updated Code
-
-```bash
-# Stop current containers
 docker compose down
-
-# Build and start with new code
-# The --build flag ensures Docker rebuilds with latest code
 docker compose up -d --build
+```
+
+**Full rebuild (if dependencies changed):**
+```bash
+docker compose down
+docker compose build --no-cache
+docker compose up -d
 ```
 
 ### Step 6: Verify Deployment
 
 ```bash
-# Watch logs to ensure successful deployment
+# Check container status
+docker compose ps
+
+# View logs
 docker compose logs -f
 
-# Or watch specific service logs
-docker compose logs -f proxy-server
+# Test website
+curl -I https://curago.in
+```
+
+---
+
+## Deployment Scenarios
+
+### Scenario 1: Frontend Changes Only
+
+```bash
+cd /opt/curago-website
+git pull origin main
+docker compose restart website
 docker compose logs -f website
-
-# Press Ctrl+C to stop watching logs
 ```
 
-Check if containers are running:
+### Scenario 2: Backend/API Changes
 
 ```bash
-docker compose ps
-```
-
-You should see:
-```
-NAME               STATUS          PORTS
-curago-proxy       Up
-curago-website     Up
-traefik            Up             0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
-```
-
-### Step 7: Test Payment Verification
-
-1. **Check proxy server logs:**
-   ```bash
-   docker compose logs proxy-server | grep "Proxy server running"
-   ```
-
-   Should show:
-   ```
-   🚀 Proxy server running on port 3001
-   💳 Payment verification endpoint: http://localhost:3001/api/verify-payment
-   ```
-
-2. **Test the verification endpoint:**
-   ```bash
-   # From inside the VPS, test if the endpoint responds
-   docker exec curago-proxy wget -O- http://localhost:3001/api/health
-   ```
-
-   Should return:
-   ```json
-   {"status":"OK","message":"Proxy server is running"}
-   ```
-
-3. **Make a test payment:**
-   - Go to https://curago.in/calm
-   - Click "Start CALM 1.0"
-   - Complete payment (use test mode if testing)
-   - Verify you're redirected to quiz with payment verification
-
-4. **Check logs for verification:**
-   ```bash
-   docker compose logs -f proxy-server
-   ```
-
-   Look for:
-   ```
-   💳 Verifying payment: pay_XXX
-   ✅ Payment verification successful
-   ```
-
-## Troubleshooting
-
-### Issue: "Payment verification service not configured"
-
-**Solution:**
-```bash
-# Verify .env file exists and has Razorpay credentials
-cat .env | grep RAZORPAY
-
-# Restart proxy server to pick up environment variables
+cd /opt/curago-website
+git pull origin main
 docker compose restart proxy-server
-
-# Check logs
-docker compose logs proxy-server
+docker compose logs -f proxy-server
 ```
 
-### Issue: Container not starting
+### Scenario 3: New Dependencies or Config Changes
 
-**Solution:**
 ```bash
-# Check detailed logs
-docker compose logs proxy-server
-
-# Common issues:
-# 1. Syntax error in .env file
-# 2. Missing dependencies
-# 3. Port conflict
-
-# Rebuild without cache
+cd /opt/curago-website
+git pull origin main
 docker compose down
-docker compose build --no-cache proxy-server
+docker compose build --no-cache
 docker compose up -d
-```
-
-### Issue: Payment verification failing
-
-**Solution:**
-```bash
-# 1. Verify credentials are correct
-docker exec curago-proxy printenv | grep RAZORPAY
-
-# 2. Test Razorpay API manually (from VPS)
-curl -u "YOUR_KEY_ID:YOUR_KEY_SECRET" https://api.razorpay.com/v1/payments/pay_XXXXX
-
-# 3. Check if proxy server can reach Razorpay
-docker exec curago-proxy wget -O- https://api.razorpay.com/
-```
-
-### Issue: .env file keeps getting overwritten by git pull
-
-**Solution:**
-```bash
-# Make sure .env is in .gitignore
-echo ".env" >> .gitignore
-git add .gitignore
-git commit -m "Add .env to gitignore"
-
-# On VPS, tell git to ignore changes to .env
-git update-index --skip-worktree .env
-```
-
-## Environment Variables Reference
-
-### Required Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `RAZORPAY_KEY_ID` | Razorpay Key ID (Live/Test) | `rzp_live_xxxxx` |
-| `RAZORPAY_KEY_SECRET` | Razorpay Key Secret (Live/Test) | `xxxxxxxxxxxxxx` |
-
-### Optional Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Proxy server port | `3001` |
-
-## Security Checklist
-
-- ✅ .env file has correct permissions: `chmod 600 .env`
-- ✅ .env file is in .gitignore
-- ✅ Using Live Mode credentials in production
-- ✅ Key Secret is never exposed in frontend code
-- ✅ HTTPS is enabled (Traefik handles this)
-- ✅ Payment verification happens server-side only
-
-## Razorpay Dashboard Configuration
-
-### Production Setup
-
-1. Go to [Razorpay Dashboard](https://dashboard.razorpay.com)
-2. Switch to **Live Mode** (top-right toggle)
-3. Go to **Settings → API Keys**
-4. Copy **Key ID** and **Key Secret**
-5. Update VPS `.env` file with these credentials
-
-### Payment Button Configuration
-
-1. Go to **Payment Pages → Payment Buttons**
-2. Select your CALM payment button
-3. Set **Success URL** to:
-   ```
-   https://curago.in/calm/quiz?uuid=7f3c9b8e-4a2d-4c6a-9f21-8c7e5b2d1a94
-   ```
-4. Razorpay will automatically append `&payment_id=pay_XXX`
-5. Save the payment button
-
-## Monitoring and Maintenance
-
-### Check Service Health
-
-```bash
-# All services
-docker compose ps
-
-# Proxy server health
-curl http://localhost:3001/api/health
-
-# Check logs for errors
-docker compose logs --tail=100 proxy-server
-```
-
-### View Recent Payment Verifications
-
-```bash
-# Last 50 log lines with payment info
-docker compose logs --tail=50 proxy-server | grep "Verifying payment"
-```
-
-### Restart Services
-
-```bash
-# Restart proxy server only
-docker compose restart proxy-server
-
-# Restart all services
-docker compose restart
-
-# Full rebuild and restart
-docker compose down && docker compose up -d --build
-```
-
-## Quick Deployment Commands
-
-For future updates, use these commands:
-
-```bash
-# Quick update script
-cd /opt/curago-website && \
-git stash && \
-git pull origin main && \
-git stash pop && \
-docker compose down && \
-docker compose up -d --build && \
 docker compose logs -f
 ```
 
-Or create a deployment script:
+### Scenario 4: Environment Variables Updated
+
+```bash
+cd /opt/curago-website
+nano .env  # Update variables
+docker compose down
+docker compose up -d
+docker compose logs -f
+```
+
+### Scenario 5: Emergency Rollback
+
+```bash
+cd /opt/curago-website
+git log --oneline -5  # Find previous commit
+git reset --hard <commit-hash>
+docker compose down
+docker compose up -d --build
+```
+
+---
+
+## Automated Deployment Script
+
+Create a reusable script for easier deployments:
 
 ```bash
 # Create deploy.sh
-cat > deploy.sh << 'EOF'
+cat > /opt/curago-website/deploy.sh << 'EOF'
 #!/bin/bash
 set -e
 
-echo "🚀 Starting deployment..."
+echo "🚀 Deploying CuraGo Website..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 
 cd /opt/curago-website
 
-echo "📥 Pulling latest code..."
-git stash
+echo -e "\n${YELLOW}1. Pulling latest code...${NC}"
 git pull origin main
-git stash pop || true
 
-echo "🐳 Rebuilding containers..."
+echo -e "\n${YELLOW}2. Stopping containers...${NC}"
 docker compose down
+
+echo -e "\n${YELLOW}3. Rebuilding & starting...${NC}"
 docker compose up -d --build
 
-echo "✅ Deployment complete!"
-echo "📊 Checking status..."
+echo -e "\n${YELLOW}4. Waiting for startup...${NC}"
+sleep 5
+
+echo -e "\n${YELLOW}5. Container status:${NC}"
 docker compose ps
 
-echo ""
-echo "💡 View logs with: docker compose logs -f"
+echo -e "\n${GREEN}✅ Deployment complete!${NC}"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📊 Logs: docker compose logs -f"
+echo "🌐 Test: curl -I https://curago.in"
 EOF
 
-chmod +x deploy.sh
+chmod +x /opt/curago-website/deploy.sh
 ```
 
-Then deploy with:
+**Usage:**
 ```bash
+cd /opt/curago-website
 ./deploy.sh
 ```
 
-## Support
+---
 
-If you encounter issues:
-1. Check logs: `docker compose logs -f proxy-server`
-2. Verify .env file: `cat .env | grep RAZORPAY`
-3. Test health endpoint: `curl http://localhost:3001/api/health`
-4. Contact support: curagodoctor@gmail.com
+## Monitoring & Logs
+
+### View Logs
+
+```bash
+# All services
+docker compose logs -f
+
+# Specific service
+docker compose logs -f website
+docker compose logs -f proxy-server
+docker compose logs -f reverse-proxy
+
+# Last N lines
+docker compose logs --tail=50
+
+# Search for errors
+docker compose logs | grep -i error
+
+# Follow logs with timestamp
+docker compose logs -f --timestamps
+```
+
+### Check Container Status
+
+```bash
+# List all containers
+docker compose ps
+
+# Detailed container info
+docker ps
+
+# Container resource usage
+docker stats
+
+# Check specific service health
+docker exec curago-proxy wget -O- http://localhost:3001/api/health
+```
+
+---
+
+## Troubleshooting
+
+### Issue: Containers not starting
+
+**Check logs:**
+```bash
+docker compose logs
+```
+
+**Common fixes:**
+```bash
+# Restart all services
+docker compose restart
+
+# Full rebuild
+docker compose down
+docker compose build --no-cache
+docker compose up -d
+```
+
+### Issue: Changes not reflecting
+
+**Clear cache and rebuild:**
+```bash
+docker compose down
+docker compose build --no-cache
+docker compose up -d
+
+# Also clear browser cache: Ctrl+Shift+R
+```
+
+### Issue: Port already in use
+
+**Find what's using the port:**
+```bash
+sudo lsof -i :80
+sudo lsof -i :443
+sudo lsof -i :3001
+
+# Stop the conflicting service or container
+docker compose down
+```
+
+### Issue: Disk space full
+
+**Clean up Docker:**
+```bash
+# Remove unused containers, networks, images
+docker system prune -a
+
+# Check disk usage
+df -h
+du -sh /opt/curago-website/*
+```
+
+### Issue: Git pull fails
+
+**Stash local changes:**
+```bash
+git stash
+git pull origin main
+git stash pop
+
+# Or reset to remote
+git fetch origin
+git reset --hard origin/main
+```
+
+### Issue: Environment variables not loading
+
+**Restart containers:**
+```bash
+docker compose down
+docker compose up -d
+
+# Verify variables are loaded
+docker exec curago-proxy printenv
+```
+
+### Issue: SSL certificate issues
+
+**Check Traefik logs:**
+```bash
+docker compose logs reverse-proxy | grep -i cert
+
+# Restart Traefik
+docker compose restart reverse-proxy
+```
+
+---
+
+## Health Checks
+
+### Website Health
+
+```bash
+# Check homepage
+curl -I https://curago.in
+
+# Check specific pages
+curl -I https://curago.in/calm
+curl -I https://curago.in/aura
+
+# Check API health
+curl https://curago.in/api/health
+```
+
+### Container Health
+
+```bash
+# All containers status
+docker compose ps
+
+# Specific health checks
+docker exec curago-proxy wget -qO- http://localhost:3001/api/health
+docker exec curago-website wget -qO- http://localhost/health
+
+# Resource usage
+docker stats --no-stream
+```
+
+---
+
+## Maintenance Tasks
+
+### Regular Maintenance
+
+```bash
+# Clean up old Docker resources (monthly)
+docker system prune -a
+
+# Check logs size
+du -sh /opt/curago-website/logs/*
+
+# Rotate/clear old logs
+cd /opt/curago-website/logs
+tar -czf logs-backup-$(date +%Y%m%d).tar.gz *.log
+rm *.log
+```
+
+### Backup
+
+```bash
+# Backup .env file
+cp /opt/curago-website/.env /opt/curago-website/.env.backup
+
+# Backup Let's Encrypt certificates
+tar -czf letsencrypt-backup-$(date +%Y%m%d).tar.gz /opt/curago-website/letsencrypt/
+```
+
+---
+
+## Environment Variables Reference
+
+Current environment variables in `.env`:
+
+```env
+# Google Apps Script
+VITE_GOOGLE_APPS_SCRIPT_URL=<your_script_url>
+VITE_USE_PROXY=true
+GOOGLE_APPS_SCRIPT_URL=<your_script_url>
+
+# Razorpay (for payment features)
+RAZORPAY_KEY_ID=rzp_live_xxxxx
+RAZORPAY_KEY_SECRET=xxxxxxxxxxxxx
+```
+
+**Important:**
+- Never commit `.env` to git
+- Use `rzp_live_` for production, `rzp_test_` for testing
+- Keep backup of `.env` file
+
+---
+
+## Service Architecture
+
+```
+Internet
+   ↓
+Traefik (reverse-proxy) - Port 80/443
+   ↓
+   ├─→ Website (nginx) - Port 80
+   │   └─→ Static React App
+   │
+   └─→ Proxy Server (node) - Port 3001
+       └─→ API endpoints (/api/*)
+```
+
+**Services:**
+- `reverse-proxy`: Traefik - SSL/TLS & routing
+- `website`: Nginx - Static site hosting
+- `proxy-server`: Node.js - API proxy server
+
+---
+
+## Quick Reference Commands
+
+### Deployment
+```bash
+# Quick deploy
+./deploy.sh
+
+# Manual deploy
+git pull && docker compose down && docker compose up -d --build
+```
+
+### Logs
+```bash
+# All logs
+docker compose logs -f
+
+# Recent errors
+docker compose logs --tail=100 | grep -i error
+```
+
+### Status
+```bash
+# Container status
+docker compose ps
+
+# Resource usage
+docker stats
+```
+
+### Restart
+```bash
+# All services
+docker compose restart
+
+# Specific service
+docker compose restart website
+```
+
+### Emergency
+```bash
+# Stop everything
+docker compose down
+
+# Force stop
+docker compose kill
+
+# Start fresh
+docker compose down && docker compose up -d --build
+```
+
+---
+
+## Support Contacts
+
+- **Email:** curagodoctor@gmail.com
+- **WhatsApp:** +917021227203
+
+---
+
+## Additional Documentation
+
+- **Payment Verification Setup:** `PAYMENT_VERIFICATION_SETUP.md`
+- **502 Error Fix:** `QUICK_FIX_502.md`
+- **Fix Script:** `fix-deployment.sh`
 
 ---
 
