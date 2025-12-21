@@ -74,6 +74,10 @@ services:
       dockerfile: Dockerfile
     container_name: curago-proxy
 
+    environment:
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}
+
     restart: unless-stopped
     networks:
       - curago-network

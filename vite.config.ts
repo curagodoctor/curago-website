@@ -67,6 +67,11 @@
           secure: true,
           followRedirects: true,
         },
+        // Proxy payment verification to local proxy server
+        '/api/verify-payment': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
       },
     },
   });

@@ -18,20 +18,86 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
   const [answers, setAnswers] = useState<Partial<CalmAnswers>>({});
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const [hasValidUUID, setHasValidUUID] = useState(false);
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(true);
+  const [paymentVerified, setPaymentVerified] = useState(false);
+  const [paymentError, setPaymentError] = useState<string>('');
 
   // Valid UUID for accessing the quiz
   const VALID_UUID = '7f3c9b8e-4a2d-4c6a-9f21-8c7e5b2d1a94';
 
-  // Check for UUID in URL params
+  // Check for UUID and payment_id in URL params and verify payment
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const uuid = urlParams.get('uuid');
+    const verifyAccessAndPayment = async () => {
+      // Parse URL parameters - handle malformed URLs with multiple '?'
+      const urlString = window.location.href;
+      const queryStart = urlString.indexOf('?');
 
-    if (uuid === VALID_UUID) {
+      if (queryStart === -1) {
+        setHasValidUUID(false);
+        setIsVerifyingPayment(false);
+        return;
+      }
+
+      // Get everything after first '?' and replace additional '?' with '&'
+      const queryString = urlString.substring(queryStart + 1).replace(/\?/g, '&');
+      const urlParams = new URLSearchParams(queryString);
+
+      const uuid = urlParams.get('uuid');
+      const paymentId = urlParams.get('payment_id');
+
+      console.log('URL params:', { uuid, paymentId });
+
+      // Check UUID first
+      if (uuid !== VALID_UUID) {
+        setHasValidUUID(false);
+        setIsVerifyingPayment(false);
+        return;
+      }
+
       setHasValidUUID(true);
-    } else {
-      setHasValidUUID(false);
-    }
+
+      // Check if payment_id is provided
+      if (!paymentId) {
+        setPaymentError('Payment ID not found. Please complete the payment first.');
+        setIsVerifyingPayment(false);
+        return;
+      }
+
+      // Verify payment with backend
+      try {
+        console.log('Verifying payment:', paymentId);
+
+        const response = await fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ payment_id: paymentId }),
+        });
+
+        const data = await response.json();
+
+        console.log('Payment verification response:', data);
+
+        if (data.success && data.valid) {
+          setPaymentVerified(true);
+          console.log('✅ Payment verified successfully');
+        } else {
+          setPaymentError(
+            data.payment?.status === 'failed'
+              ? 'Payment failed. Please try again.'
+              : 'Payment not completed. Please complete the payment to access the quiz.'
+          );
+        }
+      } catch (error) {
+        console.error('Payment verification error:', error);
+        setPaymentError('Unable to verify payment. Please try again or contact support.');
+      } finally {
+        setIsVerifyingPayment(false);
+      }
+    };
+
+    verifyAccessAndPayment();
   }, []);
 
   const totalQuestions = CALM_QUESTIONS.length;
@@ -110,6 +176,29 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
 
   const currentQuestionData = CALM_QUESTIONS[currentQuestion];
 
+  // Show loading screen while verifying payment
+  if (isVerifyingPayment) {
+    return (
+      <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-24" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full text-center"
+        >
+          <div className="bg-white rounded-2xl p-8 border-2 border-[#096b17]/20 shadow-2xl">
+            <div className="flex justify-center mb-4">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#096b17]"></div>
+            </div>
+            <h2 className="text-2xl font-bold mb-3" style={{ color: '#096b17' }}>Verifying Payment</h2>
+            <p style={{ color: '#096b17' }}>
+              Please wait while we verify your payment...
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   // Show access denied if no valid UUID
   if (!hasValidUUID) {
     return (
@@ -127,10 +216,45 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
             </p>
             <button
               onClick={() => window.location.href = '/'}
-              className="px-6 py-3 bg-[#096b17] text-white font-semibold  hover:bg-[#075110] transition-all"
+              className="px-6 py-3 bg-[#096b17] text-white font-semibold hover:bg-[#075110] transition-all"
             >
               Return to Home
             </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Show payment error if payment verification failed
+  if (paymentError || !paymentVerified) {
+    return (
+      <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-24" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full text-center"
+        >
+          <div className="bg-white rounded-2xl p-8 border-2 border-[#096b17]/20 shadow-2xl">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-3" style={{ color: '#096b17' }}>Payment Verification Failed</h2>
+            <p className="mb-6" style={{ color: '#096b17' }}>
+              {paymentError || 'Unable to verify your payment. Please complete the payment to access the quiz.'}
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => window.location.href = '/calm'}
+                className="px-6 py-3 bg-[#096b17] text-white font-semibold hover:bg-[#075110] transition-all"
+              >
+                Go to Payment Page
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-white text-[#096b17] font-semibold border-2 border-[#096b17] hover:bg-[#F5F5DC] transition-all"
+              >
+                Retry Verification
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>
