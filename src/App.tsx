@@ -40,6 +40,7 @@ import CalmLandingPage from './components/CalmLandingPage';
 import QuizFlow from './components/assessment/calm/QuizFlow';
 import AnalyzingScreen from './components/assessment/calm/AnalyzingScreen';
 import ResultScreen from './components/assessment/calm/ResultScreen';
+import CalmTermsAndConditions from './components/CalmTermsAndConditions';
 import { calculateCalmResult } from './components/assessment/calm/scoringEngine';
 import { sendCalmResultsToGoogleSheets } from './utils/googleSheets';
 
@@ -94,7 +95,7 @@ export default function App() {
   const [dummyUserInfo, setDummyUserInfo] = useState<AtmUserInfo | null>(null);
 
   // ---------- CALM state ----------
-  const [calmStage, setCalmStage] = useState<'landing' | 'quiz' | 'analyzing' | 'results'>('landing');
+  const [calmStage, setCalmStage] = useState<'landing' | 'quiz' | 'analyzing' | 'results' | 'terms'>('landing');
   const [calmAnswers, setCalmAnswers] = useState<CalmAnswers | null>(null);
   const [calmUserInfo, setCalmUserInfo] = useState<CalmUserInfo | null>(null);
   const [calmResult, setCalmResult] = useState<CalmResult | null>(null);
@@ -281,6 +282,12 @@ export default function App() {
         });
 
         console.log('✅ GTM signal fired: calm_test_finished_signal');
+        return;
+      }
+      if (pathname === '/calm/terms') {
+        setCalmStage('terms');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('CALM Terms & Conditions', 'CuraGo - CALM 1.0 Terms & Conditions');
         return;
       }
 
@@ -505,7 +512,7 @@ export default function App() {
   };
 
   // ---------- CALM nav helpers (path) ----------
-  const goToCalm = (stage: 'landing' | 'quiz' | 'analyzing' | 'results') => {
+  const goToCalm = (stage: 'landing' | 'quiz' | 'analyzing' | 'results' | 'terms') => {
     const path =
       stage === 'landing'
         ? '/calm'
@@ -513,6 +520,8 @@ export default function App() {
         ? '/calm/quiz'
         : stage === 'analyzing'
         ? '/calm/analyzing'
+        : stage === 'terms'
+        ? '/calm/terms'
         : '/calm/results';
 
     history.pushState(null, '', buildUrl(path));
@@ -784,7 +793,9 @@ export default function App() {
           </div>
         )}
 
-        {calmStage === 'landing' && <Footer />}
+        {calmStage === 'terms' && <CalmTermsAndConditions />}
+
+        {(calmStage === 'landing' || calmStage === 'terms') && <Footer />}
       </>
     );
   }
