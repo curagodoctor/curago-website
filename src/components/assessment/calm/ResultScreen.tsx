@@ -39,38 +39,6 @@ export default function ResultScreen({ result, userName }: ResultScreenProps) {
             <p className="text-sm" style={{ color: '#096b17' }}>
               We are here to help you understand the report. If needed, check your email inbox/spam for the PDF version of this report.
             </p>
-
-            {/* Help Options */}
-            <div className="mt-6 space-y-4">
-              <p className="text-base" style={{ color: '#096b17' }}>
-                Need help to understand the result?{' '}
-                <button
-                  onClick={handleWhatsAppClick}
-                  className="underline font-semibold hover:text-[#075110] transition-colors"
-                >
-                  Chat with us on WhatsApp
-                </button>
-                {', or '}
-                <a
-                  href="/contact"
-                  className="underline font-semibold hover:text-[#075110] transition-colors"
-                >
-                  take a free clarity call
-                </a>
-              </p>
-
-              <div className="flex justify-center">
-                <a
-                  href="/bookconsultation"
-                  className="inline-block bg-[#096b17] text-white hover:bg-[#075110] px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-                >
-                  Book a Session
-                </a>
-              </div>
-              <p className="text-sm italic" style={{ color: '#096b17' }}>
-                If you feel like needing any formal help
-              </p>
-            </div>
           </div>
         </motion.div>
 
@@ -230,6 +198,45 @@ export default function ResultScreen({ result, userName }: ResultScreenProps) {
               It is not a diagnosis and does not substitute clinical evaluation.
             </p>
           </Card>
+        </motion.div>
+
+        {/* Help Options - Moved to End */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-12"
+        >
+          <div className="max-w-2xl mx-auto space-y-6 text-center">
+            <p className="text-base" style={{ color: '#096b17' }}>
+              Need help to understand the result?{' '}
+              <button
+                onClick={handleWhatsAppClick}
+                className="underline font-semibold hover:text-[#075110] transition-colors"
+              >
+                Chat with us on WhatsApp
+              </button>
+              {', or '}
+              <a
+                href="/contact"
+                className="underline font-semibold hover:text-[#075110] transition-colors"
+              >
+                take a free clarity call
+              </a>
+            </p>
+
+            <div className="flex justify-center">
+              <a
+                href="/bookconsultation"
+                className="inline-block bg-[#096b17] text-white hover:bg-[#075110] px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+              >
+                Book a Session
+              </a>
+            </div>
+            <p className="text-sm italic" style={{ color: '#096b17' }}>
+              If you feel like needing any formal help
+            </p>
+          </div>
         </motion.div>
       </div>
 

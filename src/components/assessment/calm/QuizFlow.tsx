@@ -21,6 +21,9 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(true);
   const [paymentVerified, setPaymentVerified] = useState(false);
   const [paymentError, setPaymentError] = useState<string>('');
+  const [paymentDetails, setPaymentDetails] = useState<{ email: string; contact: string } | null>(null);
+  const [quizAlreadyTaken, setQuizAlreadyTaken] = useState(false);
+  const [currentPaymentId, setCurrentPaymentId] = useState<string>('');
 
   // Valid UUID for accessing the quiz
   const VALID_UUID = '7f3c9b8e-4a2d-4c6a-9f21-8c7e5b2d1a94';
@@ -63,6 +66,35 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
         return;
       }
 
+      setCurrentPaymentId(paymentId);
+
+      // Check if quiz has already been completed with this payment_id
+      try {
+        const completionCheckResponse = await fetch('/api/google-sheets', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'check_completion',
+            payment_id: paymentId
+          }),
+        });
+
+        const completionData = await completionCheckResponse.json();
+        console.log('Completion check response:', completionData);
+
+        if (completionData.success && completionData.completed) {
+          console.log('⚠️ Quiz already completed with this payment_id');
+          setQuizAlreadyTaken(true);
+          setIsVerifyingPayment(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking quiz completion:', error);
+        // Continue with payment verification even if completion check fails
+      }
+
       // Verify payment with backend
       try {
         console.log('Verifying payment:', paymentId);
@@ -81,6 +113,13 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
 
         if (data.success && data.valid) {
           setPaymentVerified(true);
+          // Store payment details for validation
+          if (data.payment?.email && data.payment?.contact) {
+            setPaymentDetails({
+              email: data.payment.email,
+              contact: data.payment.contact
+            });
+          }
           console.log('✅ Payment verified successfully');
         } else {
           setPaymentError(
@@ -119,14 +158,30 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
     } else if (!/^\d{10}$/.test(userInfo.whatsapp.trim())) {
       errors.whatsapp = 'Please enter a valid 10-digit number';
       isValid = false;
+    } else if (paymentDetails) {
+      // Validate against payment details
+      const paymentContact = paymentDetails.contact.replace(/\+91/g, '').trim();
+      const enteredContact = userInfo.whatsapp.trim();
+      if (paymentContact !== enteredContact) {
+        errors.whatsapp = 'This number does not match the one used for payment';
+        isValid = false;
+      }
     }
 
-    if (!userInfo.email.trim()) {
+    if (!userInfo.email || !userInfo.email.trim()) {
       errors.email = 'Email is required';
       isValid = false;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userInfo.email.trim())) {
       errors.email = 'Please enter a valid email address';
       isValid = false;
+    } else if (paymentDetails) {
+      // Validate against payment details
+      const paymentEmail = paymentDetails.email.toLowerCase().trim();
+      const enteredEmail = userInfo.email.toLowerCase().trim();
+      if (paymentEmail !== enteredEmail) {
+        errors.email = 'This email does not match the one used for payment';
+        isValid = false;
+      }
     }
 
     setFormErrors(errors);
@@ -147,7 +202,7 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAnswer = (questionId: string, answerId: string) => {
+  const handleAnswer = async (questionId: string, answerId: string) => {
     // Prevent multiple submissions
     if (isSubmitting) return;
 
@@ -155,13 +210,35 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
     setAnswers(newAnswers);
     setSelectedValue(answerId);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if (currentQuestion < totalQuestions - 1) {
         setCurrentQuestion((q) => q + 1);
         setSelectedValue(null);
       } else {
-        // Quiz complete - submit with collected user info
+        // Quiz complete - mark as completed in Google Sheets and submit
         setIsSubmitting(true);
+
+        // Mark quiz as completed
+        try {
+          await fetch('/api/google-sheets', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              action: 'mark_completion',
+              payment_id: currentPaymentId,
+              name: userInfo.name,
+              email: userInfo.email || '',
+              phone: userInfo.whatsapp
+            }),
+          });
+          console.log('✅ Quiz marked as completed');
+        } catch (error) {
+          console.error('❌ Failed to mark quiz as completed:', error);
+          // Continue with submission even if marking fails
+        }
+
         onComplete(userInfo, newAnswers as CalmAnswers);
       }
     }, 450);
@@ -226,6 +303,49 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
     );
   }
 
+  // Show quiz already taken message
+  if (quizAlreadyTaken) {
+    return (
+      <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-24" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full text-center"
+        >
+          <div className="bg-white rounded-2xl p-8 border-2 border-[#096b17]/20 shadow-2xl">
+            <AlertCircle className="w-16 h-16 text-[#096b17] mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-3" style={{ color: '#096b17' }}>Quiz Already Completed</h2>
+            <p className="mb-6" style={{ color: '#096b17' }}>
+              This assessment has already been completed with this payment. Each payment allows for one quiz attempt only.
+            </p>
+            <p className="mb-6 text-sm" style={{ color: '#096b17' }}>
+              Please check your email for the results. If you need to retake the assessment, please make a new payment.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => window.location.href = '/calm'}
+                className="px-6 py-3 bg-[#096b17] text-white font-semibold hover:bg-[#075110] transition-all rounded-xl"
+              >
+                Return to Home
+              </button>
+              <a
+                href="https://wa.me/919148615951?text=I%20need%20help%20with%20my%20CALM%20assessment"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-white text-[#096b17] font-semibold border-2 border-[#096b17] hover:bg-[#F5F5DC] transition-all rounded-xl inline-flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                Contact Support
+              </a>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   // Show payment error if payment verification failed
   if (paymentError || !paymentVerified) {
     return (
@@ -272,9 +392,15 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
         >
           <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border-2 border-[#096b17]/20">
             <h2 className="text-2xl font-bold mb-4" style={{ color: '#096b17' }}>CALM 1.0 Assessment</h2>
-            <p className="mb-6 text-sm leading-relaxed" style={{ color: '#096b17' }}>
+            <p className="mb-4 text-sm leading-relaxed" style={{ color: '#096b17' }}>
               We need your information to send you the detailed assessment results via email and WhatsApp. Your information will be kept confidential.
             </p>
+
+            <div className="mb-6 p-3 bg-[#096b17]/10 border-l-4 border-[#096b17] rounded">
+              <p className="text-xs font-medium" style={{ color: '#096b17' }}>
+                ⓘ Please enter the same email and phone number you used during payment verification.
+              </p>
+            </div>
 
             <form onSubmit={handleUserInfoSubmit} className="space-y-4">
               {/* Name Field */}
@@ -343,6 +469,21 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
               >
                 Begin Assessment
               </button>
+
+              <div className="mt-4 text-center">
+                <a
+                  href="https://wa.me/919148615951?text=I%20am%20unable%20to%20start%20my%20CALM%20assessment"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-medium hover:underline transition-all"
+                  style={{ color: '#096b17' }}
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                  </svg>
+                  Trouble starting your test? Chat with us
+                </a>
+              </div>
             </form>
           </div>
         </motion.div>

@@ -15,6 +15,7 @@ const CONFIG = {
   AURA_SHEET_NAME: 'AURA Results',
   ATM_SHEET_NAME: 'ATM Results',
   CALM_SHEET_NAME: 'CALM Results',
+  CALM_COMPLETION_SHEET_NAME: 'CALM Completions', // New sheet for tracking quiz completions
   EMAIL_SUBJECT_AURA: 'Your AURA Index Results from CuraGo',
   EMAIL_SUBJECT_ATM: 'Your ATM Assessment Results from CuraGo',
   EMAIL_SUBJECT_CALM: 'Your CALM 1.0 Assessment Results from CuraGo',
@@ -29,6 +30,9 @@ const CONFIG = {
   // 2. Create/open a folder for PDFs
   // 3. Copy the ID from the URL: https://drive.google.com/drive/folders/YOUR_FOLDER_ID_HERE
   DRIVE_FOLDER_ID: '1ztLlzdZgZyJZR1BfICOHBPzbeNRDwTTx',
+
+  // Base64 encoded CuraGo logo (SVG)
+  LOGO_BASE64: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjYwIiB2aWV3Qm94PSIwIDAgMjAwIDYwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwOTZiMTc7c3RvcC1vcGFjaXR5OjEiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwNzUxMTA7c3RvcC1vcGFjaXR5OjEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ3aGl0ZSIvPjx0ZXh0IHg9IjEwMCIgeT0iNDAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzNiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9InVybCgjZ3JhZCkiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkN1cmFHbzwvdGV4dD48L3N2Zz4='
 };
 
 // ============================================================
@@ -37,6 +41,11 @@ const CONFIG = {
 // Date | Name | Email | Phone Number | Primary Loop | Secondary Loop | Trigger Type |
 // Reinforcement | Load Capacity Band | Stability | Anticipatory Score | Control Score |
 // Reassurance Score | Avoidance Score | Somatic Score | Cognitive Overload Score | Event ID | PDF URL
+
+// ============================================================
+// CALM COMPLETIONS SHEET HEADERS (Copy these to row 1 of your CALM Completions sheet)
+// ============================================================
+// Payment ID | Name | Email | Phone Number | Completed At | Status
 
 // ============================================================
 // CORS HANDLER
@@ -65,18 +74,25 @@ function doPost(e) {
   try {
     Logger.log('Received POST request');
     const data = JSON.parse(e.postData.contents);
-    Logger.log('Test type: ' + data.testType);
+    Logger.log('Action/Test type: ' + (data.action || data.testType));
 
     let response;
 
-    if (data.testType === 'aura_index') {
+    // Handle completion tracking actions
+    if (data.action === 'check_completion') {
+      response = checkQuizCompletion(data.payment_id);
+    } else if (data.action === 'mark_completion') {
+      response = markQuizComplete(data.payment_id, data.name, data.email, data.phone);
+    }
+    // Handle quiz submissions
+    else if (data.testType === 'aura_index') {
       response = handleAuraSubmission(data);
     } else if (data.testType === 'atm_tool') {
       response = handleAtmSubmission(data);
     } else if (data.testType === 'calm_tool') {
       response = handleCalmSubmission(data);
     } else {
-      throw new Error('Invalid test type: ' + data.testType);
+      throw new Error('Invalid action or test type: ' + (data.action || data.testType));
     }
 
     return ContentService
@@ -92,6 +108,120 @@ function doPost(e) {
         error: error.toString()
       }))
       .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ============================================================
+// COMPLETION TRACKING FUNCTIONS
+// ============================================================
+
+/**
+ * Check if a payment_id has already been used to complete the quiz
+ */
+function checkQuizCompletion(payment_id) {
+  try {
+    Logger.log('Checking completion status for payment_id: ' + payment_id);
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(CONFIG.CALM_COMPLETION_SHEET_NAME);
+
+    // Create sheet if it doesn't exist
+    if (!sheet) {
+      sheet = ss.insertSheet(CONFIG.CALM_COMPLETION_SHEET_NAME);
+      sheet.appendRow(['Payment ID', 'Name', 'Email', 'Phone Number', 'Completed At', 'Status']);
+      Logger.log('Created new completion tracking sheet');
+    }
+
+    const data = sheet.getDataRange().getValues();
+
+    // Check if payment_id exists (skip header row)
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === payment_id) {
+        Logger.log('Payment ID found - quiz already completed');
+        return {
+          success: true,
+          completed: true,
+          message: 'This quiz has already been completed',
+          data: {
+            name: data[i][1],
+            email: data[i][2],
+            phone: data[i][3],
+            completedAt: data[i][4]
+          }
+        };
+      }
+    }
+
+    Logger.log('Payment ID not found - quiz not completed yet');
+    return {
+      success: true,
+      completed: false,
+      message: 'Quiz not completed yet'
+    };
+
+  } catch (error) {
+    Logger.log('Error checking completion: ' + error.toString());
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+
+/**
+ * Mark a payment_id as completed with user details
+ */
+function markQuizComplete(payment_id, name, email, phone) {
+  try {
+    Logger.log('Marking quiz as complete for payment_id: ' + payment_id);
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(CONFIG.CALM_COMPLETION_SHEET_NAME);
+
+    // Create sheet if it doesn't exist
+    if (!sheet) {
+      sheet = ss.insertSheet(CONFIG.CALM_COMPLETION_SHEET_NAME);
+      sheet.appendRow(['Payment ID', 'Name', 'Email', 'Phone Number', 'Completed At', 'Status']);
+      Logger.log('Created new completion tracking sheet');
+    }
+
+    // Check if already exists
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === payment_id) {
+        Logger.log('Payment ID already marked as complete');
+        return {
+          success: true,
+          alreadyExists: true,
+          message: 'This payment ID is already marked as complete'
+        };
+      }
+    }
+
+    // Add new completion record
+    const timestamp = new Date().toISOString();
+    sheet.appendRow([
+      payment_id,
+      name,
+      email,
+      phone,
+      timestamp,
+      'completed'
+    ]);
+
+    Logger.log('Successfully marked quiz as complete');
+    return {
+      success: true,
+      message: 'Quiz marked as complete',
+      timestamp: timestamp
+    };
+
+  } catch (error) {
+    Logger.log('Error marking completion: ' + error.toString());
+    return {
+      success: false,
+      error: error.toString()
+    };
   }
 }
 
@@ -483,7 +613,7 @@ function generateCalmPdf(data) {
 </head>
 <body>
   <div class="header">
-    <img src="${CONFIG.COMPANY_WEBSITE}/logo.png" alt="CuraGo" class="logo-img" />
+    <img src="${CONFIG.LOGO_BASE64}" alt="CuraGo" class="logo-img" />
     <h1>Your CALM 1.0 Report</h1>
     <p>Personalized Clinical Assessment for ${data.name}</p>
   </div>
@@ -729,7 +859,7 @@ ${CONFIG.COMPANY_WEBSITE}
 </head>
 <body>
   <div class="header">
-    <img src="${CONFIG.COMPANY_WEBSITE}/logo.png" alt="CuraGo" class="logo-img" />
+    <img src="${CONFIG.LOGO_BASE64}" alt="CuraGo" class="logo-img" />
     <h1>Your CALM 1.0 Results</h1>
   </div>
   <div class="content">
