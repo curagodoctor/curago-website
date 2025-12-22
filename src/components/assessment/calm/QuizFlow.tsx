@@ -6,7 +6,7 @@ import { CALM_QUESTIONS } from './questionsData';
 import type { CalmAnswers, CalmUserInfo } from '../../../types/calm';
 
 interface QuizFlowProps {
-  onComplete: (userInfo: CalmUserInfo, answers: CalmAnswers) => void;
+  onComplete: (userInfo: CalmUserInfo, answers: CalmAnswers, paymentId: string) => void;
 }
 
 export default function QuizFlow({ onComplete }: QuizFlowProps) {
@@ -202,7 +202,7 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAnswer = async (questionId: string, answerId: string) => {
+  const handleAnswer = (questionId: string, answerId: string) => {
     // Prevent multiple submissions
     if (isSubmitting) return;
 
@@ -210,36 +210,14 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
     setAnswers(newAnswers);
     setSelectedValue(answerId);
 
-    setTimeout(async () => {
+    setTimeout(() => {
       if (currentQuestion < totalQuestions - 1) {
         setCurrentQuestion((q) => q + 1);
         setSelectedValue(null);
       } else {
-        // Quiz complete - mark as completed in Google Sheets and submit
+        // Quiz complete - submit with payment_id
         setIsSubmitting(true);
-
-        // Mark quiz as completed
-        try {
-          await fetch('/api/google-sheets', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              action: 'mark_completion',
-              payment_id: currentPaymentId,
-              name: userInfo.name,
-              email: userInfo.email || '',
-              phone: userInfo.whatsapp
-            }),
-          });
-          console.log('✅ Quiz marked as completed');
-        } catch (error) {
-          console.error('❌ Failed to mark quiz as completed:', error);
-          // Continue with submission even if marking fails
-        }
-
-        onComplete(userInfo, newAnswers as CalmAnswers);
+        onComplete(userInfo, newAnswers as CalmAnswers, currentPaymentId);
       }
     }, 450);
   };

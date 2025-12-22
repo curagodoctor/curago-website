@@ -532,7 +532,7 @@ export default function App() {
 
   const handleStartCalmQuiz = () => goToCalm('quiz');
 
-  const handleCalmQuizComplete = async (userInfo: CalmUserInfo, answers: CalmAnswers) => {
+  const handleCalmQuizComplete = async (userInfo: CalmUserInfo, answers: CalmAnswers, paymentId: string) => {
     setCalmUserInfo(userInfo);
     setCalmAnswers(answers);
 
@@ -606,8 +606,22 @@ export default function App() {
       // Continue to results even if API fails
     });
 
-    // Wait for both minimum time and API call to complete
-    await Promise.all([minWaitTime, apiCall]);
+    // Mark quiz as completed in parallel with results submission
+    const markCompletionCall = sendCalmResultsToGoogleSheets({
+      action: 'mark_completion',
+      payment_id: paymentId,
+      name: userInfo.name,
+      email: userInfo.email || '',
+      phone: userInfo.whatsapp
+    }).then(() => {
+      console.log('✅ Quiz marked as completed');
+    }).catch((error) => {
+      console.error('❌ Failed to mark quiz as completed:', error);
+      // Continue to results even if marking fails
+    });
+
+    // Wait for minimum time and both API calls to complete
+    await Promise.all([minWaitTime, apiCall, markCompletionCall]);
 
     // Navigate to results
     goToCalm('results');
