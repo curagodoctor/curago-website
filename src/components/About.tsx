@@ -104,14 +104,20 @@ export function About({ onGetStarted }: AboutProps) {
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
               >
-                <img
-                  src='/16b9238802f15faff48f3e863da5ccc19bd1bc5f.png'
-                  alt="Dr. Yuvaraj Thiruvengadam - Founder, CuraGo"
-                  className="w-full h-auto object-cover"
-                  width="800"
-                  height="1000"
-                  loading='lazy'
-                />
+                <picture>
+                  <source
+                    srcSet='/16b9238802f15faff48f3e863da5ccc19bd1bc5f.webp'
+                    type="image/webp"
+                  />
+                  <img
+                    src='/16b9238802f15faff48f3e863da5ccc19bd1bc5f.png'
+                    alt="Dr. Yuvaraj Thiruvengadam - Founder, CuraGo"
+                    className="w-full h-auto object-cover"
+                    width="800"
+                    height="1000"
+                    loading='lazy'
+                  />
+                </picture>
               </motion.div>
               <motion.div 
                 className="mt-6 bg-white rounded-xl p-6 shadow-lg border-l-4 border-[#096b17]"

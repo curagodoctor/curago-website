@@ -14,12 +14,20 @@ export function DoctorCard({ member, onBookNow }: DoctorCardProps) {
       {/* Image Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#096b17]/5 to-[#64CB81]/5">
         <div className="relative h-80">
-          <img
-            src={member.image}
-            alt={member.name}
-            className="w-full h-full object-cover object-top transition-transform duration-500 hover:scale-105"
-            loading='lazy'
-          />
+          <picture>
+            <source
+              srcSet={member.image.replace(/\.(png|jpg)$/, '.webp')}
+              type="image/webp"
+            />
+            <img
+              src={member.image}
+              alt={member.name}
+              className="w-full h-full object-cover object-top transition-transform duration-500 hover:scale-105"
+              loading='lazy'
+              width="400"
+              height="320"
+            />
+          </picture>
           
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
