@@ -2,7 +2,6 @@ import { Shield, Clock, Smartphone, Award } from 'lucide-react';
 import { Button } from './ui/button';
 import { motion } from 'framer-motion';
 import { trackButtonClick } from '../utils/tracking';
-import { OptimizedImage } from './OptimizedImage';
 
 interface AboutProps {
   onGetStarted: () => void;
@@ -105,13 +104,13 @@ export function About({ onGetStarted }: AboutProps) {
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
               >
-                <OptimizedImage
+                <img
                   src='/16b9238802f15faff48f3e863da5ccc19bd1bc5f.png'
                   alt="Dr. Yuvaraj Thiruvengadam - Founder, CuraGo"
-                  width={800}
-                  height={1000}
                   className="w-full h-auto object-cover"
-                  priority={false}
+                  width="800"
+                  height="1000"
+                  loading='lazy'
                 />
               </motion.div>
               <motion.div 
