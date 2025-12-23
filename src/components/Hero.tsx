@@ -162,14 +162,9 @@ export function Hero({ onBookAppointment }: HeroProps) {
         <div className="max-w-4xl mx-auto">
           {/* Main content */}
           <div className="text-white pt-8">
-            <motion.h1
-              className="text-4xl md:text-5xl lg:text-6xl mb-6 leading-tight"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-            >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl mb-6 leading-tight">
               CuraGo | Science Meets Mind
-            </motion.h1>
+            </h1>
 
             <motion.div
               className="space-y-4 mb-8"
