@@ -1,46 +1,52 @@
 // src/App.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Toaster } from './components/ui/sonner';
 import { Navbar } from './components/Navbar';
-import { Hero } from './components/Hero';
-import { Services } from './components/Services';
-import { ExpertiseScroller } from './components/ExpertiseScroller';
-import { MentalHealthTeam } from './components/MentalHealthTeam';
-import { MentalHealthTeamPage } from './components/MentalHealthTeamPage';
-import { BookingFormPage } from './components/BookingFormPage';
-import { About } from './components/About';
-import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
-import { FloatingButtons } from './components/FloatingButtons';
 import {
   trackPageView,
   trackButtonClick,
   trackReferralInit, // ✅ new
 } from './utils/tracking';
-import TestimonialsMarquee from './components/Testimonials';
 
-// AURA bundle (barrel also brings its CSS)
-import {
-  AuraLandingPage,
-  AuraQuizFlow,
-  AuraResultScreen,
-} from './components/assessment';
-import {
-  AtmLandingPage,
-  AtmWindDownScreen,
-  AtmQualificationScreen,
-  AtmDummyQuizFlow,
-  AtmDummyResultScreen,
-  AtmQuizFlow,
-  AtmResultScreen,
-} from './components/assessment/atm';
-import ConsultationThankYouPage from './components/ConsultationThankYouPage';
-import ConsultationLandingPage from './components/ConsultationLandingPage';
-import CalmLandingPage from './components/CalmLandingPage';
-import QuizFlow from './components/assessment/calm/QuizFlow';
-import AnalyzingScreen from './components/assessment/calm/AnalyzingScreen';
-import ResultScreen from './components/assessment/calm/ResultScreen';
-import CalmTermsAndConditions from './components/CalmTermsAndConditions';
+// ⚡ Lazy load heavy components - loads only when needed
+const Hero = lazy(() => import('./components/Hero').then(m => ({ default: m.Hero })));
+const Services = lazy(() => import('./components/Services').then(m => ({ default: m.Services })));
+const ExpertiseScroller = lazy(() => import('./components/ExpertiseScroller').then(m => ({ default: m.ExpertiseScroller })));
+const MentalHealthTeam = lazy(() => import('./components/MentalHealthTeam').then(m => ({ default: m.MentalHealthTeam })));
+const MentalHealthTeamPage = lazy(() => import('./components/MentalHealthTeamPage').then(m => ({ default: m.MentalHealthTeamPage })));
+const BookingFormPage = lazy(() => import('./components/BookingFormPage').then(m => ({ default: m.BookingFormPage })));
+const About = lazy(() => import('./components/About').then(m => ({ default: m.About })));
+const Contact = lazy(() => import('./components/Contact').then(m => ({ default: m.Contact })));
+const FloatingButtons = lazy(() => import('./components/FloatingButtons').then(m => ({ default: m.FloatingButtons })));
+const TestimonialsMarquee = lazy(() => import('./components/Testimonials'));
+
+// AURA bundle - lazy loaded
+const AuraLandingPage = lazy(() => import('./components/assessment').then(m => ({ default: m.AuraLandingPage })));
+const AuraQuizFlow = lazy(() => import('./components/assessment').then(m => ({ default: m.AuraQuizFlow })));
+const AuraResultScreen = lazy(() => import('./components/assessment').then(m => ({ default: m.AuraResultScreen })));
+
+// ATM bundle - lazy loaded
+const AtmLandingPage = lazy(() => import('./components/assessment/atm').then(m => ({ default: m.AtmLandingPage })));
+const AtmWindDownScreen = lazy(() => import('./components/assessment/atm').then(m => ({ default: m.AtmWindDownScreen })));
+const AtmQualificationScreen = lazy(() => import('./components/assessment/atm').then(m => ({ default: m.AtmQualificationScreen })));
+const AtmDummyQuizFlow = lazy(() => import('./components/assessment/atm').then(m => ({ default: m.AtmDummyQuizFlow })));
+const AtmDummyResultScreen = lazy(() => import('./components/assessment/atm').then(m => ({ default: m.AtmDummyResultScreen })));
+const AtmQuizFlow = lazy(() => import('./components/assessment/atm').then(m => ({ default: m.AtmQuizFlow })));
+const AtmResultScreen = lazy(() => import('./components/assessment/atm').then(m => ({ default: m.AtmResultScreen })));
+
+// Consultation bundle - lazy loaded
+const ConsultationThankYouPage = lazy(() => import('./components/ConsultationThankYouPage'));
+const ConsultationLandingPage = lazy(() => import('./components/ConsultationLandingPage'));
+
+// CALM bundle - lazy loaded
+const CalmLandingPage = lazy(() => import('./components/CalmLandingPage'));
+const QuizFlow = lazy(() => import('./components/assessment/calm/QuizFlow'));
+const AnalyzingScreen = lazy(() => import('./components/assessment/calm/AnalyzingScreen'));
+const ResultScreen = lazy(() => import('./components/assessment/calm/ResultScreen'));
+const CalmTermsAndConditions = lazy(() => import('./components/CalmTermsAndConditions'));
+
+// Keep these as regular imports (small utilities)
 import { calculateCalmResult } from './components/assessment/calm/scoringEngine';
 import { sendCalmResultsToGoogleSheets } from './utils/googleSheets';
 
@@ -658,6 +664,16 @@ export default function App() {
     }
   }, [isAtmRoute, atmStage, atmAnswers, isAuraRoute, auraStage, scores, isCalmRoute, calmStage, calmResult]);
 
+  // Loading fallback component
+  const LoadingSpinner = () => (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-teal-500 rounded-full mx-auto"></div>
+        <p className="text-gray-600 mt-4">Loading...</p>
+      </div>
+    </div>
+  );
+
   // ---------- Render ----------
   if (isAuraRoute) {
     return (
@@ -669,24 +685,26 @@ export default function App() {
           onNavigate={handleNavigate}
         />
 
-        {auraStage === 'landing' && <AuraLandingPage onStart={handleStartQuiz} />}
-        {auraStage === 'quiz' && <AuraQuizFlow onComplete={handleQuizComplete} />}
-        {auraStage === 'results' && scores && userInfo && (
-          <AuraResultScreen
-            scores={scores}
-            userInfo={userInfo}
-            onRetake={handleRetake}
-            answers={answers || undefined}
-          />
-        )}
-        {auraStage === 'results' && (!scores || !userInfo) && (
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-gray-600 mb-4">Redirecting to start...</p>
-              <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-teal-500 rounded-full mx-auto"></div>
+        <Suspense fallback={<LoadingSpinner />}>
+          {auraStage === 'landing' && <AuraLandingPage onStart={handleStartQuiz} />}
+          {auraStage === 'quiz' && <AuraQuizFlow onComplete={handleQuizComplete} />}
+          {auraStage === 'results' && scores && userInfo && (
+            <AuraResultScreen
+              scores={scores}
+              userInfo={userInfo}
+              onRetake={handleRetake}
+              answers={answers || undefined}
+            />
+          )}
+          {auraStage === 'results' && (!scores || !userInfo) && (
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-gray-600 mb-4">Redirecting to start...</p>
+                <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-teal-500 rounded-full mx-auto"></div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </Suspense>
 
         <Footer />
       </div>
@@ -703,52 +721,54 @@ export default function App() {
           onNavigate={handleNavigate}
         />
 
-        {atmStage === 'landing' && (
-          <AtmLandingPage
-            onStart={handleStartAtmQuiz}
-            onNavigateToWindDown={goToAtmWindDown}
-            onNavigateToDummy={() => goToAtmDummy('dummy-quiz')}
-          />
-        )}
-        {atmStage === 'winddown' && (
-          <AtmWindDownScreen
-            onComplete={handleAtmWindDownComplete}
-            onSkip={handleAtmWindDownSkip}
-          />
-        )}
-        {atmStage === 'qualification' && (
-          <AtmQualificationScreen
-            onNavigateToActual={handleQualificationToActual}
-            onNavigateToDummy={handleQualificationToDummy}
-          />
-        )}
-        {atmStage === 'dummy-quiz' && (
-          <AtmDummyQuizFlow onComplete={handleDummyQuizComplete} />
-        )}
-        {atmStage === 'dummy-results' && dummyAnswers && dummyUserInfo && (
-          <AtmDummyResultScreen
-            answers={dummyAnswers}
-            userInfo={dummyUserInfo}
-            onRetake={handleAtmRetake}
-            onUpgradeToFull={() => goToAtm('quiz')}
-          />
-        )}
-        {atmStage === 'quiz' && <AtmQuizFlow onComplete={handleAtmQuizComplete} />}
-        {atmStage === 'results' && atmAnswers && atmUserInfo && (
-          <AtmResultScreen
-            answers={atmAnswers}
-            userInfo={atmUserInfo}
-            onRetake={handleAtmRetake}
-          />
-        )}
-        {atmStage === 'results' && (!atmAnswers || !atmUserInfo) && (
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-gray-600 mb-4">Redirecting to start...</p>
-              <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-teal-500 rounded-full mx-auto"></div>
+        <Suspense fallback={<LoadingSpinner />}>
+          {atmStage === 'landing' && (
+            <AtmLandingPage
+              onStart={handleStartAtmQuiz}
+              onNavigateToWindDown={goToAtmWindDown}
+              onNavigateToDummy={() => goToAtmDummy('dummy-quiz')}
+            />
+          )}
+          {atmStage === 'winddown' && (
+            <AtmWindDownScreen
+              onComplete={handleAtmWindDownComplete}
+              onSkip={handleAtmWindDownSkip}
+            />
+          )}
+          {atmStage === 'qualification' && (
+            <AtmQualificationScreen
+              onNavigateToActual={handleQualificationToActual}
+              onNavigateToDummy={handleQualificationToDummy}
+            />
+          )}
+          {atmStage === 'dummy-quiz' && (
+            <AtmDummyQuizFlow onComplete={handleDummyQuizComplete} />
+          )}
+          {atmStage === 'dummy-results' && dummyAnswers && dummyUserInfo && (
+            <AtmDummyResultScreen
+              answers={dummyAnswers}
+              userInfo={dummyUserInfo}
+              onRetake={handleAtmRetake}
+              onUpgradeToFull={() => goToAtm('quiz')}
+            />
+          )}
+          {atmStage === 'quiz' && <AtmQuizFlow onComplete={handleAtmQuizComplete} />}
+          {atmStage === 'results' && atmAnswers && atmUserInfo && (
+            <AtmResultScreen
+              answers={atmAnswers}
+              userInfo={atmUserInfo}
+              onRetake={handleAtmRetake}
+            />
+          )}
+          {atmStage === 'results' && (!atmAnswers || !atmUserInfo) && (
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-gray-600 mb-4">Redirecting to start...</p>
+                <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-teal-500 rounded-full mx-auto"></div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </Suspense>
 
         <Footer />
       </div>
@@ -762,7 +782,9 @@ export default function App() {
       return (
         <>
           <Toaster />
-          <QuizFlow onComplete={handleCalmQuizComplete} />
+          <Suspense fallback={<LoadingSpinner />}>
+            <QuizFlow onComplete={handleCalmQuizComplete} />
+          </Suspense>
         </>
       );
     }
@@ -772,7 +794,9 @@ export default function App() {
       return (
         <>
           <Toaster />
-          <AnalyzingScreen userName={calmUserInfo?.name || 'there'} />
+          <Suspense fallback={<LoadingSpinner />}>
+            <AnalyzingScreen userName={calmUserInfo?.name || 'there'} />
+          </Suspense>
         </>
       );
     }
@@ -787,27 +811,29 @@ export default function App() {
           onNavigate={handleNavigate}
         />
 
-        {calmStage === 'landing' && (
-          <CalmLandingPage onStartAssessment={handleStartCalmQuiz} />
-        )}
+        <Suspense fallback={<LoadingSpinner />}>
+          {calmStage === 'landing' && (
+            <CalmLandingPage onStartAssessment={handleStartCalmQuiz} />
+          )}
 
-        {calmStage === 'results' && calmResult && calmUserInfo && (
-          <ResultScreen
-            result={calmResult}
-            userName={calmUserInfo.name}
-          />
-        )}
+          {calmStage === 'results' && calmResult && calmUserInfo && (
+            <ResultScreen
+              result={calmResult}
+              userName={calmUserInfo.name}
+            />
+          )}
 
-        {calmStage === 'results' && (!calmResult || !calmUserInfo) && (
-          <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b]">
-            <div className="text-center">
-              <p className="text-white mb-4">Redirecting to start...</p>
-              <div className="animate-spin w-8 h-8 border-4 border-white/30 border-t-[#64CB81] rounded-full mx-auto"></div>
+          {calmStage === 'results' && (!calmResult || !calmUserInfo) && (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b]">
+              <div className="text-center">
+                <p className="text-white mb-4">Redirecting to start...</p>
+                <div className="animate-spin w-8 h-8 border-4 border-white/30 border-t-[#64CB81] rounded-full mx-auto"></div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {calmStage === 'terms' && <CalmTermsAndConditions />}
+          {calmStage === 'terms' && <CalmTermsAndConditions />}
+        </Suspense>
 
         {(calmStage === 'landing' || calmStage === 'terms') && <Footer />}
       </>
@@ -825,8 +851,10 @@ export default function App() {
           currentPage="booking"
           onNavigate={handleNavigate}
         />
-        {pathname === '/bookconsultation' && <ConsultationLandingPage />}
-        {pathname === '/paymentSuccess' && <ConsultationThankYouPage />}
+        <Suspense fallback={<LoadingSpinner />}>
+          {pathname === '/bookconsultation' && <ConsultationLandingPage />}
+          {pathname === '/paymentSuccess' && <ConsultationThankYouPage />}
+        </Suspense>
         <Footer />
       </div>
     );
@@ -836,7 +864,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-white scroll-smooth">
       <Toaster />
-      <FloatingButtons onBookNow={navigateToBooking} />
+      <Suspense fallback={null}>
+        <FloatingButtons onBookNow={navigateToBooking} />
+      </Suspense>
 
       <Navbar
         onBookAppointment={navigateToBooking}
@@ -844,36 +874,38 @@ export default function App() {
         onNavigate={handleNavigate}
       />
 
-      {currentPage === 'home' ? (
-        <>
-          <Hero onBookAppointment={navigateToBooking} />
-          <Services />
-          <ExpertiseScroller />
-          <MentalHealthTeam
-            onViewAllTeam={() => handleNavigate('team')}
-            onBookNow={navigateToBooking}
-          />
-          <TestimonialsMarquee />
-          <About onGetStarted={navigateToBooking} />
-          <Contact />
-          <Footer />
-        </>
-      ) : currentPage === 'booking' ? (
-        <>
-          <BookingFormPage />
-          <Footer />
-        </>
-      ) : currentPage === 'team' ? (
-        <>
-          <MentalHealthTeamPage onBookAppointment={navigateToBooking} />
-          <Footer />
-        </>
-      ) : currentPage === 'contact' ? (
-        <>
-          <Contact />
-          <Footer />
-        </>
-      ) : null}
+      <Suspense fallback={<LoadingSpinner />}>
+        {currentPage === 'home' ? (
+          <>
+            <Hero onBookAppointment={navigateToBooking} />
+            <Services />
+            <ExpertiseScroller />
+            <MentalHealthTeam
+              onViewAllTeam={() => handleNavigate('team')}
+              onBookNow={navigateToBooking}
+            />
+            <TestimonialsMarquee />
+            <About onGetStarted={navigateToBooking} />
+            <Contact />
+            <Footer />
+          </>
+        ) : currentPage === 'booking' ? (
+          <>
+            <BookingFormPage />
+            <Footer />
+          </>
+        ) : currentPage === 'team' ? (
+          <>
+            <MentalHealthTeamPage onBookAppointment={navigateToBooking} />
+            <Footer />
+          </>
+        ) : currentPage === 'contact' ? (
+          <>
+            <Contact />
+            <Footer />
+          </>
+        ) : null}
+      </Suspense>
     </div>
   );
 }

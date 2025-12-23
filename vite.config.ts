@@ -2,9 +2,19 @@
   import { defineConfig } from 'vite';
   import react from '@vitejs/plugin-react-swc';
   import path from 'path';
+  import { visualizer } from 'rollup-plugin-visualizer';
 
   export default defineConfig({
-    plugins: [react()],
+    plugins: [
+      react(),
+      // Bundle analyzer - generates stats.html after build
+      visualizer({
+        open: true,
+        gzipSize: true,
+        brotliSize: true,
+        filename: 'dist/stats.html',
+      }),
+    ],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
@@ -54,6 +64,35 @@
     build: {
       target: 'esnext',
       outDir: 'build',
+      // Performance optimizations
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true, // Remove console.logs in production
+          drop_debugger: true,
+        },
+      },
+      // Enable code splitting
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Separate vendor chunks for better caching
+            'react-vendor': ['react', 'react-dom'],
+            'radix-ui': [
+              '@radix-ui/react-accordion',
+              '@radix-ui/react-alert-dialog',
+              '@radix-ui/react-dialog',
+              '@radix-ui/react-dropdown-menu',
+              '@radix-ui/react-select',
+              '@radix-ui/react-tabs',
+            ],
+            'framer': ['framer-motion'],
+            'charts': ['recharts'],
+          },
+        },
+      },
+      // Optimize chunk size warnings
+      chunkSizeWarningLimit: 600,
     },
     server: {
       port: 3000,
