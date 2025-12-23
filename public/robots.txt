@@ -1,0 +1,13 @@
+# robots.txt for CuraGo
+# Allow all crawlers
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://curago.in/sitemap.xml
+
+# Disallow admin/private paths if any
+# User-agent: *
+# Disallow: /admin/
+# Disallow: /private/
