@@ -108,35 +108,14 @@
           drop_debugger: true,
         },
       },
-      // Enable code splitting
+      // Enable code splitting - simplified to avoid dependency issues
       rollupOptions: {
         output: {
-          manualChunks(id) {
-            // Vendor chunks for better caching
-            if (id.includes('node_modules')) {
-              // React core - critical
-              if (id.includes('react') || id.includes('react-dom')) {
-                return 'react-vendor';
-              }
-
-              // Radix UI - used throughout app
-              if (id.includes('@radix-ui')) {
-                return 'radix-ui';
-              }
-
-              // Charts - ONLY for assessment pages, not homepage
-              if (id.includes('recharts')) {
-                return 'charts-lazy';
-              }
-
-              // Framer Motion - now only used in Navbar/About
-              if (id.includes('framer-motion')) {
-                return 'framer';
-              }
-
-              // All other node_modules
-              return 'vendor';
-            }
+          manualChunks: {
+            // Keep React together with ReactDOM to avoid dependency issues
+            'vendor': ['react', 'react-dom'],
+            // Separate large libraries
+            'charts': ['recharts'],
           },
         },
       },
