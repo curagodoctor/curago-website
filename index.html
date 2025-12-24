@@ -39,10 +39,7 @@
       }
     </style>
 
-    <!-- Preload critical assets for faster LCP -->
-    <link rel="modulepreload" href="/src/main.tsx">
-    <link rel="preload" as="style" href="/src/index.css" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="/src/index.css"></noscript>
+    <!-- Note: Vite handles module preloading automatically during build -->
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico?v=5" />
