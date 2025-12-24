@@ -9,11 +9,47 @@
       react(),
       // Bundle analyzer - generates stats.html after build
       visualizer({
-        open: true,
+        open: false, // Changed to false to not auto-open
         gzipSize: true,
         brotliSize: true,
         filename: 'dist/stats.html',
       }),
+      // Add cache headers via _headers file
+      {
+        name: 'generate-headers',
+        closeBundle() {
+          const fs = require('fs');
+          const headersContent = `# Cache static assets for 1 year
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache images for 1 year
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+/*.jpeg
+  Cache-Control: public, max-age=31536000, immutable
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+/*.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache fonts for 1 year
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML - no cache
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+`;
+          fs.writeFileSync('./build/_headers', headersContent);
+        }
+      }
     ],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
