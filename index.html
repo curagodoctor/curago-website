@@ -47,23 +47,132 @@
         color: #096b17;
       }
 
+      /* Critical responsive utilities - navbar must show on desktop */
+      @media (min-width: 768px) {
+        .hidden.md\:flex {
+          display: flex !important;
+        }
+        .md\:hidden {
+          display: none !important;
+        }
+      }
+
+      /* Mobile menu utilities */
+      .hidden {
+        display: none;
+      }
+      .flex {
+        display: flex;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .gap-8 {
+        gap: 2rem;
+      }
+      .gap-3 {
+        gap: 0.75rem;
+      }
+
       /* Critical spacing utilities - prevents sections collapsing before CSS loads */
       .space-y-12 > :not(:last-child) {
-        margin-bottom: 3rem; /* 48px / 16px = 3rem */
+        margin-bottom: 3rem;
+      }
+      .space-y-8 > :not(:last-child) {
+        margin-bottom: 2rem;
       }
       .space-y-6 > :not(:last-child) {
-        margin-bottom: 1.5rem; /* 24px / 16px = 1.5rem */
+        margin-bottom: 1.5rem;
       }
       .space-y-4 > :not(:last-child) {
-        margin-bottom: 1rem; /* 16px / 16px = 1rem */
+        margin-bottom: 1rem;
       }
+      .space-y-3 > :not(:last-child) {
+        margin-bottom: 0.75rem;
+      }
+      .space-y-2 > :not(:last-child) {
+        margin-bottom: 0.5rem;
+      }
+
+      /* Padding utilities */
       .py-20 {
-        padding-top: 5rem; /* 80px / 16px = 5rem */
+        padding-top: 5rem;
         padding-bottom: 5rem;
       }
       .py-12 {
-        padding-top: 3rem; /* 48px / 16px = 3rem */
+        padding-top: 3rem;
         padding-bottom: 3rem;
+      }
+      .py-8 {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+      }
+      .px-4 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+      .p-8 {
+        padding: 2rem;
+      }
+
+      /* Width/Max-width utilities */
+      .max-w-4xl {
+        max-width: 56rem;
+      }
+      .max-w-7xl {
+        max-width: 80rem;
+      }
+      .mx-auto {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* Min-height utilities */
+      .min-h-screen {
+        min-height: 100vh;
+      }
+
+      /* Text alignment */
+      .text-center {
+        text-align: center;
+      }
+
+      /* Grid utilities */
+      .grid {
+        display: grid;
+      }
+      @media (min-width: 768px) {
+        .md\:grid-cols-2 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      /* Button/Width utilities - prevents stretched buttons */
+      .w-full {
+        width: 100%;
+      }
+      @media (min-width: 640px) {
+        .sm\:w-auto {
+          width: auto !important;
+        }
+      }
+
+      /* Flex direction utilities */
+      .flex-col {
+        flex-direction: column;
+      }
+      @media (min-width: 640px) {
+        .sm\:flex-row {
+          flex-direction: row !important;
+        }
+      }
+
+      /* Border radius */
+      .rounded-2xl {
+        border-radius: 1rem;
+      }
+      .rounded-xl {
+        border-radius: 0.75rem;
       }
     </style>
 

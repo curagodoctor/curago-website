@@ -75,13 +75,6 @@ export default function LandingPage({ onStart }: LandingPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] relative overflow-hidden">
-      {/* Decorative background - matching home page style */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-[-10%] w-96 h-96 bg-white rounded-full opacity-10 blur-3xl animate-[pulse_8s_ease-in-out_infinite]" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#64CB81] rounded-full opacity-10 blur-3xl animate-[pulse_10s_ease-in-out_infinite]" />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-white rounded-full opacity-10 blur-3xl animate-[pulse_12s_ease-in-out_infinite]" />
-      </div>
-
       {/* Hero */}
       <section className="container mx-auto px-6 pt-32 md:pt-36 lg:pt-40 relative z-10">
         <div className="max-w-6xl mx-auto">
