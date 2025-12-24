@@ -111,19 +111,32 @@
       // Enable code splitting
       rollupOptions: {
         output: {
-          manualChunks: {
-            // Separate vendor chunks for better caching
-            'react-vendor': ['react', 'react-dom'],
-            'radix-ui': [
-              '@radix-ui/react-accordion',
-              '@radix-ui/react-alert-dialog',
-              '@radix-ui/react-dialog',
-              '@radix-ui/react-dropdown-menu',
-              '@radix-ui/react-select',
-              '@radix-ui/react-tabs',
-            ],
-            'framer': ['framer-motion'],
-            'charts': ['recharts'],
+          manualChunks(id) {
+            // Vendor chunks for better caching
+            if (id.includes('node_modules')) {
+              // React core - critical
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'react-vendor';
+              }
+
+              // Radix UI - used throughout app
+              if (id.includes('@radix-ui')) {
+                return 'radix-ui';
+              }
+
+              // Charts - ONLY for assessment pages, not homepage
+              if (id.includes('recharts')) {
+                return 'charts-lazy';
+              }
+
+              // Framer Motion - now only used in Navbar/About
+              if (id.includes('framer-motion')) {
+                return 'framer';
+              }
+
+              // All other node_modules
+              return 'vendor';
+            }
           },
         },
       },
