@@ -37,6 +37,34 @@
         max-width: 100%;
         height: auto;
       }
+
+      /* Critical Navbar styles - prevents invisible text before CSS loads */
+      nav a, nav button {
+        color: #374151; /* text-gray-700 */
+        transition: color 0.3s;
+      }
+      nav a:hover, nav button:hover {
+        color: #096b17;
+      }
+
+      /* Critical spacing utilities - prevents sections collapsing before CSS loads */
+      .space-y-12 > :not(:last-child) {
+        margin-bottom: 3rem; /* 48px / 16px = 3rem */
+      }
+      .space-y-6 > :not(:last-child) {
+        margin-bottom: 1.5rem; /* 24px / 16px = 1.5rem */
+      }
+      .space-y-4 > :not(:last-child) {
+        margin-bottom: 1rem; /* 16px / 16px = 1rem */
+      }
+      .py-20 {
+        padding-top: 5rem; /* 80px / 16px = 5rem */
+        padding-bottom: 5rem;
+      }
+      .py-12 {
+        padding-top: 3rem; /* 48px / 16px = 3rem */
+        padding-bottom: 3rem;
+      }
     </style>
 
     <!-- Note: Vite handles module preloading automatically during build -->
