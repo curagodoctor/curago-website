@@ -274,7 +274,7 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
               </AnimatePresence>
             </div>
 
-            {/* CALM 1.0 - path route */}
+            {/* CuraGo's Anxiety Loop Assessment Tool 1.0 - path route */}
             <a
               href="/calm"
               onClick={(e) => {
@@ -283,7 +283,7 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
               }}
               className={`${baseLink} ${currentPage === 'calm' ? 'text-[#096b17]' : ''}`}
             >
-              CALM 1.0
+              CuraGo's Anxiety Loop Assessment Tool 1.0
               <span className={underline(currentPage === 'calm')} />
             </a>
 
@@ -482,7 +482,7 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
                     }}
                     className="py-2 text-gray-800"
                   >
-                    CALM 1.0
+                    CuraGo's Anxiety Loop Assessment Tool 1.0
                   </a>
 
                   <a

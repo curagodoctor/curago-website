@@ -27,7 +27,7 @@ export default function ResultScreen({ result, userName }: ResultScreenProps) {
           className="text-center space-y-4"
         >
           <h1 className="text-4xl md:text-5xl font-bold" style={{ color: '#096b17' }}>
-            Your CALM 1.0 Report
+            Your CuraGo's Anxiety Loop Assessment Tool 1.0 Report
           </h1>
           <p className="text-xl font-semibold" style={{ color: '#096b17' }}>
             Personalised Assessment
@@ -260,7 +260,7 @@ export default function ResultScreen({ result, userName }: ResultScreenProps) {
         isOpen={showWhatsAppDialog}
         onOpenChange={setShowWhatsAppDialog}
         source="calm_results_page"
-        message="Hi, I just finished CALM 1.0. I need help with my results"
+        message="Hi, I just finished CuraGo's Anxiety Loop Assessment Tool 1.0. I need help with my results"
       />
     </div>
   );

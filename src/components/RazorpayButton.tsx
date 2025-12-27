@@ -43,7 +43,7 @@ export default function RazorpayButton({ buttonId = 'pl_Rtue8bSVIson8p', classNa
       page_path: window.location.pathname,
       timestamp: new Date().toISOString(),
     });
-    console.log('✅ initiatecheckout event pushed to dataLayer (CALM, ₹299)');
+    console.log('✅ initiatecheckout event pushed to dataLayer (CuraGo\'s Anxiety Loop Assessment Tool 1.0, ₹299)');
 
     // Open Razorpay payment link
     const paymentUrl = `https://razorpay.com/payment-button/${buttonId}/view/?amount=29900`;
@@ -60,7 +60,7 @@ export default function RazorpayButton({ buttonId = 'pl_Rtue8bSVIson8p', classNa
       className={className || "bg-[#096b17] text-white hover:bg-[#075110] border-2 border-[#096b17] px-8 h-14 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"}
     >
       <Sparkles className="w-5 h-5 mr-2" />
-      {isLoading ? 'Opening...' : 'Start CALM 1.0'}
+      {isLoading ? 'Opening...' : 'Start Assessment'}
     </Button>
   );
 }

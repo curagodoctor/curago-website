@@ -49,12 +49,12 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
             >
               <div className="space-y-6">
                 <h1 className="leading-tight font-bold animate-[fadeInUp_0.8s_ease-out_0.1s_both]" style={{ color: '#096b17' }}>
-                  <span className="text-5xl md:text-6xl lg:text-7xl">CALM</span>{' '}
+                  <span className="text-4xl md:text-5xl lg:text-6xl">CuraGo's Anxiety Loop Assessment Tool</span>{' '}
                   <span className="text-3xl md:text-4xl lg:text-5xl">1.0</span>
                 </h1>
 
                 <p className="text-lg md:text-xl font-medium animate-[fadeInUp_0.8s_ease-out_0.2s_both]" style={{ color: '#096b17' }}>
-                  Curago's Anxiety Loop Mapping
+                  Professional Anxiety Assessment
                 </p>
 
                 <h2 className="text-xl md:text-2xl leading-relaxed max-w-2xl mx-auto animate-[fadeInUp_0.8s_ease-out_0.3s_both]" style={{ color: '#096b17' }}>
@@ -82,7 +82,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                 </div>
 
                 <p className="text-xs text-center max-w-md" style={{ color: '#096b17' }}>
-                  By clicking Start CALM 1.0, you are agreeing to our{' '}
+                  By clicking Start Assessment, you are agreeing to our{' '}
                   <a
                     href="/calm/terms"
                     target="_blank"
@@ -172,12 +172,12 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
             <div className="space-y-8">
               <div className="text-center">
                 <h2 className="text-2xl md:text-3xl font-bold mb-6" style={{ color: '#096b17' }}>
-                  Why CALM 1.0 exists
+                  Why CuraGo's Anxiety Loop Assessment Tool 1.0 exists
                 </h2>
               </div>
 
               <div className="text-center space-y-6" style={{ color: '#096b17' }}>
-                <p className="text-base">CALM is designed to do one thing well:</p>
+                <p className="text-base">Our assessment is designed to do one thing well:</p>
 
                 <p className="text-2xl md:text-3xl font-bold py-4">
                   Help you understand whether you need a consultation at all — and if yes, what kind.
@@ -264,7 +264,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
               </h2>
               <div className="max-w-2xl mx-auto space-y-4" style={{ color: '#096b17' }}>
                 <p className="text-lg">
-                  The CALM 1.0 assessment takes about 10 minutes.
+                  The CuraGo's Anxiety Loop Assessment Tool 1.0 takes about 10 minutes.
                 </p>
                 <p className="text-lg">
                   At the end, you receive a personalised clinical report covering:
@@ -404,7 +404,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
           >
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: '#096b17' }}>
-                Why CALM is a paid assessment
+                Why CuraGo's Anxiety Loop Assessment Tool is a paid assessment
               </h2>
               <p className="text-lg max-w-2xl mx-auto mb-8" style={{ color: '#096b17' }}>
                 We charge a small fee to maintain independence and clinical neutrality
@@ -420,7 +420,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                       Free tools are designed to:
                     </th>
                     <th className="p-6 md:p-8 border-2 border-white text-white text-lg md:text-2xl font-bold text-center">
-                      CALM 1.0 is designed to:
+                      CuraGo's Anxiety Loop Assessment Tool 1.0 is designed to:
                     </th>
                   </tr>
                 </thead>
@@ -485,7 +485,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                     Clinical Assessment
                   </Badge>
                   <h2 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: '#096b17' }}>
-                    CALM 1.0 Assessment
+                    CuraGo's Anxiety Loop Assessment Tool 1.0
                   </h2>
                 </div>
 
@@ -562,7 +562,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
                     />
 
                     <p className="text-xs text-white text-center max-w-md group-hover:text-white">
-                      By clicking Start CALM 1.0, you are agreeing to our{' '}
+                      By clicking Start Assessment, you are agreeing to our{' '}
                       <a
                         href="/calm/terms"
                         target="_blank"
@@ -609,7 +609,7 @@ export default function CalmLandingPage({ onStartAssessment }: CalmLandingPagePr
         isOpen={showWhatsAppDialog}
         onOpenChange={setShowWhatsAppDialog}
         source="calm_landing_page"
-        message="Hi, I want to know more about CALM 1.0"
+        message="Hi, I want to know more about CuraGo's Anxiety Loop Assessment Tool 1.0"
       />
     </div>
   );

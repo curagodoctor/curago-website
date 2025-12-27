@@ -1,4 +1,4 @@
-// CALM 1.0 - Clinical Anxiety Loop Mapping Types
+// CuraGo's Anxiety Loop Assessment Tool 1.0 Types
 
 export interface CalmAnswers {
   q1: string;

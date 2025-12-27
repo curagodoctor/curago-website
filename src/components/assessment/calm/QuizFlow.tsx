@@ -1,4 +1,4 @@
-// CALM 1.0 Quiz Flow Component
+// CuraGo's Anxiety Loop Assessment Tool 1.0 Quiz Flow Component
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, AlertCircle, User, Mail, Phone } from 'lucide-react';
@@ -369,7 +369,7 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
           className="max-w-md w-full"
         >
           <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border-2 border-[#096b17]/20">
-            <h2 className="text-2xl font-bold mb-4" style={{ color: '#096b17' }}>CALM 1.0 Assessment</h2>
+            <h2 className="text-2xl font-bold mb-4" style={{ color: '#096b17' }}>CuraGo's Anxiety Loop Assessment Tool 1.0</h2>
             <p className="mb-4 text-sm leading-relaxed" style={{ color: '#096b17' }}>
               We need your information to send you the detailed assessment results via email and WhatsApp. Your information will be kept confidential.
             </p>

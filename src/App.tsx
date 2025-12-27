@@ -39,7 +39,7 @@ const AtmResultScreen = lazy(() => import('./components/assessment/atm').then(m 
 const ConsultationThankYouPage = lazy(() => import('./components/ConsultationThankYouPage'));
 const ConsultationLandingPage = lazy(() => import('./components/ConsultationLandingPage'));
 
-// CALM bundle - lazy loaded
+// CuraGo's Anxiety Loop Assessment Tool 1.0 bundle - lazy loaded
 const CalmLandingPage = lazy(() => import('./components/CalmLandingPage'));
 const QuizFlow = lazy(() => import('./components/assessment/calm/QuizFlow'));
 const AnalyzingScreen = lazy(() => import('./components/assessment/calm/AnalyzingScreen'));
@@ -255,31 +255,31 @@ export default function App() {
         return;
       }
 
-      // CALM 1.0 routes
+      // CuraGo's Anxiety Loop Assessment Tool 1.0 routes
       if (pathname === '/calm') {
         setCalmStage('landing');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('CALM Landing', 'CuraGo - Clinical Anxiety Loop Mapping');
+        trackPageView('CuraGo\'s Anxiety Loop Assessment Tool 1.0 Landing', 'CuraGo - Anxiety Loop Assessment Tool 1.0');
         return;
       }
       if (pathname === '/calm/quiz') {
         setCalmStage('quiz');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('CALM Quiz', 'CuraGo - CALM Quiz');
+        trackPageView('CuraGo\'s Anxiety Loop Assessment Tool 1.0 Quiz', 'CuraGo - Anxiety Loop Assessment Tool 1.0 Quiz');
         return;
       }
       if (pathname === '/calm/analyzing') {
         setCalmStage('analyzing');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('CALM Analyzing', 'CuraGo - Analyzing CALM Results');
+        trackPageView('CuraGo\'s Anxiety Loop Assessment Tool 1.0 Analyzing', 'CuraGo - Analyzing Anxiety Loop Assessment Results');
         return;
       }
       if (pathname === '/calm/results') {
         setCalmStage('results');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('CALM Results', 'CuraGo - CALM Results');
+        trackPageView('CuraGo\'s Anxiety Loop Assessment Tool 1.0 Results', 'CuraGo - Anxiety Loop Assessment Tool 1.0 Results');
 
-        // ✅ Developer-added GTM signal for CompleteRegistration (CALM finish)
+        // ✅ Developer-added GTM signal for CompleteRegistration (CuraGo's Anxiety Loop Assessment Tool 1.0 finish)
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
           event: 'calm_test_finished_signal',
@@ -293,7 +293,7 @@ export default function App() {
       if (pathname === '/calm/terms') {
         setCalmStage('terms');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('CALM Terms & Conditions', 'CuraGo - CALM 1.0 Terms & Conditions');
+        trackPageView('CuraGo\'s Anxiety Loop Assessment Tool 1.0 Terms & Conditions', 'CuraGo - Anxiety Loop Assessment Tool 1.0 Terms & Conditions');
         return;
       }
 
@@ -775,7 +775,7 @@ export default function App() {
     );
   }
 
-  // CALM 1.0 route
+  // CuraGo's Anxiety Loop Assessment Tool 1.0 route
   if (isCalmRoute) {
     // Quiz stage - full screen, no navbar/footer
     if (calmStage === 'quiz') {
