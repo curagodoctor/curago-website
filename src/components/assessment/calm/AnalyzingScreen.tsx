@@ -52,7 +52,7 @@ export default function AnalyzingScreen({ userName }: AnalyzingScreenProps) {
                 Analyzing Your Responses
               </h2>
               <p className="text-lg" style={{ color: '#096b17' }}>
-                Hi {userName}, we're creating your personalized CALM report
+                Hi {userName}, we're creating your personalized CALA 1.0 report
               </p>
             </div>
 

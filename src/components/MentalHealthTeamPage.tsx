@@ -25,12 +25,12 @@ export function MentalHealthTeamPage({ onBookAppointment }: MentalHealthTeamPage
           </p>
         </div>
 
-        {/* Team Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        {/* Team Grid - Responsive 3-4 columns */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
           {teamMembers.map((member, index) => (
-            <DoctorCard 
-              key={index} 
-              member={member} 
+            <DoctorCard
+              key={index}
+              member={member}
               onBookNow={onBookAppointment}
             />
           ))}

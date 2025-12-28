@@ -301,7 +301,7 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
             </p>
             <div className="flex flex-col gap-3">
               <button
-                onClick={() => window.location.href = '/calm'}
+                onClick={() => window.location.href = '/cala'}
                 className="px-6 py-3 bg-[#096b17] text-white font-semibold hover:bg-[#075110] transition-all rounded-xl"
               >
                 Return to Home
@@ -341,7 +341,7 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
             </p>
             <div className="flex flex-col gap-3">
               <button
-                onClick={() => window.location.href = '/calm'}
+                onClick={() => window.location.href = '/cala'}
                 className="px-6 py-3 bg-[#096b17] text-white font-semibold hover:bg-[#075110] transition-all"
               >
                 Go to Payment Page

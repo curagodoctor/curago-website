@@ -127,22 +127,22 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] flex flex-col pt-24">
-      <div className="w-full bg-gradient-to-b from-[#096b17]/60 to-[#075110]/40 backdrop-blur-md border-b border-white/20 p-3 sticky top-16 z-20 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-[#FFFBF5] to-[#FFFFFF] flex flex-col pt-24">
+      <div className="w-full bg-white/95 backdrop-blur-md border-b border-[#E5E7EB] p-3 sticky top-16 z-20 shadow-sm">
         <div className="container mx-auto max-w-3xl">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-white font-semibold">
+            <span className="text-sm text-[#0A0A0A] font-semibold">
               Question {currentQuestion + 1} of {questions.length}
             </span>
-            <span className="text-sm text-white font-semibold">{Math.round(progress)}%</span>
+            <span className="text-sm text-[#0A0A0A] font-semibold">{Math.round(progress)}%</span>
           </div>
           <div className="relative">
-            <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden shadow-inner">
+            <div className="w-full h-3 bg-[#E5E7EB] rounded-full overflow-hidden shadow-inner border border-[#D1D5DB]">
               <div
-                className="h-full bg-[#64CB81] rounded-full transition-all duration-500 ease-out shadow-sm"
-                style={{ 
-                  width: `${progress}%`,
-                  background: 'linear-gradient(90deg, #64CB81 0%, #4CAF50 100%)'
+                className="h-full rounded-full transition-all duration-500 ease-out shadow-lg"
+                style={{
+                  background: 'linear-gradient(to right, #0284C7, #0369A1)',
+                  width: `${progress}%`
                 }}
               />
             </div>
@@ -162,7 +162,7 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
               className="space-y-8 sm:space-y-10 md:space-y-12"
             >
               <div className="text-center space-y-4 md:space-y-6">
-                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white font-bold max-w-3xl mx-auto leading-tight px-4">
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-[#0A0A0A] font-bold max-w-3xl mx-auto leading-tight px-4">
                   {question.text}
                 </h2>
               </div>
@@ -177,23 +177,27 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
                     transition={{ duration: 0.4, delay: index * 0.08, ease: "easeOut" }}
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
+                    style={selectedValue === option.value ? {
+                      background: 'linear-gradient(to right, #0284C7, #0369A1)',
+                      borderColor: '#0284C7'
+                    } : {}}
                     className={`w-full p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl text-left transition-all duration-300 ${
                       selectedValue === option.value
-                        ? 'bg-[#64CB81] text-white shadow-xl border-2 border-[#64CB81]'
-                        : 'bg-white/40 backdrop-blur-md border-2 border-white/30 hover:bg-white/50 hover:border-white/40 text-white shadow-lg hover:shadow-xl'
+                        ? 'shadow-xl border-2'
+                        : 'bg-white border-2 border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0284C7] text-[#0A0A0A] shadow-lg hover:shadow-xl'
                     }`}
                   >
                     <div className="flex items-start gap-3 sm:gap-4 md:gap-6">
                       <div
                         className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm sm:text-base font-bold transition-all duration-300 ${
                           selectedValue === option.value
-                            ? 'bg-white text-[#64CB81] scale-110 shadow-lg'
-                            : 'bg-white/30 backdrop-blur-sm text-white border-2 border-white/20'
+                            ? 'bg-white text-[#0284C7] scale-110 shadow-lg'
+                            : 'bg-[#E0F2FE] text-[#0284C7] border-2 border-[#E5E7EB]'
                         }`}
                       >
                         {String.fromCharCode(65 + index)}
                       </div>
-                      <p className={`text-sm sm:text-base md:text-lg leading-relaxed font-medium text-white`}>
+                      <p className={`text-sm sm:text-base md:text-lg leading-relaxed font-medium ${selectedValue === option.value ? 'text-white' : 'text-[#0A0A0A]'}`}>
                         {option.text}
                       </p>
                     </div>
@@ -206,7 +210,7 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
                   onClick={handlePrevious}
                   disabled={currentQuestion === 0}
                   variant="outline"
-                  className="bg-white/40 backdrop-blur-md border-2 border-white/30 hover:bg-white/50 hover:border-white/40 text-white font-semibold rounded-xl md:rounded-2xl px-6 sm:px-8 md:px-10 py-2 sm:py-3 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                  className="bg-white border-2 border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0A0A0A] text-[#0A0A0A] font-semibold rounded-xl md:rounded-2xl px-6 sm:px-8 md:px-10 py-2 sm:py-3 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                 >
                   <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Previous

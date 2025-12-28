@@ -67,7 +67,7 @@ export default function QualificationScreen({ onNavigateToActual, onNavigateToDu
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] flex flex-col items-center justify-start px-4 pt-32 md:pt-40 pb-12">
+    <div className="min-h-screen bg-gradient-to-br from-[#FFFBF5] to-[#FFFFFF] flex flex-col items-center justify-start px-4 pt-32 md:pt-40 pb-12">
       <div className="relative z-10 flex flex-col items-center max-w-2xl mx-auto text-center w-full">
         {/* Headline */}
         <motion.div
@@ -76,7 +76,7 @@ export default function QualificationScreen({ onNavigateToActual, onNavigateToDu
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="mb-12 md:mb-16"
         >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl text-white font-bold leading-tight px-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl text-[#0A0A0A] font-bold leading-tight px-4">
             Which best describes you right now?
           </h2>
         </motion.div>
@@ -92,9 +92,9 @@ export default function QualificationScreen({ onNavigateToActual, onNavigateToDu
               transition={{ duration: 0.6, delay: index * 0.15, ease: "easeOut" }}
               whileHover={{ scale: 1.02, y: -3 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full p-5 sm:p-6 md:p-7 rounded-2xl text-center bg-white/15 backdrop-blur-md border-2 border-white/30 hover:bg-white/25 hover:border-white/50 text-white shadow-lg hover:shadow-2xl transition-all duration-700 ease-in-out cursor-pointer"
+              className="w-full p-5 sm:p-6 md:p-7 rounded-2xl text-center bg-white border-2 border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0A0A0A] text-[#0A0A0A] shadow-lg hover:shadow-2xl transition-all duration-700 ease-in-out cursor-pointer"
             >
-              <p className="text-base sm:text-lg md:text-xl leading-relaxed font-medium text-white">
+              <p className="text-base sm:text-lg md:text-xl leading-relaxed font-medium text-[#0A0A0A]">
                 {option.text}
               </p>
             </motion.button>
@@ -106,7 +106,7 @@ export default function QualificationScreen({ onNavigateToActual, onNavigateToDu
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 0.8, ease: "easeOut" }}
-          className="mt-12 text-sm md:text-base text-green-100/70 px-4"
+          className="mt-12 text-sm md:text-base text-[#6B6B6B] px-4"
         >
           Choose the option that resonates most with your current experience
         </motion.p>

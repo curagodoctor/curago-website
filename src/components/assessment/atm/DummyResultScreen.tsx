@@ -5,7 +5,7 @@ import { Badge } from '../../ui/badge';
 import type { AtmAnswers, UserInfo, AnxietyPattern } from '../../../types/atm';
 import { trackButtonClick, trackPhoneClick, trackFormSubmission } from '../../../utils/tracking';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Zap, Brain, Shield, Target, Clock, AlertTriangle, MessageCircle, X, Phone, User, Mail } from 'lucide-react';
+import { RefreshCw, Zap, Brain, Shield, Target, Clock, AlertTriangle, MessageCircle, X, Phone, User, Mail, Loader2, CheckCircle2, Sparkles } from 'lucide-react';
 import { FloatingButtons } from '../../FloatingButtons';
 import { sendAtmResultsToGoogleSheets } from '../../../utils/googleSheets';
 
@@ -137,7 +137,114 @@ function determineAnxietyPattern(answers: AtmAnswers): {
   return { pattern: 'Mixed-pattern Anxiety', confidence: 0.55 };
 }
 
-export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: ResultScreenProps) {
+// ---- Analyzing Animation Component ----
+function AnalyzingAnimation({ userName }: { userName: string }) {
+  const [stage, setStage] = useState(0);
+
+  const stages = [
+    'Processing your responses...',
+    'Analyzing anxiety patterns...',
+    'Mapping trigger architecture...',
+    'Calculating loop dynamics...',
+    'Generating your report...',
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStage((prev) => {
+        if (prev < stages.length - 1) {
+          return prev + 1;
+        }
+        return prev;
+      });
+    }, 800);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{ background: 'linear-gradient(to bottom right, #FFFBF5, #FFFFFF)' }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-2xl w-full"
+      >
+        <div className="bg-white rounded-2xl p-8 md:p-12 border-2 shadow-2xl" style={{ borderColor: 'rgba(2, 132, 199, 0.2)' }}>
+          <div className="text-center space-y-8">
+            {/* Header */}
+            <div className="space-y-4">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="inline-block"
+              >
+                <Brain className="w-16 h-16 text-[#0284C7]" />
+              </motion.div>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#0284C7]">
+                Analyzing Your Responses
+              </h2>
+              <p className="text-lg text-[#0284C7]">
+                Hi {userName}, we're creating your personalized ATM report
+              </p>
+            </div>
+
+            {/* Progress Stages */}
+            <div className="space-y-3">
+              {stages.map((text, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{
+                    opacity: index <= stage ? 1 : 0.3,
+                    x: 0
+                  }}
+                  className="flex items-center gap-3 text-left"
+                >
+                  {index < stage ? (
+                    <CheckCircle2 className="w-5 h-5 text-[#0284C7] flex-shrink-0" />
+                  ) : index === stage ? (
+                    <Loader2 className="w-5 h-5 text-[#0284C7] flex-shrink-0 animate-spin" />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full border-2 flex-shrink-0" style={{ borderColor: 'rgba(2, 132, 199, 0.3)' }} />
+                  )}
+                  <span
+                    className={`text-sm md:text-base ${index <= stage ? 'font-medium' : ''}`}
+                    style={{ color: index <= stage ? '#0284C7' : 'rgba(2, 132, 199, 0.5)' }}
+                  >
+                    {text}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Loading Bar */}
+            <div className="relative">
+              <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#E0F2FE' }}>
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ background: 'linear-gradient(to right, #0284C7, #0369A1)' }}
+                  initial={{ width: '0%' }}
+                  animate={{ width: `${((stage + 1) / stages.length) * 100}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+            </div>
+
+            {/* Info Text */}
+            <p className="text-sm" style={{ color: 'rgba(2, 132, 199, 0.7)' }}>
+              This usually takes 5-10 seconds. Please don't close this window.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+export default function ResultScreen({ answers, userInfo, onRetake, onUpgradeToFull }: ResultScreenProps) {
   const result = useMemo(() => determineAnxietyPattern(answers), [answers]);
   const details = patternDetails[result.pattern];
   const { Icon, color } = details;
@@ -317,39 +424,10 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
   return (
     <>
       {/* Loading Animation */}
-      {showLoadingAnimation && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b]"
-        >
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="text-center"
-          >
-            <div className="mb-4">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="w-16 h-16 border-4 border-white border-t-transparent rounded-full mx-auto"
-              />
-            </div>
-            <motion.p
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="text-xl md:text-2xl text-white font-medium"
-            >
-              Analyzing the responses...
-            </motion.p>
-          </motion.div>
-        </motion.div>
-      )}
+      {showLoadingAnimation && <AnalyzingAnimation userName={userInfo.name} />}
 
       {!showLoadingAnimation && (
-    <div className="min-h-screen bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-[#FFFBF5] to-[#FFFFFF] pt-20">
       <header className="container mx-auto px-4 sm:px-6 py-4 flex justify-end items-center gap-3">
         {onUpgradeToFull && (
           <Button
@@ -358,7 +436,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
               onUpgradeToFull();
             }}
             size="sm"
-            className="rounded-full bg-[#64CB81] hover:bg-[#4CAF50] text-white shadow-md hover:shadow-lg transition-all duration-200 text-sm font-semibold px-6 py-2"
+            className="rounded-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] hover:from-[#0369A1] hover:to-[#075985] text-white shadow-md hover:shadow-lg transition-all duration-200 text-sm font-semibold px-6 py-2"
           >
             Get Full Assessment
           </Button>
@@ -370,7 +448,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
           }}
           variant="outline"
           size="sm"
-          className="rounded-full bg-white/30 backdrop-blur-md border border-white/30 hover:bg-white/40 text-white shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium px-4 py-2"
+          className="rounded-full bg-white border border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0A0A0A] text-[#0A0A0A] shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium px-4 py-2"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           Retake Quiz
@@ -379,40 +457,40 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <Card className="p-6 sm:p-8 lg:p-10 mb-6 sm:mb-8 text-center bg-white/30 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl sm:rounded-3xl">
-            <Badge className="mb-4 sm:mb-6 text-white bg-[#64CB81] border-none px-4 py-2 text-sm font-medium rounded-full">
+          <Card className="p-6 sm:p-8 lg:p-10 mb-6 sm:mb-8 text-center bg-white border border-[#E5E7EB] shadow-xl rounded-2xl sm:rounded-3xl">
+            <Badge className="mb-4 sm:mb-6 text-white bg-gradient-to-r from-[#0284C7] to-[#0369A1] border-none px-4 py-2 text-sm font-medium rounded-full">
               Your Anxiety Pattern
             </Badge>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight">{result.pattern}</h1>
-            <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">{details.explanation}</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#0A0A0A] mb-4 sm:mb-6 leading-tight">{result.pattern}</h1>
+            <p className="text-base sm:text-lg md:text-xl text-[#3A3A3A] max-w-3xl mx-auto leading-relaxed">{details.explanation}</p>
           </Card>
         </motion.div>
 
         <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
-            <Card className="p-4 sm:p-6 h-full bg-white/30 backdrop-blur-md border border-white/20 rounded-xl sm:rounded-2xl shadow-lg">
+            <Card className="p-4 sm:p-6 h-full bg-white border border-[#E5E7EB] rounded-xl sm:rounded-2xl shadow-lg">
               <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#64CB81] flex items-center justify-center">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] flex items-center justify-center">
                   <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
-                <h3 className="font-bold text-white text-lg sm:text-xl">Why It Happens</h3>
+                <h3 className="font-bold text-[#0A0A0A] text-lg sm:text-xl">Why It Happens</h3>
               </div>
-              <p className="text-sm sm:text-base text-white/90 leading-relaxed">{details.neurological}</p>
+              <p className="text-sm sm:text-base text-[#3A3A3A] leading-relaxed">{details.neurological}</p>
             </Card>
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.4 }}>
-            <Card className="p-4 sm:p-6 h-full bg-white/30 backdrop-blur-md border border-white/20 rounded-xl sm:rounded-2xl shadow-lg">
+            <Card className="p-4 sm:p-6 h-full bg-white border border-[#E5E7EB] rounded-xl sm:rounded-2xl shadow-lg">
               <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#64CB81] flex items-center justify-center">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] flex items-center justify-center">
                   <Target className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
-                <h3 className="font-bold text-white text-lg sm:text-xl">Common Impacts</h3>
+                <h3 className="font-bold text-[#0A0A0A] text-lg sm:text-xl">Common Impacts</h3>
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
                 {details.impact.map((item, index) => (
                   <Badge
                     key={index}
-                    className="text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full font-medium bg-white/20 backdrop-blur-sm text-white border border-white/30"
+                    className="text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full font-medium bg-[#E0F2FE] text-[#0284C7] border border-[#E5E7EB]"
                   >
                     {item}
                   </Badge>
@@ -429,14 +507,14 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
           transition={{ duration: 0.6, delay: 0.6 }}
           className={`relative ${!isFormSubmitted ? 'filter blur-lg' : ''}`}
         >
-          <Card className="p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 bg-white/30 backdrop-blur-md border border-white/20 rounded-xl sm:rounded-2xl shadow-lg relative">
+          <Card className="p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 bg-white border border-[#E5E7EB] rounded-xl sm:rounded-2xl shadow-lg relative">
             <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#64CB81] flex items-center justify-center flex-shrink-0 mt-1">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] flex items-center justify-center flex-shrink-0 mt-1">
                 <span className="text-lg sm:text-xl font-bold text-white">💡</span>
               </div>
               <div>
-                <h3 className="font-bold text-white text-lg sm:text-xl lg:text-2xl mb-2 sm:mb-3">{details.microAction.title}</h3>
-                <p className="text-sm sm:text-base lg:text-lg text-white/90 leading-relaxed">{details.microAction.description}</p>
+                <h3 className="font-bold text-[#0A0A0A] text-lg sm:text-xl lg:text-2xl mb-2 sm:mb-3">{details.microAction.title}</h3>
+                <p className="text-sm sm:text-base lg:text-lg text-[#3A3A3A] leading-relaxed">{details.microAction.description}</p>
               </div>
             </div>
           </Card>
@@ -446,7 +524,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
             <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-lg rounded-xl sm:rounded-2xl">
               <Card className="p-8 bg-gradient-to-br from-white/95 to-white/90 backdrop-blur-lg border-2 border-white/40 rounded-2xl shadow-2xl max-w-md mx-4 transform hover:scale-105 transition-all duration-300">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#64CB81] to-[#4CAF50] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#0284C7] to-[#0369A1] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                     <span className="text-2xl">🔒</span>
                   </div>
                   <h4 className="font-bold text-gray-800 text-xl mb-3 leading-tight">Unlock Your Full Analysis</h4>
@@ -464,7 +542,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                       setShowFormPopup(true);
                       setFormPopupClosedTime(null); // Reset the timer
                     }}
-                    className="w-full bg-gradient-to-r from-[#64CB81] to-[#4CAF50] text-white hover:from-[#4CAF50] hover:to-[#64CB81] rounded-xl py-3 font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    className="w-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] text-white hover:from-[#0369A1] hover:to-[#075985] rounded-xl py-3 font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                   >
                     Submit Details to Unlock
                   </Button>
@@ -475,16 +553,16 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.8 }}>
-          <Card className="p-6 sm:p-8 lg:p-10 text-center bg-white/30 backdrop-blur-md border border-white/20 rounded-xl sm:rounded-2xl shadow-lg">
-            <p className="text-lg sm:text-xl lg:text-2xl text-white mb-6 sm:mb-8 font-medium leading-relaxed">{details.cta}</p>
-            <h3 className="text-xl sm:text-2xl lg:text-3xl text-white mb-6 sm:mb-8 font-bold">Ready to take your next step?</h3>
+          <Card className="p-6 sm:p-8 lg:p-10 text-center bg-white border border-[#E5E7EB] rounded-xl sm:rounded-2xl shadow-lg">
+            <p className="text-lg sm:text-xl lg:text-2xl text-[#0A0A0A] mb-6 sm:mb-8 font-medium leading-relaxed">{details.cta}</p>
+            <h3 className="text-xl sm:text-2xl lg:text-3xl text-[#0A0A0A] mb-6 sm:mb-8 font-bold">Ready to take your next step?</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
               <Button
                 onClick={() => {
                   trackButtonClick('Book Free Clarity Call', 'cta', 'atm_results_bottom');
                   window.location.href = '/contact';
                 }}
-                className="w-full h-12 sm:h-14 rounded-xl bg-[#64CB81] text-white hover:bg-[#64CB81]/90 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-sm sm:text-base"
+                className="w-full h-12 sm:h-14 rounded-xl bg-gradient-to-r from-[#0284C7] to-[#0369A1] text-white hover:from-[#0369A1] hover:to-[#075985] shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-sm sm:text-base"
               >
                 Book Free Clarity Call
               </Button>
@@ -493,7 +571,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                   trackButtonClick('Chat Now on WhatsApp', 'cta', 'atm_results_bottom');
                   window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
                 }}
-                className="w-full h-12 sm:h-14 rounded-xl bg-white text-[#096b17] border border-white/20 hover:bg-gray-50 transition-all duration-300 font-semibold text-sm sm:text-base"
+                className="w-full h-12 sm:h-14 rounded-xl bg-white text-[#0A0A0A] border border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0A0A0A] transition-all duration-300 font-semibold text-sm sm:text-base"
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 WhatsApp Chat
@@ -505,7 +583,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                   else window.location.assign('/#mental-health-team');
                 }}
-                className="w-full h-12 sm:h-14 rounded-xl bg-white text-[#096b17] border border-white/20 hover:bg-gray-50 transition-all duration-300 font-semibold text-sm sm:text-base"
+                className="w-full h-12 sm:h-14 rounded-xl bg-white text-[#0A0A0A] border border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0A0A0A] transition-all duration-300 font-semibold text-sm sm:text-base"
               >
                 Our Team
               </Button>
@@ -516,7 +594,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                   else window.location.assign('/#home');
                 }}
-                className="w-full h-12 sm:h-14 rounded-xl bg-white text-[#096b17] border border-white/20 hover:bg-gray-50 transition-all duration-300 font-semibold text-sm sm:text-base"
+                className="w-full h-12 sm:h-14 rounded-xl bg-white text-[#0A0A0A] border border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0A0A0A] transition-all duration-300 font-semibold text-sm sm:text-base"
               >
                 Book Consultation
               </Button>
@@ -577,7 +655,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                       type="text"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      className={`w-full px-4 py-3 border  focus:ring-2 focus:ring-[#64CB81] focus:border-[#64CB81] outline-none transition-colors ${
+                      className={`w-full px-4 py-3 border  focus:ring-2 focus:ring-[#0284C7] focus:border-[#0284C7] outline-none transition-colors ${
                         formErrors.name ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter your full name"
@@ -601,7 +679,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                         type="text"
                         value={formData.whatsapp}
                         onChange={(e) => handleInputChange('whatsapp', e.target.value)}
-                        className={`w-full px-4 py-3 border focus:ring-2 focus:ring-[#64CB81] focus:border-[#64CB81] outline-none transition-colors ${
+                        className={`w-full px-4 py-3 border focus:ring-2 focus:ring-[#0284C7] focus:border-[#0284C7] outline-none transition-colors ${
                           formErrors.whatsapp ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="Enter 10-digit number"
@@ -623,7 +701,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className={`w-full px-4 py-3 border  focus:ring-2 focus:ring-[#64CB81] focus:border-[#64CB81] outline-none transition-colors ${
+                      className={`w-full px-4 py-3 border  focus:ring-2 focus:ring-[#0284C7] focus:border-[#0284C7] outline-none transition-colors ${
                         formErrors.email ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter your email address"
@@ -643,7 +721,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                       type="text"
                       value={formData.callbackTime}
                       onChange={(e) => handleInputChange('callbackTime', e.target.value)}
-                      className={`w-full px-4 py-3 border focus:ring-2 focus:ring-[#64CB81] focus:border-[#64CB81] outline-none transition-colors ${
+                      className={`w-full px-4 py-3 border focus:ring-2 focus:ring-[#0284C7] focus:border-[#0284C7] outline-none transition-colors ${
                         formErrors.callbackTime ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="e.g., Morning 10-12, Evening 5-7"
@@ -653,7 +731,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
 
                   <Button
                     type="submit"
-                    className="w-full bg-[#64CB81] text-white hover:bg-[#64CB81]/90 py-3 rounded-lg font-semibold text-base mt-6"
+                    className="w-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] text-white hover:from-[#0369A1] hover:to-[#075985] py-3 rounded-lg font-semibold text-base mt-6"
                   >
                     I AM READY FOR THE RESULTS
                   </Button>
@@ -712,7 +790,7 @@ export default function ResultScreen({ answers, onRetake, onUpgradeToFull }: Res
                       window.location.href = '/contact';
                       setShowClarityCallPopup(false);
                     }}
-                    className="w-full bg-[#64CB81] text-white cursor-pointer hover:bg-green-600 py-3 lg:py-4 rounded-lg font-semibold text-sm lg:text-base xl:text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    className="w-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] text-white cursor-pointer hover:from-[#0369A1] hover:to-[#075985] py-3 lg:py-4 rounded-lg font-semibold text-sm lg:text-base xl:text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                   >
                     <Phone className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                     Book Free Clarity Call

@@ -129,7 +129,7 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
               className="flex items-center cursor-pointer"
               aria-label="Go to home"
             >
-              <img src="/Logo.svg?v=6" alt="CuraGo Logo" className="h-10 w-auto" width="160" height="40" fetchpriority="high" />
+              <img src="/Logo.svg?v=6" alt="CuraGo Logo" className="h-7 sm:h-10 w-auto" width="160" height="40" fetchpriority="high" />
             </a>
           </motion.div>
 
@@ -274,17 +274,14 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
               </AnimatePresence>
             </div>
 
-            {/* CuraGo's Anxiety Loop Assessment Tool 1.0 - path route */}
+            {/* CALM 1.0 - external link to cala.curago.in */}
             <a
-              href="/calm"
-              onClick={(e) => {
-                e.preventDefault();
-                goToAssessment('/calm');
-              }}
-              className={`${baseLink} ${currentPage === 'calm' ? 'text-[#096b17]' : ''}`}
+              href="https://cala.curago.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${baseLink}`}
             >
-              CuraGo's Anxiety Loop Assessment Tool 1.0
-              <span className={underline(currentPage === 'calm')} />
+              CALM 1.0
             </a>
 
             <a
@@ -475,14 +472,12 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
                   </div>
 
                   <a
-                    href="/calm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      goToAssessment('/calm');
-                    }}
+                    href="https://cala.curago.in"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="py-2 text-gray-800"
                   >
-                    CuraGo's Anxiety Loop Assessment Tool 1.0
+                    CALM 1.0
                   </a>
 
                   <a
