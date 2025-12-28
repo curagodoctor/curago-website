@@ -48,7 +48,7 @@ const CalmTermsAndConditions = lazy(() => import('./components/CalmTermsAndCondi
 
 // Keep these as regular imports (small utilities)
 import { calculateCalmResult } from './components/assessment/calm/scoringEngine';
-import { sendCalmResultsToGoogleSheets } from './utils/googleSheets';
+import { sendCalaResultsToGoogleSheets } from './utils/googleSheets';
 
 // ✅ Single source of truth for types (new 8-pillar model)
 import type { QuizAnswers, UserInfo, AuraScores } from './types/aura';
@@ -282,12 +282,12 @@ export default function App() {
         // ✅ Developer-added GTM signal for CompleteRegistration (CuraGo's Anxiety Loop Assessment Tool 1.0 finish)
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
-          event: 'calm_test_finished_signal',
+          event: 'cala_test_finished_signal',
           page_path: pathname,
           timestamp: new Date().toISOString(),
         });
 
-        console.log('✅ GTM signal fired: calm_test_finished_signal');
+        console.log('✅ GTM signal fired: cala_test_finished_signal');
         return;
       }
       if (pathname === '/cala/terms') {
@@ -550,19 +550,19 @@ export default function App() {
     goToCalm('analyzing');
 
     // Generate event ID for tracking
-    const eventId = `calm-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const eventId = `cala-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-    // Send webhook with form data and CALM results - FIRES FIRST
+    // Send webhook with form data and CALA results - FIRES FIRST
     try {
       const webhookPayload = {
-        action: "calm_assessment",
+        action: "cala_assessment",
         contact: {
           name: userInfo.name,
           whatsapp: userInfo.whatsapp.startsWith('+91') ? userInfo.whatsapp : `+91${userInfo.whatsapp}`,
           email: userInfo.email || ""
         },
         assessment: {
-          type: "CALM",
+          type: "CALA",
           primaryLoop: result.primaryLoop,
           secondaryLoop: result.secondaryLoop,
           triggerType: result.triggerType,
@@ -583,17 +583,17 @@ export default function App() {
         body: JSON.stringify(webhookPayload)
       });
 
-      console.log('✅ CALM assessment webhook sent successfully');
+      console.log('✅ CALA assessment webhook sent successfully');
     } catch (error) {
-      console.error('❌ Failed to send CALM assessment webhook:', error);
+      console.error('❌ Failed to send CALA assessment webhook:', error);
     }
 
     // Minimum wait time for analyzing screen (5 seconds for better UX)
     const minWaitTime = new Promise(resolve => setTimeout(resolve, 5000));
 
     // Send to Google Sheets in background (async, non-blocking)
-    const apiCall = sendCalmResultsToGoogleSheets({
-      testType: 'calm_tool',
+    const apiCall = sendCalaResultsToGoogleSheets({
+      testType: 'cala_tool',
       name: userInfo.name,
       email: userInfo.email || '',
       phoneNumber: userInfo.whatsapp,
@@ -606,14 +606,14 @@ export default function App() {
       loopScores: result.loopScores,
       eventId: eventId,
     }).then(() => {
-      console.log('✅ CALM results sent to Google Sheets');
+      console.log('✅ CALA results sent to Google Sheets');
     }).catch((error) => {
-      console.error('❌ Failed to send CALM results:', error);
+      console.error('❌ Failed to send CALA results:', error);
       // Continue to results even if API fails
     });
 
     // Mark quiz as completed in parallel with results submission
-    const markCompletionCall = sendCalmResultsToGoogleSheets({
+    const markCompletionCall = sendCalaResultsToGoogleSheets({
       action: 'mark_completion',
       payment_id: paymentId,
       name: userInfo.name,

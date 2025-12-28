@@ -48,8 +48,8 @@ interface AtmResultData {
   eventId: string;
 }
 
-interface CalmResultData {
-  testType: 'calm_tool';
+interface CalaResultData {
+  testType: 'cala_tool';
   name: string;
   email: string;
   phoneNumber: string;
@@ -165,10 +165,10 @@ export async function sendAtmResultsToGoogleSheets(data: AtmResultData): Promise
 }
 
 /**
- * Send CALM assessment results to Google Sheets and trigger email
+ * Send CALA assessment results to Google Sheets and trigger email
  */
-export async function sendCalmResultsToGoogleSheets(data: CalmResultData): Promise<boolean> {
-  console.log('📤 Sending CALM results to Google Sheets...', {
+export async function sendCalaResultsToGoogleSheets(data: CalaResultData): Promise<boolean> {
+  console.log('📤 Sending CALA results to Google Sheets...', {
     name: data.name,
     email: data.email,
     testType: data.testType
@@ -193,14 +193,14 @@ export async function sendCalmResultsToGoogleSheets(data: CalmResultData): Promi
     const result = await response.json();
 
     if (result.success) {
-      console.log('✅ CALM results sent to Google Sheets and email sent');
+      console.log('✅ CALA results sent to Google Sheets and email sent');
       return true;
     } else {
       console.error('❌ Google Sheets API error:', result.error);
       return false;
     }
   } catch (error) {
-    console.error('❌ Failed to send CALM results to Google Sheets:', error);
+    console.error('❌ Failed to send CALA results to Google Sheets:', error);
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
       console.error('💡 This is likely a CORS error. Check:');
       console.error('   1. Apps Script deployment "Who has access" is set to "Anyone"');

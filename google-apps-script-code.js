@@ -14,10 +14,10 @@
 const CONFIG = {
   AURA_SHEET_NAME: 'AURA Results',
   ATM_SHEET_NAME: 'ATM Results',
-  CALM_SHEET_NAME: 'CALM Results',
+  CALA_SHEET_NAME: 'CALA Results',
   EMAIL_SUBJECT_AURA: 'Your AURA Index Results from CuraGo',
   EMAIL_SUBJECT_ATM: 'Your ATM Assessment Results from CuraGo',
-  EMAIL_SUBJECT_CALM: 'Your CALM 1.0 Assessment Results from CuraGo',
+  EMAIL_SUBJECT_CALA: 'Your CALA 1.0 Assessment Results from CuraGo',
   FROM_NAME: 'CuraGo Team',
   COMPANY_WEBSITE: 'https://curago.in',
   SUPPORT_EMAIL: 'curagodoctor@gmail.com',
@@ -66,8 +66,8 @@ function doPost(e) {
       response = handleAuraSubmission(data);
     } else if (data.testType === 'atm_tool') {
       response = handleAtmSubmission(data);
-    } else if (data.testType === 'calm_tool') {
-      response = handleCalmSubmission(data);
+    } else if (data.testType === 'cala_tool') {
+      response = handleCalaSubmission(data);
     } else {
       throw new Error('Invalid test type: ' + data.testType);
     }
@@ -697,18 +697,18 @@ ${CONFIG.COMPANY_WEBSITE}
 }
 
 // ============================================================
-// CALM SUBMISSION HANDLER
+// CALA SUBMISSION HANDLER
 // ============================================================
-function handleCalmSubmission(data) {
+function handleCalaSubmission(data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(CONFIG.CALM_SHEET_NAME);
+  const sheet = ss.getSheetByName(CONFIG.CALA_SHEET_NAME);
 
   if (!sheet) {
-    throw new Error('Sheet "' + CONFIG.CALM_SHEET_NAME + '" not found. Please create it.');
+    throw new Error('Sheet "' + CONFIG.CALA_SHEET_NAME + '" not found. Please create it.');
   }
 
   // Generate PDF and save to Drive
-  const pdfFile = savePdfToDrive(generateCalmPdf(data), 'CALM_Results_' + data.name.replace(/\s+/g, '_'));
+  const pdfFile = savePdfToDrive(generateCalaPdf(data), 'CALA_Results_' + data.name.replace(/\s+/g, '_'));
   const pdfUrl = pdfFile.getUrl();
 
   // Save to Google Sheet with PDF link
@@ -738,19 +738,19 @@ function handleCalmSubmission(data) {
 
   // Send email with PDF
   if (data.email && data.email.trim() !== '') {
-    sendCalmPdfEmail(data, pdfFile);
+    sendCalaPdfEmail(data, pdfFile);
     Logger.log('Email sent to: ' + data.email);
   } else {
     Logger.log('No email provided, skipping email send');
   }
 
-  return { success: true, message: 'CALM results saved and email sent', pdfUrl: pdfUrl };
+  return { success: true, message: 'CALA results saved and email sent', pdfUrl: pdfUrl };
 }
 
 // ============================================================
-// CALM PDF GENERATOR
+// CALA PDF GENERATOR
 // ============================================================
-function generateCalmPdf(data) {
+function generateCalaPdf(data) {
   const html = `
 <!DOCTYPE html>
 <html>
@@ -841,12 +841,12 @@ function generateCalmPdf(data) {
 </head>
 <body>
   <div class="header">
-    <h1>Your CALM 1.0 Report</h1>
+    <h1>Your CALA 1.0 Report</h1>
     <p>Clinical Anxiety Loop Mapping</p>
   </div>
 
   <p class="greeting">Hi ${data.name}!</p>
-  <p>Thank you for completing the CALM 1.0 assessment. Here is your personalized clinical report:</p>
+  <p>Thank you for completing the CALA 1.0 assessment. Here is your personalized clinical report:</p>
 
   <div class="section">
     <h2>Section 1: Your Anxiety Loop Map</h2>
@@ -915,13 +915,13 @@ function generateCalmPdf(data) {
 }
 
 // ============================================================
-// SEND CALM EMAIL WITH PDF
+// SEND CALA EMAIL WITH PDF
 // ============================================================
-function sendCalmPdfEmail(data, pdfFile) {
+function sendCalaPdfEmail(data, pdfFile) {
   const plainBody = `
 Hi ${data.name}!
 
-Thank you for completing the CALM 1.0 assessment.
+Thank you for completing the CALA 1.0 assessment.
 
 Your detailed results are attached as a PDF document.
 
@@ -956,11 +956,11 @@ ${CONFIG.COMPANY_WEBSITE}
 </head>
 <body>
   <div class="header">
-    <h1>Your CALM 1.0 Results</h1>
+    <h1>Your CALA 1.0 Results</h1>
   </div>
   <div class="content">
     <h2>Hi ${data.name}!</h2>
-    <p>Thank you for completing the CALM 1.0 assessment.</p>
+    <p>Thank you for completing the CALA 1.0 assessment.</p>
     <p><strong>Your detailed results are attached as a PDF document.</strong></p>
     <p>Primary Loop: <strong>${data.primaryLoop}</strong></p>
     <p style="text-align: center;">
@@ -977,7 +977,7 @@ ${CONFIG.COMPANY_WEBSITE}
 
   GmailApp.sendEmail(
     data.email,
-    CONFIG.EMAIL_SUBJECT_CALM,
+    CONFIG.EMAIL_SUBJECT_CALA,
     plainBody,
     {
       htmlBody: htmlBody,
@@ -986,5 +986,5 @@ ${CONFIG.COMPANY_WEBSITE}
     }
   );
 
-  Logger.log('CALM email with PDF sent to: ' + data.email);
+  Logger.log('CALA email with PDF sent to: ' + data.email);
 }
