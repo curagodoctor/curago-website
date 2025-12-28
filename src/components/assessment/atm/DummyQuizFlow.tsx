@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { Button } from '../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import type { AtmAnswers, UserInfo } from '../../../types/atm';
@@ -127,23 +126,22 @@ export default function DummyQuizFlow({ onComplete }: QuizFlowProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFFBF5] to-[#FFFFFF] flex flex-col pt-24">
-      <div className="w-full bg-white/95 backdrop-blur-md border-b border-[#E5E7EB] p-3 sticky top-16 z-20 shadow-sm">
+    <div className="min-h-screen bg-[#F5F5DC] flex flex-col pt-24" style={{ fontFamily: 'Poppins, sans-serif' }}>
+      <div className="w-full bg-white border-b-2 border-[#096b17]/20 p-3 sticky top-16 z-20 shadow-sm">
         <div className="container mx-auto max-w-3xl">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-[#0A0A0A] font-semibold">
+            <span className="text-sm font-semibold" style={{ color: '#096b17' }}>
               Question {currentQuestion + 1} of {questions.length}
             </span>
-            <span className="text-sm text-[#0A0A0A] font-semibold">{Math.round(progress)}%</span>
+            <span className="text-sm font-semibold" style={{ color: '#096b17' }}>{Math.round(progress)}%</span>
           </div>
           <div className="relative">
-            <div className="w-full h-3 bg-[#E5E7EB] rounded-full overflow-hidden shadow-inner border border-[#D1D5DB]">
-              <div
-                className="h-full rounded-full transition-all duration-500 ease-out shadow-lg"
-                style={{
-                  background: 'linear-gradient(to right, #0284C7, #0369A1)',
-                  width: `${progress}%`
-                }}
+            <div className="w-full h-2 bg-[#F5F5DC] rounded-full overflow-hidden shadow-inner">
+              <motion.div
+                className="h-full bg-[#096b17] rounded-full transition-all duration-500 ease-out shadow-sm"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.3 }}
               />
             </div>
           </div>
@@ -161,61 +159,52 @@ export default function DummyQuizFlow({ onComplete }: QuizFlowProps) {
               transition={{ duration: 0.4, ease: "easeInOut" }}
               className="space-y-8 sm:space-y-10 md:space-y-12"
             >
-              <div className="text-center space-y-4 md:space-y-6">
-                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-[#0A0A0A] font-bold max-w-3xl mx-auto leading-tight px-4">
+              <div className="text-center">
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                   {question.text}
                 </h2>
               </div>
 
               <div className="space-y-3 sm:space-y-4 md:space-y-5 max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
-                {question.options.map((option, index) => (
-                  <motion.button
-                    key={index}
-                    onClick={() => handleAnswer(option.value)}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.08, ease: "easeOut" }}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    style={selectedValue === option.value ? {
-                      background: 'linear-gradient(to right, #0284C7, #0369A1)',
-                      borderColor: '#0284C7'
-                    } : {}}
-                    className={`w-full p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl text-left transition-all duration-300 ${
-                      selectedValue === option.value
-                        ? 'shadow-xl border-2'
-                        : 'bg-white border-2 border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0284C7] text-[#0A0A0A] shadow-lg hover:shadow-xl'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3 sm:gap-4 md:gap-6">
-                      <div
-                        className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm sm:text-base font-bold transition-all duration-300 ${
-                          selectedValue === option.value
-                            ? 'bg-white text-[#0284C7] scale-110 shadow-lg'
-                            : 'bg-[#E0F2FE] text-[#0284C7] border-2 border-[#E5E7EB]'
-                        }`}
-                      >
-                        {String.fromCharCode(65 + index)}
-                      </div>
-                      <p className={`text-sm sm:text-base md:text-lg leading-relaxed font-medium ${selectedValue === option.value ? 'text-white' : 'text-[#0A0A0A]'}`}>
+                {question.options.map((option, index) => {
+                  const isSelected = selectedValue === option.value;
+
+                  return (
+                    <motion.button
+                      key={index}
+                      onClick={() => handleAnswer(option.value)}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.08, ease: "easeOut" }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`w-full p-4 sm:p-5 md:p-8 rounded-2xl md:rounded-3xl text-center transition-all duration-300 ${
+                        isSelected
+                          ? 'bg-[#096b17] text-white shadow-xl border-2 border-[#096b17]'
+                          : 'bg-white border-2 border-[#096b17]/20 hover:border-[#096b17]/40 shadow-lg hover:shadow-xl'
+                      }`}
+                    >
+                      <p className={`text-sm sm:text-base md:text-lg leading-relaxed font-medium ${
+                        isSelected ? 'text-white' : ''
+                      }`} style={isSelected ? {} : { color: '#096b17' }}>
                         {option.text}
                       </p>
-                    </div>
-                  </motion.button>
-                ))}
+                    </motion.button>
+                  );
+                })}
               </div>
 
-              <div className="flex justify-center pt-6 md:pt-8">
-                <Button
-                  onClick={handlePrevious}
-                  disabled={currentQuestion === 0}
-                  variant="outline"
-                  className="bg-white border-2 border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0A0A0A] text-[#0A0A0A] font-semibold rounded-xl md:rounded-2xl px-6 sm:px-8 md:px-10 py-2 sm:py-3 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-                >
-                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Previous
-                </Button>
-              </div>
+              {currentQuestion > 0 && (
+                <div className="flex justify-center mt-8 sm:mt-12">
+                  <button
+                    onClick={handlePrevious}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all bg-white text-[#096b17] hover:bg-[#F5F5DC] border-2 border-[#096b17]/20 shadow-lg"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                    <span>Previous Question</span>
+                  </button>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>

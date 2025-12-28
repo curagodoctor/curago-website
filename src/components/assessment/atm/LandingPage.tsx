@@ -82,7 +82,7 @@ export default function LandingPage({ onNavigateToWindDown, onNavigateToDummy }:
                   onClick={handleSkipToTest}
                   size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto bg-white hover:bg-[#F8F9FA] text-[#3A3A3A] hover:text-[#0A0A0A] px-6 sm:px-8 h-12 sm:h-14 rounded-2xl font-semibold transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl border-2 border-[#E5E7EB] hover:border-[#0284C7] text-sm sm:text-base"
+                  className="w-full sm:w-auto bg-white hover:bg-[#F8F9FA] text-[#3A3A3A] hover:text-[#0A0A0A] px-6 sm:px-8 h-12 sm:h-14 rounded-2xl font-semibold transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl border-2 border-[#E5E7EB] hover:border-[#096b17] text-sm sm:text-base"
                 >
                   Skip and Go to the test
                 </Button>
@@ -94,7 +94,7 @@ export default function LandingPage({ onNavigateToWindDown, onNavigateToDummy }:
                   }}
                   size="lg"
                   style={{
-                    background: 'linear-gradient(to right, #0284C7, #0369A1)',
+                    background: 'linear-gradient(to right, #096b17, #075110)',
                     color: 'white',
                   }}
                   className="w-full sm:w-auto hover:opacity-90 px-6 sm:px-8 h-12 sm:h-14 rounded-2xl font-semibold transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl text-sm sm:text-base border-0"
@@ -151,7 +151,7 @@ export default function LandingPage({ onNavigateToWindDown, onNavigateToDummy }:
                     type="checkbox"
                     checked={consentChecked}
                     onChange={(e) => setConsentChecked(e.target.checked)}
-                    className="mt-0.5 w-5 h-5 flex-shrink-0 text-[#0284C7] bg-white border-gray-300 rounded focus:ring-[#0284C7] focus:ring-2 cursor-pointer"
+                    className="mt-0.5 w-5 h-5 flex-shrink-0 text-[#096b17] bg-white border-gray-300 rounded focus:ring-[#096b17] focus:ring-2 cursor-pointer"
                   />
                   <span className="text-sm sm:text-base text-gray-800 font-medium group-hover:text-gray-900 leading-snug">
                     I understand how this process works and I'm proceeding seriously
@@ -165,7 +165,7 @@ export default function LandingPage({ onNavigateToWindDown, onNavigateToDummy }:
                   disabled={!consentChecked}
                   className={`w-full py-3 rounded-xl font-semibold text-sm sm:text-base transition-all duration-300 ${
                     consentChecked
-                      ? 'bg-gradient-to-r from-[#0284C7] to-[#0369A1] text-white hover:from-[#0369A1] hover:to-[#075985] cursor-pointer shadow-lg hover:shadow-xl'
+                      ? 'bg-gradient-to-r from-[#096b17] to-[#075110] text-white hover:from-[#075110] hover:to-[#053d0b] cursor-pointer shadow-lg hover:shadow-xl'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >

@@ -5,7 +5,7 @@ import { Badge } from '../../ui/badge';
 import type { AtmAnswers, UserInfo, AnxietyPattern } from '../../../types/atm';
 import { trackButtonClick, trackPhoneClick, trackFormSubmission } from '../../../utils/tracking';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Zap, Brain, Shield, Target, Clock, AlertTriangle, MessageCircle, X, Phone, User, Mail, Loader2, CheckCircle2, Sparkles } from 'lucide-react';
+import { RefreshCw, Zap, Brain, Shield, Target, Clock, AlertTriangle, MessageCircle, X, Phone, User, Mail, Loader2, CheckCircle2 } from 'lucide-react';
 import { FloatingButtons } from '../../FloatingButtons';
 import { sendAtmResultsToGoogleSheets } from '../../../utils/googleSheets';
 
@@ -204,14 +204,14 @@ function AnalyzingAnimation({ userName }: { userName: string }) {
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: 'linear-gradient(to bottom right, #FFFBF5, #FFFFFF)' }}
+      style={{ background: '#F5F5DC', fontFamily: 'Poppins, sans-serif' }}
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-2xl w-full"
       >
-        <div className="bg-white rounded-2xl p-8 md:p-12 border-2 shadow-2xl" style={{ borderColor: 'rgba(2, 132, 199, 0.2)' }}>
+        <div className="bg-white rounded-2xl p-8 md:p-12 border-2 shadow-2xl" style={{ borderColor: 'rgba(9, 107, 23, 0.2)' }}>
           <div className="text-center space-y-8">
             {/* Header */}
             <div className="space-y-4">
@@ -220,12 +220,12 @@ function AnalyzingAnimation({ userName }: { userName: string }) {
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 className="inline-block"
               >
-                <Brain className="w-16 h-16 text-[#0284C7]" />
+                <Brain className="w-16 h-16 text-[#096b17]" />
               </motion.div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0284C7]">
+              <h2 className="text-3xl md:text-4xl font-bold text-[#096b17]">
                 Analyzing Your Responses
               </h2>
-              <p className="text-lg text-[#0284C7]">
+              <p className="text-lg text-[#096b17]">
                 Hi {userName}, we're creating your personalized ATM report
               </p>
             </div>
@@ -243,15 +243,15 @@ function AnalyzingAnimation({ userName }: { userName: string }) {
                   className="flex items-center gap-3 text-left"
                 >
                   {index < stage ? (
-                    <CheckCircle2 className="w-5 h-5 text-[#0284C7] flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-[#096b17] flex-shrink-0" />
                   ) : index === stage ? (
-                    <Loader2 className="w-5 h-5 text-[#0284C7] flex-shrink-0 animate-spin" />
+                    <Loader2 className="w-5 h-5 text-[#096b17] flex-shrink-0 animate-spin" />
                   ) : (
-                    <div className="w-5 h-5 rounded-full border-2 flex-shrink-0" style={{ borderColor: 'rgba(2, 132, 199, 0.3)' }} />
+                    <div className="w-5 h-5 rounded-full border-2 flex-shrink-0" style={{ borderColor: 'rgba(9, 107, 23, 0.3)' }} />
                   )}
                   <span
                     className={`text-sm md:text-base ${index <= stage ? 'font-medium' : ''}`}
-                    style={{ color: index <= stage ? '#0284C7' : 'rgba(2, 132, 199, 0.5)' }}
+                    style={{ color: index <= stage ? '#096b17' : 'rgba(9, 107, 23, 0.5)' }}
                   >
                     {text}
                   </span>
@@ -261,10 +261,10 @@ function AnalyzingAnimation({ userName }: { userName: string }) {
 
             {/* Loading Bar */}
             <div className="relative">
-              <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#E0F2FE' }}>
+              <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#F5F5DC' }}>
                 <motion.div
                   className="h-full rounded-full"
-                  style={{ background: 'linear-gradient(to right, #0284C7, #0369A1)' }}
+                  style={{ background: 'linear-gradient(to right, #096b17, #075110)' }}
                   initial={{ width: '0%' }}
                   animate={{ width: `${((stage + 1) / stages.length) * 100}%` }}
                   transition={{ duration: 0.5 }}
@@ -273,7 +273,7 @@ function AnalyzingAnimation({ userName }: { userName: string }) {
             </div>
 
             {/* Info Text */}
-            <p className="text-sm" style={{ color: 'rgba(2, 132, 199, 0.7)' }}>
+            <p className="text-sm" style={{ color: 'rgba(9, 107, 23, 0.7)' }}>
               This usually takes 5-10 seconds. Please don't close this window.
             </p>
           </div>
@@ -297,10 +297,8 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
   // Form and popup states
   const [showLoadingAnimation, setShowLoadingAnimation] = useState(true);
   const [showFormPopup, setShowFormPopup] = useState(false);
-  const [showAcknowledgmentPopup, setShowAcknowledgmentPopup] = useState(false);
   const [showClarityCallPopup, setShowClarityCallPopup] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
-  const [acknowledgmentClosedTime, setAcknowledgmentClosedTime] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     whatsapp: '',
@@ -410,21 +408,13 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
     return () => clearTimeout(timer);
   }, []);
 
-  // Show acknowledgment popup after form submission (no auto-close)
-  useEffect(() => {
-    if (isFormSubmitted && !showAcknowledgmentPopup && !acknowledgmentClosedTime) {
-      setShowAcknowledgmentPopup(true);
-    }
-  }, [isFormSubmitted]);
-
-  // Show clarity call popup 10 seconds after form submission
+  // Show clarity call popup 10 seconds after form submission (result unlock)
   useEffect(() => {
     let timer: NodeJS.Timeout;
 
     if (isFormSubmitted) {
       // Start timer immediately when form is submitted
       timer = setTimeout(() => {
-        setShowAcknowledgmentPopup(false); // Close acknowledgement popup if still open
         setShowClarityCallPopup(true);
       }, 10000);
     }
@@ -521,13 +511,13 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
         // Don't block user experience if Google Sheets fails
       });
 
-      // Track form submission - FIRES SECOND
+      // Track form submission - FIRES SECOND (₹0 value for preview/dummy flow)
       trackFormSubmission('lead', {
         name: formData.name,
         phone: formData.whatsapp,
         email: formData.email,
         source: 'ATM Assessment Results',
-        value: 300.00,
+        value: 0.00,
         currency: 'INR',
       });
 
@@ -575,7 +565,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
       {showLoadingAnimation && <AnalyzingAnimation userName={userInfo.name} />}
 
       {!showLoadingAnimation && (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFFBF5] to-[#FFFFFF] pt-20">
+    <div className="min-h-screen bg-[#F5F5DC] pt-20" style={{ fontFamily: 'Poppins, sans-serif' }}>
       <header className="container mx-auto px-4 sm:px-6 py-4 flex justify-end items-center">
         <Button
           onClick={() => {
@@ -585,7 +575,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
           }}
           variant="outline"
           size="sm"
-          className="rounded-full bg-white border border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0A0A0A] text-[#0A0A0A] shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium px-4 py-2"
+          className="rounded-xl bg-white border-2 border-[#096b17]/20 hover:bg-[#F5F5DC] hover:border-[#096b17] shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium px-4 py-2" style={{ color: '#096b17' }}
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           Retake Quiz
@@ -595,7 +585,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <Card className="p-6 sm:p-8 lg:p-10 mb-6 sm:mb-8 text-center bg-white border border-[#E5E7EB] shadow-xl rounded-2xl sm:rounded-3xl">
-            <Badge className="mb-4 sm:mb-6 text-white bg-gradient-to-r from-[#0284C7] to-[#0369A1] border-none px-4 py-2 text-sm font-medium rounded-full">
+            <Badge className="mb-4 sm:mb-6 text-white bg-gradient-to-r from-[#096b17] to-[#075110] border-none px-4 py-2 text-sm font-medium rounded-full">
               Your Anxiety Pattern
             </Badge>
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#0A0A0A] mb-4 sm:mb-6 leading-tight">{result.pattern}</h1>
@@ -607,7 +597,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
             <Card className="p-4 sm:p-6 h-full bg-white border border-[#E5E7EB] rounded-xl sm:rounded-2xl shadow-lg">
               <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] flex items-center justify-center">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#096b17] to-[#075110] flex items-center justify-center">
                   <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <h3 className="font-bold text-[#0A0A0A] text-lg sm:text-xl">Why It Happens</h3>
@@ -618,7 +608,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.4 }}>
             <Card className="p-4 sm:p-6 h-full bg-white border border-[#E5E7EB] rounded-xl sm:rounded-2xl shadow-lg">
               <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] flex items-center justify-center">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#096b17] to-[#075110] flex items-center justify-center">
                   <Target className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <h3 className="font-bold text-[#0A0A0A] text-lg sm:text-xl">Common Impacts</h3>
@@ -627,7 +617,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
                 {details.impact.map((item, index) => (
                   <Badge
                     key={index}
-                    className="text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full font-medium bg-[#E0F2FE] text-[#0284C7] border border-[#E5E7EB]"
+                    className="text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full font-medium bg-[#F5F5DC] text-[#096b17] border border-[#E5E7EB]"
                   >
                     {item}
                   </Badge>
@@ -646,7 +636,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
         >
           <Card className="p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 bg-white border border-[#E5E7EB] rounded-xl sm:rounded-2xl shadow-lg relative">
             <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] flex items-center justify-center flex-shrink-0 mt-1">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#096b17] to-[#075110] flex items-center justify-center flex-shrink-0 mt-1">
                 <span className="text-lg sm:text-xl font-bold text-white">💡</span>
               </div>
               <div>
@@ -655,13 +645,13 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
               </div>
             </div>
           </Card>
-          
+
           {/* Unlock Overlay */}
           {!isFormSubmitted && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-lg rounded-xl sm:rounded-2xl">
               <Card className="p-8 bg-gradient-to-br from-white/95 to-white/90 backdrop-blur-lg border-2 border-white/40 rounded-2xl shadow-2xl max-w-md mx-4 transform hover:scale-105 transition-all duration-300">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#0284C7] to-[#0369A1] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#096b17] to-[#075110] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                     <span className="text-2xl">🔒</span>
                   </div>
                   <h4 className="font-bold text-gray-800 text-xl mb-3 leading-tight">Unlock Your Micro Action</h4>
@@ -669,9 +659,8 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
                   <Button
                     onClick={() => {
                       setShowFormPopup(true);
-                      setFormPopupClosedTime(null); // Reset the timer
                     }}
-                    className="w-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] text-white hover:from-[#0369A1] hover:to-[#075985] rounded-xl py-3 font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    className="w-full bg-[#096b17] text-white hover:bg-[#075110] rounded-xl py-3 font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300"
                   >
                     Submit Details to Unlock
                   </Button>
@@ -692,7 +681,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
                   trackButtonClick('Book Free Clarity Call', 'cta', 'atm_results_bottom');
                   window.location.href = '/contact';
                 }}
-                className="w-full h-12 sm:h-14 rounded-xl bg-gradient-to-r from-[#0284C7] to-[#0369A1] text-white hover:from-[#0369A1] hover:to-[#075985] shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-sm sm:text-base"
+                className="w-full h-12 sm:h-14 rounded-xl bg-[#096b17] text-white hover:bg-[#075110] shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-sm sm:text-base"
               >
                 Book Free Clarity Call
               </Button>
@@ -702,7 +691,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
                   trackButtonClick('Chat Now on WhatsApp', 'cta', 'atm_results_bottom');
                   window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
                 }}
-                className="w-full h-12 sm:h-14 rounded-xl bg-white text-[#0A0A0A] border border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0A0A0A] transition-all duration-300 font-semibold text-sm sm:text-base"
+                className="w-full h-12 sm:h-14 rounded-xl bg-white border-2 border-[#096b17]/20 hover:bg-[#F5F5DC] hover:border-[#096b17] transition-all duration-300 font-semibold text-sm sm:text-base" style={{ color: '#096b17' }}
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 WhatsApp Chat
@@ -715,7 +704,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                   else window.location.assign('/#mental-health-team');
                 }}
-                className="w-full h-12 sm:h-14 rounded-xl bg-white text-[#0A0A0A] border border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0A0A0A] transition-all duration-300 font-semibold text-sm sm:text-base"
+                className="w-full h-12 sm:h-14 rounded-xl bg-white border-2 border-[#096b17]/20 hover:bg-[#F5F5DC] hover:border-[#096b17] transition-all duration-300 font-semibold text-sm sm:text-base" style={{ color: '#096b17' }}
               >
                 Our Team
               </Button>
@@ -727,7 +716,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                   else window.location.assign('/#home');
                 }}
-                className="w-full h-12 sm:h-14 rounded-xl bg-white text-[#0A0A0A] border border-[#E5E7EB] hover:bg-[#F8F9FA] hover:border-[#0A0A0A] transition-all duration-300 font-semibold text-sm sm:text-base"
+                className="w-full h-12 sm:h-14 rounded-xl bg-white border-2 border-[#096b17]/20 hover:bg-[#F5F5DC] hover:border-[#096b17] transition-all duration-300 font-semibold text-sm sm:text-base" style={{ color: '#096b17' }}
               >
                 Book Consultation
               </Button>
@@ -788,7 +777,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
                       type="text"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      className={`w-full px-4 py-3 border  focus:ring-2 focus:ring-[#0284C7] focus:border-[#0284C7] outline-none transition-colors ${
+                      className={`w-full px-4 py-3 border  focus:ring-2 focus:ring-[#096b17] focus:border-[#096b17] outline-none transition-colors ${
                         formErrors.name ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter your full name"
@@ -812,7 +801,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
                         type="text"
                         value={formData.whatsapp}
                         onChange={(e) => handleInputChange('whatsapp', e.target.value)}
-                        className={`w-full px-4 py-3 border focus:ring-2 focus:ring-[#0284C7] focus:border-[#0284C7] outline-none transition-colors ${
+                        className={`w-full px-4 py-3 border focus:ring-2 focus:ring-[#096b17] focus:border-[#096b17] outline-none transition-colors ${
                           formErrors.whatsapp ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="Enter 10-digit number"
@@ -834,7 +823,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className={`w-full px-4 py-3 border  focus:ring-2 focus:ring-[#0284C7] focus:border-[#0284C7] outline-none transition-colors ${
+                      className={`w-full px-4 py-3 border  focus:ring-2 focus:ring-[#096b17] focus:border-[#096b17] outline-none transition-colors ${
                         formErrors.email ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter your email address"
@@ -854,7 +843,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
                       type="text"
                       value={formData.callbackTime}
                       onChange={(e) => handleInputChange('callbackTime', e.target.value)}
-                      className={`w-full px-4 py-3 border focus:ring-2 focus:ring-[#0284C7] focus:border-[#0284C7] outline-none transition-colors ${
+                      className={`w-full px-4 py-3 border focus:ring-2 focus:ring-[#096b17] focus:border-[#096b17] outline-none transition-colors ${
                         formErrors.callbackTime ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="e.g., Morning 10-12, Evening 5-7"
@@ -864,7 +853,7 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
 
                   <Button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] text-white hover:from-[#0369A1] hover:to-[#075985] py-3 rounded-lg font-semibold text-base mt-6"
+                    className="w-full bg-[#096b17] text-white hover:bg-[#075110] py-3 rounded-xl font-semibold text-base mt-6"
                   >
                     I AM READY FOR THE RESULTS
                   </Button>
@@ -904,183 +893,50 @@ export default function ResultScreen({ answers, userInfo, onRetake }: ResultScre
                   </Button>
                 </div>
 
-                {/* Logo from Navbar */}
-                <div className="flex justify-center mb-6">
-                  <img src="/Logo.svg?v=6" alt="CuraGo Logo" className="h-12 w-auto lg:h-16" />
-                </div>
+                <h3 className="text-2xl md:text-3xl font-bold text-[#0A0A0A] mb-8">
+                  Are you ready for the full assessment?
+                </h3>
 
-
-                <h3 className="text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800 mb-4 lg:mb-6">You've Taken a Big Step - Here's Your Next One</h3>
-                <p className="text-gray-600 text-sm lg:text-base xl:text-lg mb-6 lg:mb-8 leading-relaxed px-2 lg:px-4">
-                  Your results are now clear. If you'd like to understand what your results actually mean and what to do next, our team can guide you.<br /><br />
-                  Just book a free clarity call and we will walk you through the whole process. This is the safest next step.
-                </p>
-
-                <div className="space-y-3 lg:space-y-4">
+                <div className="space-y-4">
+                  {/* Yes, start assessment - Razorpay Button */}
                   <Button
                     onClick={() => {
-                      // ✅ Clarity Call CTA Click (₹350 value intent)
+                      // Track initiate checkout event
                       window.dataLayer = window.dataLayer || [];
                       window.dataLayer.push({
-                        event: 'contact_form_submission',
-                        form_type: 'clarity_call_cta_click',
-                        proxy_value: 350.00,
+                        event: 'initiatecheckout',
+                        test_type: 'atm_tool',
+                        amount: 299,
                         currency: 'INR',
                         page_path: window.location.pathname,
-                        source: 'atm_clarity_popup',
-                        atm_event_id: eventIdRef.current,
-                        pattern: result.pattern,
+                        timestamp: new Date().toISOString(),
                       });
-                      console.log('✅ contact_form_submission event (CTA click) pushed to dataLayer (₹350)');
+                      console.log('✅ initiatecheckout event pushed to dataLayer (ATM Tool, ₹299)');
 
-                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Free Clarity Call (popup)' });
-                      trackButtonClick('Book Free Clarity Call', 'popup', 'atm_results_clarity_popup');
-                      window.location.href = '/contact';
-                      setShowClarityCallPopup(false);
+                      // Open Razorpay payment link
+                      const paymentUrl = 'https://razorpay.com/payment-button/pl_Rtue8bSVIson8p/view/?amount=29900';
+                      window.open(paymentUrl, '_blank');
                     }}
-                    className="w-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] text-white cursor-pointer hover:from-[#0369A1] hover:to-[#075985] py-3 lg:py-4 rounded-lg font-semibold text-sm lg:text-base xl:text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    size="lg"
+                    className="w-full bg-[#096b17] text-white hover:bg-[#075110] border-0 px-8 h-14 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                   >
-                    <Phone className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
-                    Book Free Clarity Call
+                    Yes, start assessment
                   </Button>
 
+                  {/* Chat with us Button */}
                   <Button
                     onClick={() => {
-                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Mental Health Team (popup)' });
-                      trackButtonClick('Mental Health Team', 'popup', 'atm_results_clarity_popup');
-                      window.location.href = '/team';
-                      setShowClarityCallPopup(false);
-                    }}
-                    className="w-full bg-white border cursor-pointer border-gray-300 text-gray-800 hover:bg-gray-50 py-3 lg:py-4 rounded-lg font-medium text-sm lg:text-base shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    Mental Health Team
-                  </Button>
-
-                  <Button
-                    onClick={() => {
-                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Book Appointment (popup)' });
-                      trackButtonClick('Book Appointment', 'popup', 'atm_results_clarity_popup');
-                      window.location.href = '/contact';
-                      setShowClarityCallPopup(false);
-                    }}
-                    className="w-full bg-white border cursor-pointer border-gray-300 text-gray-800 hover:bg-gray-50 py-3 lg:py-4 rounded-lg font-medium text-sm lg:text-base shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    Book Appointment
-                  </Button>
-
-                  <Button
-                    onClick={() => {
-                      dlPush({ event: 'atm_results_cta_click', atm_event_id: eventIdRef.current, label: 'Chat on WhatsApp (popup)' });
-                      trackButtonClick('Chat on WhatsApp', 'popup', 'atm_results_clarity_popup');
+                      trackButtonClick('Chat with us', 'popup', 'atm_results_clarity_popup');
                       window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
-                      setShowClarityCallPopup(false);
                     }}
-                    className="w-full py-3 lg:py-4 rounded-lg font-medium text-sm lg:text-base bg-white border border-gray-300 text-gray-800 cursor-pointer hover:bg-gray-50 transition-all duration-300"
+                    variant="outline"
+                    size="lg"
+                    className="w-full bg-white hover:bg-[#F5F5DC] border-2 border-[#096b17]/20 hover:border-[#096b17] px-8 h-14 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl" style={{ color: '#096b17' }}
                   >
-                    <svg className="w-4 h-4 lg:w-5 lg:h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-2.462-.96-4.779-2.705-6.526-1.746-1.746-4.065-2.711-6.526-2.713-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.092-.634zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.867-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.149-.173.198-.297.297-.495.099-.198.05-.372-.025-.521-.074-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414l-.005.009z"/>
-                    </svg>
-                    Chat on WhatsApp
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    Chat with us
                   </Button>
                 </div>
-
-                {/* Additional Contact Options for Large Screens */}
-                <div className="hidden lg:block mt-8 pt-6 border-t border-gray-200">
-                  <p className="text-gray-500 text-sm mb-4">Or contact us directly:</p>
-                  <div className="flex justify-center gap-4">
-                    <Button
-                      onClick={() => {
-                        trackButtonClick('Chat Now on WhatsApp', 'popup', 'atm_results_clarity_popup');
-                        window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
-                        setShowClarityCallPopup(false);
-                      }}
-                      variant="outline"
-                      className="flex-1 py-2.5 rounded-lg font-medium text-sm border-green-300 text-green-600 hover:bg-green-50 transition-all duration-300"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      WhatsApp
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        trackPhoneClick('atm_results_clarity_popup');
-                        window.open('tel:+917021227203', '_self');
-                        setShowClarityCallPopup(false);
-                      }}
-                      variant="outline"
-                      className="flex-1 py-2.5 rounded-lg font-medium text-sm border-blue-300 text-blue-600 hover:bg-blue-50 transition-all duration-300"
-                    >
-                      <Phone className="w-4 h-4 mr-2" />
-                      Call Now
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Acknowledgment Popup - Ready for Full Assessment */}
-      <AnimatePresence>
-        {showAcknowledgmentPopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(12px)' }}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 text-center"
-            >
-              <h3 className="text-2xl md:text-3xl font-bold text-[#0A0A0A] mb-8">
-                Are you ready for the full assessment?
-              </h3>
-
-              <div className="space-y-4">
-                {/* Yes, start assessment - Razorpay Button */}
-                <Button
-                  onClick={() => {
-                    // Track initiate checkout event
-                    window.dataLayer = window.dataLayer || [];
-                    window.dataLayer.push({
-                      event: 'initiatecheckout',
-                      test_type: 'atm_tool',
-                      amount: 299,
-                      currency: 'INR',
-                      page_path: window.location.pathname,
-                      timestamp: new Date().toISOString(),
-                    });
-                    console.log('✅ initiatecheckout event pushed to dataLayer (ATM Tool, ₹299)');
-
-                    // Open Razorpay payment link
-                    const paymentUrl = 'https://razorpay.com/payment-button/pl_Rtue8bSVIson8p/view/?amount=29900';
-                    window.open(paymentUrl, '_blank');
-                  }}
-                  size="lg"
-                  className="w-full text-white hover:opacity-90 border-0 px-8 h-14 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-                  style={{ background: 'linear-gradient(to right, #0284C7, #0369A1)' }}
-                >
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Yes, start assessment
-                </Button>
-
-                {/* Chat with us Button */}
-                <Button
-                  onClick={() => {
-                    trackButtonClick('Chat with us', 'popup', 'atm_results_acknowledgment_popup');
-                    window.open('https://wa.me/917021227203?text=' + encodeURIComponent('Hi! I completed my ATM assessment and would like to chat.'), '_blank', 'noopener,noreferrer');
-                  }}
-                  variant="outline"
-                  size="lg"
-                  className="w-full bg-white hover:bg-[#F8F9FA] text-[#0A0A0A] border-2 border-[#E5E7EB] hover:border-[#0284C7] px-8 h-14 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  Chat with us
-                </Button>
               </div>
             </motion.div>
           </motion.div>
