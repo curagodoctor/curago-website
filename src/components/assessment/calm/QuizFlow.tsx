@@ -152,34 +152,38 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
       isValid = false;
     }
 
+    // Basic format validation for phone
     if (!userInfo.whatsapp.trim()) {
       errors.whatsapp = 'WhatsApp number is required';
       isValid = false;
     } else if (!/^\d{10}$/.test(userInfo.whatsapp.trim())) {
       errors.whatsapp = 'Please enter a valid 10-digit number';
       isValid = false;
-    } else if (paymentDetails) {
-      // Validate against payment details
-      const paymentContact = paymentDetails.contact.replace(/\+91/g, '').trim();
-      const enteredContact = userInfo.whatsapp.trim();
-      if (paymentContact !== enteredContact) {
-        errors.whatsapp = 'This number does not match the one used for payment';
-        isValid = false;
-      }
     }
 
+    // Basic format validation for email
     if (!userInfo.email || !userInfo.email.trim()) {
       errors.email = 'Email is required';
       isValid = false;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userInfo.email.trim())) {
       errors.email = 'Please enter a valid email address';
       isValid = false;
-    } else if (paymentDetails) {
-      // Validate against payment details
+    }
+
+    // Payment details validation - EITHER email OR phone must match
+    if (paymentDetails && isValid) {
+      const paymentContact = paymentDetails.contact.replace(/\+91/g, '').trim();
+      const enteredContact = userInfo.whatsapp.trim();
+      const phoneMatches = paymentContact === enteredContact;
+
       const paymentEmail = paymentDetails.email.toLowerCase().trim();
       const enteredEmail = userInfo.email.toLowerCase().trim();
-      if (paymentEmail !== enteredEmail) {
-        errors.email = 'This email does not match the one used for payment';
+      const emailMatches = paymentEmail === enteredEmail;
+
+      // Allow access if EITHER email OR phone matches
+      if (!emailMatches && !phoneMatches) {
+        errors.email = 'Either email or phone must match the payment details';
+        errors.whatsapp = 'Either email or phone must match the payment details';
         isValid = false;
       }
     }
@@ -370,13 +374,27 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
         >
           <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border-2 border-[#096b17]/20">
             <h2 className="text-2xl font-bold mb-4" style={{ color: '#096b17' }}>CuraGo's Anxiety Loop Assessment Tool 1.0</h2>
+
+            {/* Email Confirmation Message */}
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Mail className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-green-800 mb-1">Payment Successful!</p>
+                  <p className="text-xs text-green-700 leading-relaxed">
+                    We've sent you an email with your invoice and assessment access link. Please check your inbox (and spam folder if needed).
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <p className="mb-4 text-sm leading-relaxed" style={{ color: '#096b17' }}>
               We need your information to send you the detailed assessment results via email and WhatsApp. Your information will be kept confidential.
             </p>
 
             <div className="mb-6 p-3 bg-[#096b17]/10 border-l-4 border-[#096b17] rounded">
               <p className="text-xs font-medium" style={{ color: '#096b17' }}>
-                ⓘ Please enter the same email and phone number you used during payment verification.
+                ⓘ Please enter the email or phone number you used during payment (at least one must match).
               </p>
             </div>
 
