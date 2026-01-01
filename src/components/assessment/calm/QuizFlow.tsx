@@ -10,8 +10,7 @@ interface QuizFlowProps {
 }
 
 export default function QuizFlow({ onComplete }: QuizFlowProps) {
-  const [showDecisionScreen, setShowDecisionScreen] = useState(true); // NEW: Take test now or later
-  const [showUserInfoForm, setShowUserInfoForm] = useState(false); // Changed to false initially
+  const [showUserInfoForm, setShowUserInfoForm] = useState(true); // Start with user info form
   const [showCredentialsScreen, setShowCredentialsScreen] = useState(false);
   const [userInfo, setUserInfo] = useState<CalmUserInfo>({ name: '', whatsapp: '', email: '' });
   const [formErrors, setFormErrors] = useState({ name: '', whatsapp: '', email: '' });
@@ -191,28 +190,6 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
     setShowCredentialsScreen(false);
   };
 
-  const handleTakeTestNow = () => {
-    setShowDecisionScreen(false);
-    setShowUserInfoForm(true);
-  };
-
-  const handleTakeTestLater = () => {
-    // Save the current URL for the user to access later
-    const currentUrl = window.location.href;
-
-    // Copy to clipboard
-    navigator.clipboard.writeText(currentUrl).then(() => {
-      alert('Test link copied to clipboard! You can take this test anytime by using this link.');
-    }).catch(() => {
-      alert('Please save this link to take the test later: ' + currentUrl);
-    });
-
-    // Redirect to CALA landing page
-    setTimeout(() => {
-      window.location.href = '/cala';
-    }, 1000);
-  };
-
   const handleStartLater = () => {
     window.location.href = '/cala';
   };
@@ -225,19 +202,9 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
   // Copy credentials to clipboard
   const handleCopyCredentials = () => {
     const testUrl = window.location.href;
-    const credentials = `CuraGo's Anxiety Loop Assessment Tool 1.0
 
-Test URL: ${testUrl}
-
-Login Credentials:
-Name: ${userInfo.name}
-Email: ${userInfo.email}
-WhatsApp: +91 ${userInfo.whatsapp}
-
-Please save these credentials to access your assessment.`;
-
-    navigator.clipboard.writeText(credentials).then(() => {
-      alert('Credentials copied to clipboard!');
+    navigator.clipboard.writeText(testUrl).then(() => {
+      alert('Access link copied to clipboard!');
     }).catch(() => {
       alert('Failed to copy. Please copy manually.');
     });
@@ -246,22 +213,13 @@ Please save these credentials to access your assessment.`;
   // Download credentials as text file
   const handleDownloadCredentials = () => {
     const testUrl = window.location.href;
-    const credentials = `CuraGo's Anxiety Loop Assessment Tool 1.0
-
-Test URL: ${testUrl}
-
-Login Credentials:
-Name: ${userInfo.name}
-Email: ${userInfo.email}
-WhatsApp: +91 ${userInfo.whatsapp}
-
-Please save these credentials to access your assessment.`;
+    const credentials = `${testUrl}`;
 
     const blob = new Blob([credentials], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'CALA-Credentials.txt';
+    a.download = 'CALA-Access-Link.txt';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -271,20 +229,12 @@ Please save these credentials to access your assessment.`;
   // Share credentials using Web Share API
   const handleShareCredentials = async () => {
     const testUrl = window.location.href;
-    const credentials = `CuraGo's Anxiety Loop Assessment Tool 1.0
-
-Test URL: ${testUrl}
-
-Login Credentials:
-Name: ${userInfo.name}
-Email: ${userInfo.email}
-WhatsApp: +91 ${userInfo.whatsapp}`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'CALA Test Credentials',
-          text: credentials,
+          title: 'CALA Assessment Access Link',
+          text: `Access your CALA 1.0 Assessment here: ${testUrl}`,
         });
       } catch (error) {
         console.error('Error sharing:', error);
@@ -453,94 +403,6 @@ WhatsApp: +91 ${userInfo.whatsapp}`;
     );
   }
 
-  // Show decision screen: Take test now or later
-  if (showDecisionScreen) {
-    return (
-      <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-16" style={{ fontFamily: 'Poppins, sans-serif' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-lg w-full"
-        >
-          <div className="bg-white rounded-2xl shadow-2xl p-8 border-2 border-[#096b17]/20">
-            {/* Success Icon */}
-            <div className="flex justify-center mb-6">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-12 h-12 text-green-600" />
-              </div>
-            </div>
-
-            {/* Title */}
-            <h2 className="text-3xl font-bold text-center mb-3" style={{ color: '#096b17' }}>
-              Payment Successful!
-            </h2>
-
-            {/* Subtitle */}
-            <p className="text-center text-gray-600 mb-6">
-              Your CALA 1.0 Assessment is now unlocked
-            </p>
-
-            {/* Email Confirmation Notice */}
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-start gap-2">
-                <Mail className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-blue-800 mb-1">Check Your Email</p>
-                  <p className="text-xs text-blue-700 leading-relaxed">
-                    We've sent you an email with your invoice and a unique test access link. You can use this link to take the test anytime.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Question */}
-            <div className="text-center mb-6">
-              <p className="text-lg font-semibold mb-2" style={{ color: '#096b17' }}>
-                Would you like to take the test now?
-              </p>
-              <p className="text-sm text-gray-600">
-                The assessment takes approximately 10-15 minutes
-              </p>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              {/* Take Test Now Button */}
-              <button
-                onClick={handleTakeTestNow}
-                className="w-full px-6 py-4 bg-[#096b17] text-white font-semibold rounded-xl hover:bg-[#075110] transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>Yes, Take Test Now</span>
-                </div>
-              </button>
-
-              {/* Take Test Later Button */}
-              <button
-                onClick={handleTakeTestLater}
-                className="w-full px-6 py-4 bg-white text-[#096b17] font-semibold border-2 border-[#096b17] rounded-xl hover:bg-[#F5F5DC] transition-all"
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <ExternalLink className="w-5 h-5" />
-                  <span>I'll Take It Later</span>
-                </div>
-              </button>
-            </div>
-
-            {/* Info Box */}
-            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-xs text-yellow-800 leading-relaxed">
-                <strong>Note:</strong> If you choose to take the test later, the link will be copied to your clipboard.
-                You can also find it in the email we sent you. This link is valid for one-time use only.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
   // Show user info form (validation screen)
   if (showUserInfoForm) {
     return (
@@ -683,44 +545,20 @@ WhatsApp: +91 ${userInfo.whatsapp}`;
             </h2>
 
             <p className="text-center mb-6 text-sm" style={{ color: '#096b17' }}>
-              Please save your test credentials below. You'll need them to access the assessment again if you choose to start later.
+              Please save your secure access link below. You'll need it to access the assessment again if you choose to start later.
             </p>
 
             {/* Credentials Box */}
             <div className="bg-[#F5F5DC] border-2 border-[#096b17]/20 rounded-xl p-5 mb-6">
               <div className="flex items-center gap-2 mb-4">
                 <ExternalLink className="w-5 h-5" style={{ color: '#096b17' }} />
-                <h3 className="font-semibold text-lg" style={{ color: '#096b17' }}>Test URL & Credentials</h3>
+                <h3 className="font-semibold text-lg" style={{ color: '#096b17' }}>Secure Access Link</h3>
               </div>
 
               <div className="space-y-3 text-sm">
                 <div>
-                  <p className="font-medium mb-1" style={{ color: '#096b17' }}>Test URL:</p>
-                  <p className="bg-white p-2 rounded border border-[#096b17]/20 break-all text-xs" style={{ color: '#096b17' }}>
+                  <p className="bg-white p-3 rounded border border-[#096b17]/20 break-all text-xs" style={{ color: '#096b17' }}>
                     {testUrl}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <p className="font-medium mb-1" style={{ color: '#096b17' }}>Name:</p>
-                    <p className="bg-white p-2 rounded border border-[#096b17]/20" style={{ color: '#096b17' }}>
-                      {userInfo.name}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="font-medium mb-1" style={{ color: '#096b17' }}>Email:</p>
-                    <p className="bg-white p-2 rounded border border-[#096b17]/20 break-all text-xs" style={{ color: '#096b17' }}>
-                      {userInfo.email}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="font-medium mb-1" style={{ color: '#096b17' }}>WhatsApp:</p>
-                  <p className="bg-white p-2 rounded border border-[#096b17]/20" style={{ color: '#096b17' }}>
-                    +91 {userInfo.whatsapp}
                   </p>
                 </div>
               </div>
@@ -756,7 +594,7 @@ WhatsApp: +91 ${userInfo.whatsapp}`;
             {/* Important Notice */}
             <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
               <p className="text-xs font-medium text-yellow-800">
-                ⚠️ Important: Save these credentials now! You'll need them if you want to access this assessment later.
+                ⚠️ Important: Save this access link now! You'll need it if you want to access this assessment later.
               </p>
             </div>
 
@@ -780,7 +618,7 @@ WhatsApp: +91 ${userInfo.whatsapp}`;
             {/* Help Link */}
             <div className="mt-6 text-center">
               <a
-                href="https://wa.me/917021227203?text=I%20need%20help%20with%20my%20CALM%20assessment%20credentials"
+                href="https://wa.me/917021227203?text=I%20need%20help%20with%20my%20CALM%20assessment%20access%20link"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm font-medium hover:underline transition-all"
