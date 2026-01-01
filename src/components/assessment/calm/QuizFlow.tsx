@@ -10,8 +10,8 @@ interface QuizFlowProps {
 }
 
 export default function QuizFlow({ onComplete }: QuizFlowProps) {
-  const [showUserInfoForm, setShowUserInfoForm] = useState(true); // Start with user info form
-  const [showCredentialsScreen, setShowCredentialsScreen] = useState(false);
+  const [showCredentialsScreen, setShowCredentialsScreen] = useState(true); // Start with credentials screen
+  const [showUserInfoForm, setShowUserInfoForm] = useState(false);
   const [userInfo, setUserInfo] = useState<CalmUserInfo>({ name: '', whatsapp: '', email: '' });
   const [formErrors, setFormErrors] = useState({ name: '', whatsapp: '', email: '' });
 
@@ -182,12 +182,13 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
     e.preventDefault();
     if (validateUserInfoForm()) {
       setShowUserInfoForm(false);
-      setShowCredentialsScreen(true);
+      // Start the quiz directly
     }
   };
 
   const handleStartTest = () => {
     setShowCredentialsScreen(false);
+    setShowUserInfoForm(true);
   };
 
   const handleStartLater = () => {
