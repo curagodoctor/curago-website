@@ -10,7 +10,8 @@ interface QuizFlowProps {
 }
 
 export default function QuizFlow({ onComplete }: QuizFlowProps) {
-  const [showUserInfoForm, setShowUserInfoForm] = useState(true);
+  const [showDecisionScreen, setShowDecisionScreen] = useState(true); // NEW: Take test now or later
+  const [showUserInfoForm, setShowUserInfoForm] = useState(false); // Changed to false initially
   const [showCredentialsScreen, setShowCredentialsScreen] = useState(false);
   const [userInfo, setUserInfo] = useState<CalmUserInfo>({ name: '', whatsapp: '', email: '' });
   const [formErrors, setFormErrors] = useState({ name: '', whatsapp: '', email: '' });
@@ -171,23 +172,8 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
       isValid = false;
     }
 
-    // Payment details validation - EITHER email OR phone must match
-    if (paymentDetails && isValid) {
-      const paymentContact = paymentDetails.contact.replace(/\+91/g, '').trim();
-      const enteredContact = userInfo.whatsapp.trim();
-      const phoneMatches = paymentContact === enteredContact;
-
-      const paymentEmail = paymentDetails.email.toLowerCase().trim();
-      const enteredEmail = userInfo.email.toLowerCase().trim();
-      const emailMatches = paymentEmail === enteredEmail;
-
-      // Allow access if EITHER email OR phone matches
-      if (!emailMatches && !phoneMatches) {
-        errors.email = 'Either email or phone must match the payment details';
-        errors.whatsapp = 'Either email or phone must match the payment details';
-        isValid = false;
-      }
-    }
+    // REMOVED: Payment details validation
+    // Users can now enter any email and phone number
 
     setFormErrors(errors);
     return isValid;
@@ -203,6 +189,28 @@ export default function QuizFlow({ onComplete }: QuizFlowProps) {
 
   const handleStartTest = () => {
     setShowCredentialsScreen(false);
+  };
+
+  const handleTakeTestNow = () => {
+    setShowDecisionScreen(false);
+    setShowUserInfoForm(true);
+  };
+
+  const handleTakeTestLater = () => {
+    // Save the current URL for the user to access later
+    const currentUrl = window.location.href;
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(currentUrl).then(() => {
+      alert('Test link copied to clipboard! You can take this test anytime by using this link.');
+    }).catch(() => {
+      alert('Please save this link to take the test later: ' + currentUrl);
+    });
+
+    // Redirect to CALA landing page
+    setTimeout(() => {
+      window.location.href = '/cala';
+    }, 1000);
   };
 
   const handleStartLater = () => {
@@ -445,7 +453,95 @@ WhatsApp: +91 ${userInfo.whatsapp}`;
     );
   }
 
-  // Show user info form first
+  // Show decision screen: Take test now or later
+  if (showDecisionScreen) {
+    return (
+      <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-16" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-lg w-full"
+        >
+          <div className="bg-white rounded-2xl shadow-2xl p-8 border-2 border-[#096b17]/20">
+            {/* Success Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-12 h-12 text-green-600" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-3xl font-bold text-center mb-3" style={{ color: '#096b17' }}>
+              Payment Successful!
+            </h2>
+
+            {/* Subtitle */}
+            <p className="text-center text-gray-600 mb-6">
+              Your CALA 1.0 Assessment is now unlocked
+            </p>
+
+            {/* Email Confirmation Notice */}
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Mail className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-blue-800 mb-1">Check Your Email</p>
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    We've sent you an email with your invoice and a unique test access link. You can use this link to take the test anytime.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Question */}
+            <div className="text-center mb-6">
+              <p className="text-lg font-semibold mb-2" style={{ color: '#096b17' }}>
+                Would you like to take the test now?
+              </p>
+              <p className="text-sm text-gray-600">
+                The assessment takes approximately 10-15 minutes
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              {/* Take Test Now Button */}
+              <button
+                onClick={handleTakeTestNow}
+                className="w-full px-6 py-4 bg-[#096b17] text-white font-semibold rounded-xl hover:bg-[#075110] transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <CheckCircle className="w-5 h-5" />
+                  <span>Yes, Take Test Now</span>
+                </div>
+              </button>
+
+              {/* Take Test Later Button */}
+              <button
+                onClick={handleTakeTestLater}
+                className="w-full px-6 py-4 bg-white text-[#096b17] font-semibold border-2 border-[#096b17] rounded-xl hover:bg-[#F5F5DC] transition-all"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <ExternalLink className="w-5 h-5" />
+                  <span>I'll Take It Later</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Info Box */}
+            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-xs text-yellow-800 leading-relaxed">
+                <strong>Note:</strong> If you choose to take the test later, the link will be copied to your clipboard.
+                You can also find it in the email we sent you. This link is valid for one-time use only.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Show user info form (validation screen)
   if (showUserInfoForm) {
     return (
       <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-16" style={{ fontFamily: 'Poppins, sans-serif' }}>
@@ -471,14 +567,8 @@ WhatsApp: +91 ${userInfo.whatsapp}`;
             </div>
 
             <p className="mb-4 text-sm leading-relaxed" style={{ color: '#096b17' }}>
-              We need your information to send you the detailed assessment results via email and WhatsApp. Your information will be kept confidential.
+              Please provide your details to receive the comprehensive assessment results via email and WhatsApp. Your information will be kept confidential.
             </p>
-
-            <div className="mb-6 p-3 bg-[#096b17]/10 border-l-4 border-[#096b17] rounded">
-              <p className="text-xs font-medium" style={{ color: '#096b17' }}>
-                ⓘ Please enter the email or phone number you used during payment (at least one must match).
-              </p>
-            </div>
 
             <form onSubmit={handleUserInfoSubmit} className="space-y-4">
               {/* Name Field */}

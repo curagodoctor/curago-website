@@ -748,9 +748,146 @@ function handleCalaSubmission(data) {
 }
 
 // ============================================================
-// CALA PDF GENERATOR
+// CALA PDF GENERATOR - WITH COMPLETE CONTENT
 // ============================================================
 function generateCalaPdf(data) {
+  // Get loop descriptions
+  const getLoopDescription = function(loopName) {
+    const descriptions = {
+      'Anticipatory Loop': 'Your anxiety is driven by future-oriented thinking. You tend to mentally rehearse possible outcomes in advance, which creates a sense of preparedness but also keeps anxiety active.',
+      'Control-Seeking Loop': 'Your anxiety is shaped by a need to stabilise or control uncertainty. Attempts to manage or neutralise discomfort provide short-term relief but keep attention fixed on the problem.',
+      'Reassurance Loop': 'Your anxiety is reinforced through reassurance-seeking. External validation eases anxiety briefly, but over time increases dependence and sensitivity to doubt.',
+      'Avoidance Loop': 'Your anxiety persists through avoidance patterns. Avoiding discomfort reduces anxiety momentarily, but teaches the system that anxiety requires withdrawal.',
+      'Somatic Sensitivity Loop': 'Your anxiety is strongly influenced by bodily sensations. Physical signals become interpreted as threats, which amplifies awareness and fear.',
+      'Cognitive Overload Loop': 'Your anxiety emerges from sustained mental load. Prolonged thinking without recovery reduces cognitive buffer, allowing anxiety to surface during routine stress.'
+    };
+    return descriptions[loopName] || '';
+  };
+
+  // Get trigger content
+  const getTriggerContent = function(triggerType) {
+    const content = {
+      'Internal': {
+        description: 'Your anxiety is mostly triggered internally — through thoughts, mental scenarios, or subtle body signals. This explains why anxiety can appear even on days that look calm from the outside.',
+        points: [
+          'You may have noticed anxiety arriving without a clear external reason.',
+          'This can make it harder to explain to others — or even to yourself — why you feel anxious.'
+        ]
+      },
+      'External': {
+        description: 'Your anxiety is mainly triggered by situations or environments, with internal reactions following. This means anxiety usually makes sense in context, even if the reaction feels stronger than expected.',
+        points: [
+          'You may find that anxiety eases once the situation passes.',
+          'Certain environments or demands may consistently stand out as difficult for you.'
+        ]
+      },
+      'Mixed': {
+        description: 'Your anxiety shifts between internal and situational triggers. Some days, external stressors play a bigger role. On other days, anxiety seems to arise internally.',
+        points: [
+          'This can make anxiety feel inconsistent or hard to predict.',
+          'You may notice that your experience changes depending on context rather than one fixed cause.'
+        ]
+      }
+    };
+    return content[triggerType] || content['Mixed'];
+  };
+
+  // Get reinforcement content
+  const getReinforcementContent = function(reinforcement) {
+    const content = {
+      'Control': {
+        description: 'When anxiety appears, you tend to respond by trying to manage or stabilise it. This usually brings short-term relief, but keeps attention focused on the problem.',
+        points: [
+          'You may feel more alert or "on guard" even after anxiety settles.',
+          'It can feel like you\'re always one step away from needing to intervene again.'
+        ]
+      },
+      'Reassurance': {
+        description: 'Reassurance reduces anxiety briefly, but over time increases dependence on external confirmation. This explains why reassurance often needs repeating.',
+        points: [
+          'You may notice relief fading faster than it used to.',
+          'Anxiety can feel quieter when someone else confirms things — but louder when you\'re alone.'
+        ]
+      },
+      'Avoidance': {
+        description: 'Avoiding discomfort reduces anxiety in the moment, but teaches the system to withdraw. Over time, this can reduce tolerance.',
+        points: [
+          'You may feel immediate relief after stepping away from a situation.',
+          'Later, similar situations may start to feel harder than before.'
+        ]
+      },
+      'Neutral': {
+        description: 'Your coping responses reduce anxiety without strongly reinforcing it. This suggests your system is managing stress without locking into a repeating loop.',
+        points: [
+          'You may recognise anxiety without feeling overtaken by it.',
+          'Anxiety tends to pass without leaving a strong after-effect.'
+        ]
+      }
+    };
+    return content[reinforcement] || content['Neutral'];
+  };
+
+  // Get load capacity content
+  const getLoadContent = function(loadCapacity) {
+    const content = {
+      'Overloaded': {
+        description: 'Your current mental and physical demands exceed your recovery capacity. This reduces buffer, making anxiety more likely during routine stress.',
+        points: [
+          'You may feel that even small demands take more effort than before.',
+          'Anxiety may show up more often when rest has been inconsistent.'
+        ]
+      },
+      'Strained': {
+        description: 'You are functioning, but with limited margin. Anxiety increases when stress accumulates or recovery is delayed.',
+        points: [
+          'You may feel "mostly okay" until several things pile up at once.',
+          'There may be less room for error or unexpected demands.'
+        ]
+      },
+      'Balanced': {
+        description: 'Your load and recovery are reasonably matched. Anxiety is more likely linked to specific situations than exhaustion.',
+        points: [
+          'You may notice anxiety comes and goes without lingering.',
+          'Recovery generally restores your baseline.'
+        ]
+      }
+    };
+    return content[loadCapacity] || content['Balanced'];
+  };
+
+  // Get stability content
+  const getStabilityContent = function(stability) {
+    const content = {
+      'Stable': {
+        description: 'Anxiety appears, but settles when conditions improve. Your system returns to baseline without much carry-over.',
+        points: [
+          'Anxiety feels contained rather than spreading.',
+          'Stressful periods don\'t permanently shift how you feel.'
+        ]
+      },
+      'Fluctuating': {
+        description: 'Anxiety varies with stress and recovery balance. It\'s not fixed, but it can feel unpredictable.',
+        points: [
+          'Some weeks feel manageable, others feel unexpectedly harder.',
+          'Changes in routine or rest may strongly influence how you feel.'
+        ]
+      },
+      'Escalation-Prone': {
+        description: 'Anxiety intensifies when recovery remains insufficient over time. This reflects narrowing capacity, not worsening anxiety itself.',
+        points: [
+          'You may notice anxiety lingering longer than it used to.',
+          'Stress seems to accumulate rather than reset fully.'
+        ]
+      }
+    };
+    return content[stability] || content['Stable'];
+  };
+
+  const trigger = getTriggerContent(data.triggerType);
+  const reinforcement = getReinforcementContent(data.reinforcement);
+  const load = getLoadContent(data.loadCapacityBand);
+  const stability = getStabilityContent(data.stability);
+
   const html = `
 <!DOCTYPE html>
 <html>
@@ -760,142 +897,272 @@ function generateCalaPdf(data) {
       font-family: Arial, sans-serif;
       line-height: 1.6;
       color: #333;
-      padding: 40px;
-      max-width: 800px;
+      padding: 30px;
+      max-width: 900px;
       margin: 0 auto;
+      font-size: 11pt;
     }
     .header {
       background: #096b17;
       color: white;
-      padding: 30px;
+      padding: 25px;
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
     .header h1 {
-      margin: 0 0 10px 0;
-      font-size: 28px;
-      font-weight: normal;
+      margin: 0 0 8px 0;
+      font-size: 24pt;
+      font-weight: bold;
     }
     .header p {
       margin: 0;
-      font-size: 14px;
-      opacity: 0.9;
+      font-size: 12pt;
+      opacity: 0.95;
     }
     .greeting {
-      font-size: 18px;
-      margin-bottom: 20px;
+      font-size: 14pt;
+      margin-bottom: 15px;
       color: #096b17;
       font-weight: bold;
     }
     .section {
-      background: #f8f9fa;
-      padding: 25px;
       margin-bottom: 20px;
+      page-break-inside: avoid;
+    }
+    .section-header {
+      background: #f8f9fa;
+      padding: 12px 15px;
+      margin-bottom: 12px;
       border-left: 4px solid #096b17;
     }
-    .section h2 {
-      margin-top: 0;
+    .section-header h2 {
+      margin: 0;
       color: #096b17;
-      font-size: 20px;
+      font-size: 14pt;
+      font-weight: bold;
     }
     .loop-box {
+      background: #096b17;
+      color: white;
+      padding: 18px;
+      margin: 12px 0;
+    }
+    .loop-box h3 {
+      margin: 0 0 10px 0;
+      font-size: 13pt;
+      font-weight: bold;
+    }
+    .loop-box p {
+      margin: 8px 0;
+      font-size: 10.5pt;
+      line-height: 1.5;
+    }
+    .loop-box ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+    .loop-box li {
+      margin: 5px 0;
+      font-size: 10pt;
+    }
+    .content-box {
       background: white;
-      padding: 20px;
-      margin: 15px 0;
+      padding: 15px;
+      margin: 12px 0;
       border: 1px solid #e0e0e0;
     }
-    .loop-name {
-      font-size: 18px;
+    .content-box h3 {
+      margin: 0 0 10px 0;
+      color: #096b17;
+      font-size: 12pt;
+      font-weight: bold;
+    }
+    .content-box p {
+      margin: 8px 0;
+      font-size: 10.5pt;
+      line-height: 1.5;
+    }
+    .content-box ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+    .content-box li {
+      margin: 5px 0;
+      font-size: 10pt;
+    }
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .score-item {
+      background: white;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      font-size: 10pt;
+    }
+    .score-label {
       font-weight: bold;
       color: #096b17;
-      margin-bottom: 10px;
-    }
-    .detail-row {
-      padding: 8px 0;
-      border-bottom: 1px solid #f0f0f0;
-    }
-    .detail-label {
-      font-weight: bold;
-      color: #666;
     }
     .cta-box {
       background: #096b17;
       color: white;
-      padding: 20px;
+      padding: 18px;
       text-align: center;
-      margin: 25px 0;
+      margin: 20px 0;
     }
     .cta-box h3 {
-      margin-top: 0;
-      font-size: 18px;
+      margin: 0 0 10px 0;
+      font-size: 13pt;
+    }
+    .cta-box p {
+      margin: 6px 0;
+      font-size: 10.5pt;
     }
     .footer {
       text-align: center;
-      margin-top: 30px;
-      padding-top: 20px;
+      margin-top: 25px;
+      padding-top: 18px;
       border-top: 2px solid #e0e0e0;
       color: #666;
-      font-size: 12px;
+      font-size: 9pt;
     }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>Your CALA 1.0 Report</h1>
-    <p>Clinical Anxiety Loop Mapping</p>
+    <p>Personalized Clinical Assessment for ${data.name}</p>
   </div>
 
-  <p class="greeting">Hi ${data.name}!</p>
-  <p>Thank you for completing the CALA 1.0 assessment. Here is your personalized clinical report:</p>
+  <p class="greeting">Thank you for completing the CALA 1.0 Assessment</p>
 
+  <!-- SECTION 1: ANXIETY LOOP MAP -->
   <div class="section">
-    <h2>Section 1: Your Anxiety Loop Map</h2>
+    <div class="section-header">
+      <h2>Section 1: YOUR ANXIETY LOOP MAP</h2>
+    </div>
+
     <div class="loop-box">
-      <div class="loop-name">Primary Loop: ${data.primaryLoop}</div>
-      ${data.secondaryLoop ? '<div class="detail-row">Secondary Loop: ' + data.secondaryLoop + '</div>' : ''}
-      <p style="margin-top: 10px; color: #666;">Your anxiety follows ${data.secondaryLoop ? 'a dual loop' : 'a single loop'} pattern.</p>
+      <h3>${data.secondaryLoop ? 'Dual Loop' : 'Single Loop'}</h3>
+
+      ${!data.secondaryLoop ? `
+      <p><strong>Your anxiety follows a ${data.primaryLoop} pattern.</strong></p>
+      <p>${getLoopDescription(data.primaryLoop)}</p>
+      <p>This means anxiety tends to repeat through a familiar pathway rather than appearing randomly.</p>
+      <p>Over time, it's the repetition of this pattern, not intensity, that keeps anxiety present.</p>
+      <ul>
+        <li>You may notice that anxiety feels predictable in hindsight, even if it feels sudden in the moment.</li>
+        <li>This pattern often gives the impression that anxiety has a "mind of its own," when it is actually following the same route each time.</li>
+      </ul>
+      ` : `
+      <p><strong>Your anxiety follows a ${data.primaryLoop} pattern, with a ${data.secondaryLoop} influence.</strong></p>
+      <p>${getLoopDescription(data.primaryLoop)}</p>
+      <p>${getLoopDescription(data.secondaryLoop)}</p>
+      <p>The primary loop explains how anxiety usually begins for you.</p>
+      <p>The secondary loop explains why it tends to continue or return.</p>
+      <ul>
+        <li>This can feel like anxiety starts for one reason, but stays for another.</li>
+        <li>You may recognise that even when the original trigger settles, anxiety doesn't fully switch off.</li>
+      </ul>
+      `}
     </div>
   </div>
 
+  <!-- SECTION 2: TRIGGER ARCHITECTURE -->
   <div class="section">
-    <h2>Section 2: Trigger Architecture</h2>
-    <div class="loop-box">
-      <div class="detail-row">
-        <span class="detail-label">Trigger Pattern:</span> ${data.triggerType}
+    <div class="section-header">
+      <h2>Section 2: TRIGGER ARCHITECTURE</h2>
+    </div>
+
+    <div class="content-box">
+      <h3>${data.triggerType} Trigger Pattern</h3>
+      <p>${trigger.description}</p>
+      <ul>
+        ${trigger.points.map(point => '<li>' + point + '</li>').join('')}
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 3: WHAT KEEPS THE LOOP GOING -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Section 3: WHAT KEEPS THE LOOP GOING</h2>
+    </div>
+
+    <div class="content-box">
+      <h3>${data.reinforcement} Pattern</h3>
+      <p>${reinforcement.description}</p>
+      <ul>
+        ${reinforcement.points.map(point => '<li>' + point + '</li>').join('')}
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 4: LOAD VS RECOVERY CAPACITY -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Section 4: LOAD VS RECOVERY CAPACITY</h2>
+    </div>
+
+    <div class="content-box">
+      <h3>${data.loadCapacityBand}</h3>
+      <p>${load.description}</p>
+      <ul>
+        ${load.points.map(point => '<li>' + point + '</li>').join('')}
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 5: STABILITY & ESCALATION RISK -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Section 5: STABILITY & ESCALATION RISK</h2>
+    </div>
+
+    <div class="content-box">
+      <h3>${data.stability}</h3>
+      <p>${stability.description}</p>
+      <ul>
+        ${stability.points.map(point => '<li>' + point + '</li>').join('')}
+      </ul>
+    </div>
+  </div>
+
+  <!-- LOOP INTENSITY SCORES -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Your Loop Intensity Scores</h2>
+    </div>
+
+    <div class="score-grid">
+      <div class="score-item">
+        <span class="score-label">Anticipatory:</span> ${data.loopScores.anticipatory}
+      </div>
+      <div class="score-item">
+        <span class="score-label">Control:</span> ${data.loopScores.control}
+      </div>
+      <div class="score-item">
+        <span class="score-label">Reassurance:</span> ${data.loopScores.reassurance}
+      </div>
+      <div class="score-item">
+        <span class="score-label">Avoidance:</span> ${data.loopScores.avoidance}
+      </div>
+      <div class="score-item">
+        <span class="score-label">Somatic:</span> ${data.loopScores.somatic}
+      </div>
+      <div class="score-item">
+        <span class="score-label">Cognitive Overload:</span> ${data.loopScores.cognitiveOverload}
       </div>
     </div>
   </div>
 
-  <div class="section">
-    <h2>Section 3: What Keeps the Loop Going</h2>
-    <div class="loop-box">
-      <div class="detail-row">
-        <span class="detail-label">Reinforcement Pattern:</span> ${data.reinforcement}
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <h2>Section 4: Load vs Recovery Capacity</h2>
-    <div class="loop-box">
-      <div class="detail-row">
-        <span class="detail-label">Status:</span> ${data.loadCapacityBand}
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <h2>Section 5: Stability & Escalation Risk</h2>
-    <div class="loop-box">
-      <div class="detail-row">
-        <span class="detail-label">Stability Pattern:</span> ${data.stability}
-      </div>
-    </div>
-  </div>
-
+  <!-- CTA BOX -->
   <div class="cta-box">
-    <h3>Ready to take your next step?</h3>
-    <p>Book a consultation to apply this insight to your specific situation</p>
+    <h3>Ready to Take the Next Step?</h3>
+    <p>Book a consultation with our clinical team to discuss your CALA results</p>
     <p><strong>Visit:</strong> ${CONFIG.COMPANY_WEBSITE}/contact</p>
     <p><strong>WhatsApp:</strong> ${CONFIG.WHATSAPP_NUMBER}</p>
   </div>
@@ -903,7 +1170,7 @@ function generateCalaPdf(data) {
   <div class="footer">
     <strong>CuraGo - Your Partner in Emotional Wellness</strong>
     <p>${CONFIG.COMPANY_WEBSITE} | ${CONFIG.SUPPORT_EMAIL}</p>
-    <p style="margin-top: 10px;">
+    <p style="margin-top: 8px;">
       Report generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
     </p>
   </div>
