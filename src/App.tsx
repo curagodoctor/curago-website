@@ -46,14 +46,21 @@ const AnalyzingScreen = lazy(() => import('./components/assessment/calm/Analyzin
 const ResultScreen = lazy(() => import('./components/assessment/calm/ResultScreen'));
 const CalmTermsAndConditions = lazy(() => import('./components/CalmTermsAndConditions'));
 
+// GBSI (Gut Brain Sensitivity Index) bundle - lazy loaded
+const GbsiLandingPage = lazy(() => import('./components/assessment/gbsi').then(m => ({ default: m.GbsiLandingPage })));
+const GbsiQuizFlow = lazy(() => import('./components/assessment/gbsi').then(m => ({ default: m.GbsiQuizFlow })));
+const GbsiResultScreen = lazy(() => import('./components/assessment/gbsi').then(m => ({ default: m.GbsiResultScreen })));
+
 // Keep these as regular imports (small utilities)
 import { calculateCalmResult } from './components/assessment/calm/scoringEngine';
 import { sendCalaResultsToGoogleSheets } from './utils/googleSheets';
+import { calculateGbsiResult } from './components/assessment/gbsi/scoringEngine';
 
 // ✅ Single source of truth for types (new 8-pillar model)
 import type { QuizAnswers, UserInfo, AuraScores } from './types/aura';
 import type { AtmAnswers, AtmUserInfo } from './types/atm';
 import type { CalmAnswers, CalmUserInfo, CalmResult } from './types/calm';
+import type { GbsiAnswers, GbsiUserInfo, GbsiResult } from './types/gbsi';
 
 type SitePage = 'home' | 'team' | 'booking' | 'contact';
 
@@ -63,6 +70,7 @@ const getPathname = () =>
 const isAuraPath = (p: string) => p.startsWith('/aura-rise-index');
 const isAtmPath = (p: string) => p.startsWith('/atm');
 const isCalmPath = (p: string) => p.startsWith('/cala');
+const isGbsiPath = (p: string) => p.startsWith('/gbsi');
 const isConsultationPath = (p: string) => p === '/bookconsultation' || p === '/paymentSuccess';
 
 /** =========================
@@ -106,6 +114,12 @@ export default function App() {
   const [calmUserInfo, setCalmUserInfo] = useState<CalmUserInfo | null>(null);
   const [calmResult, setCalmResult] = useState<CalmResult | null>(null);
 
+  // ---------- GBSI state ----------
+  const [gbsiStage, setGbsiStage] = useState<'landing' | 'quiz' | 'results'>('landing');
+  const [gbsiAnswers, setGbsiAnswers] = useState<GbsiAnswers | null>(null);
+  const [gbsiUserInfo, setGbsiUserInfo] = useState<GbsiUserInfo | null>(null);
+  const [gbsiResult, setGbsiResult] = useState<GbsiResult | null>(null);
+
   // Which branch of the app are we on?
   const [isAuraRoute, setIsAuraRoute] = useState<boolean>(
     isAuraPath(getPathname())
@@ -115,6 +129,9 @@ export default function App() {
   );
   const [isCalmRoute, setIsCalmRoute] = useState<boolean>(
     isCalmPath(getPathname())
+  );
+  const [isGbsiRoute, setIsGbsiRoute] = useState<boolean>(
+    isGbsiPath(getPathname())
   );
   const [isConsultationRoute, setIsConsultationRoute] = useState<boolean>(
     isConsultationPath(getPathname())
@@ -128,7 +145,7 @@ export default function App() {
 
   // ---------- Hash routing (marketing pages) ----------
   useEffect(() => {
-    if (isAuraRoute || isAtmRoute || isCalmRoute || isConsultationRoute) return;
+    if (isAuraRoute || isAtmRoute || isCalmRoute || isGbsiRoute || isConsultationRoute) return;
 
     const handleHashChange = () => {
       // Ensure /contact#... becomes just /#... to keep single-shell SPA feel
@@ -156,7 +173,7 @@ export default function App() {
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [isAuraRoute, isAtmRoute, isCalmRoute]);
+  }, [isAuraRoute, isAtmRoute, isCalmRoute, isGbsiRoute]);
 
   // ---------- Path routing (/contact and /aura-rise-index*) ----------
   useEffect(() => {
@@ -167,6 +184,7 @@ export default function App() {
       setIsAuraRoute(isAuraPath(pathname));
       setIsAtmRoute(isAtmPath(pathname));
       setIsCalmRoute(isCalmPath(pathname));
+      setIsGbsiRoute(isGbsiPath(pathname));
       setIsConsultationRoute(isConsultationPath(pathname));
 
       // AURA routes
@@ -297,6 +315,36 @@ export default function App() {
         return;
       }
 
+      // GBSI (Gut Brain Sensitivity Index) routes
+      if (pathname === '/gbsi') {
+        setGbsiStage('landing');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('GBSI Landing', 'CuraGo - Gut Brain Sensitivity Index');
+        return;
+      }
+      if (pathname === '/gbsi/quiz') {
+        setGbsiStage('quiz');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('GBSI Quiz', 'CuraGo - GBSI Quiz');
+        return;
+      }
+      if (pathname === '/gbsi/results') {
+        setGbsiStage('results');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('GBSI Results', 'CuraGo - GBSI Results');
+
+        // ✅ Developer-added GTM signal for CompleteRegistration (GBSI finish)
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'gbsi_test_finished_signal',
+          page_path: pathname,
+          timestamp: new Date().toISOString(),
+        });
+
+        console.log('✅ GTM signal fired: gbsi_test_finished_signal');
+        return;
+      }
+
       // Contact route (full page)
       if (pathname === '/contact') {
         setCurrentPage('contact');
@@ -345,13 +393,14 @@ export default function App() {
   };
 
   const handleNavigate = (page: string) => {
-    console.log('🧭 Navigating to:', page, 'from current route:', { isAuraRoute, isAtmRoute, isCalmRoute, currentPage });
+    console.log('🧭 Navigating to:', page, 'from current route:', { isAuraRoute, isAtmRoute, isCalmRoute, isGbsiRoute, currentPage });
 
     if (page === 'home') {
       history.pushState(null, '', buildUrl('/', '#home'));
       setIsAuraRoute(false);
       setIsAtmRoute(false);
       setIsCalmRoute(false);
+      setIsGbsiRoute(false);
       setCurrentPage('home');
       // Force a popstate event to trigger route sync
       window.dispatchEvent(new PopStateEvent('popstate'));
@@ -360,6 +409,7 @@ export default function App() {
       setIsAuraRoute(false);
       setIsAtmRoute(false);
       setIsCalmRoute(false);
+      setIsGbsiRoute(false);
       setCurrentPage('team');
       window.dispatchEvent(new PopStateEvent('popstate'));
     } else if (page === 'booking') {
@@ -367,10 +417,11 @@ export default function App() {
       setIsAuraRoute(false);
       setIsAtmRoute(false);
       setIsCalmRoute(false);
+      setIsGbsiRoute(false);
       setCurrentPage('booking');
       window.dispatchEvent(new PopStateEvent('popstate'));
     } else if (page === 'contact') {
-      console.log('🧭 Navigating to contact page from:', { isAuraRoute, isAtmRoute, isCalmRoute, currentPage });
+      console.log('🧭 Navigating to contact page from:', { isAuraRoute, isAtmRoute, isCalmRoute, isGbsiRoute, currentPage });
       // Use window.location.href for clean navigation
       const contactUrl = buildUrl('/contact');
       window.location.href = contactUrl;
@@ -640,6 +691,41 @@ export default function App() {
     goToCalm('landing');
   };
 
+  // ---------- GBSI nav helpers (path) ----------
+  const goToGbsi = (stage: 'landing' | 'quiz' | 'results') => {
+    const path =
+      stage === 'landing'
+        ? '/gbsi'
+        : stage === 'quiz'
+        ? '/gbsi/quiz'
+        : '/gbsi/results';
+
+    history.pushState(null, '', buildUrl(path));
+    setIsGbsiRoute(true);
+    setGbsiStage(stage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleStartGbsiQuiz = () => goToGbsi('quiz');
+
+  const handleGbsiQuizComplete = (answers: GbsiAnswers, userInfo: GbsiUserInfo) => {
+    setGbsiAnswers(answers);
+    setGbsiUserInfo(userInfo);
+
+    // Calculate the result
+    const result = calculateGbsiResult(answers);
+    setGbsiResult(result);
+
+    goToGbsi('results');
+  };
+
+  const handleGbsiRetake = () => {
+    setGbsiAnswers(null);
+    setGbsiUserInfo(null);
+    setGbsiResult(null);
+    goToGbsi('landing');
+  };
+
   // ---------- Handle refresh on results pages without data ----------
   useEffect(() => {
     // If we're on ATM results page but have no answers, redirect to landing
@@ -662,7 +748,14 @@ export default function App() {
       goToCalm('landing');
       return;
     }
-  }, [isAtmRoute, atmStage, atmAnswers, isAuraRoute, auraStage, scores, isCalmRoute, calmStage, calmResult]);
+
+    // If we're on GBSI results page but have no result, redirect to landing
+    if (isGbsiRoute && gbsiStage === 'results' && !gbsiResult) {
+      console.log('🔄 GBSI Results page accessed without data, redirecting to landing');
+      goToGbsi('landing');
+      return;
+    }
+  }, [isAtmRoute, atmStage, atmAnswers, isAuraRoute, auraStage, scores, isCalmRoute, calmStage, calmResult, isGbsiRoute, gbsiStage, gbsiResult]);
 
   // Loading fallback component
   const LoadingSpinner = () => (
@@ -837,6 +930,50 @@ export default function App() {
 
         {(calmStage === 'landing' || calmStage === 'terms') && <Footer />}
       </>
+    );
+  }
+
+  // GBSI (Gut Brain Sensitivity Index) route
+  if (isGbsiRoute) {
+    return (
+      <div className="min-h-screen bg-white scroll-smooth">
+        <Toaster />
+        <Navbar
+          onBookAppointment={navigateToBooking}
+          currentPage="gbsi"
+          onNavigate={handleNavigate}
+        />
+
+        <Suspense fallback={<LoadingSpinner />}>
+          {gbsiStage === 'landing' && (
+            <GbsiLandingPage onStart={handleStartGbsiQuiz} />
+          )}
+
+          {gbsiStage === 'quiz' && (
+            <GbsiQuizFlow onComplete={handleGbsiQuizComplete} />
+          )}
+
+          {gbsiStage === 'results' && gbsiResult && gbsiUserInfo && gbsiAnswers && (
+            <GbsiResultScreen
+              result={gbsiResult}
+              answers={gbsiAnswers}
+              userName={gbsiUserInfo.name}
+              onRetake={handleGbsiRetake}
+            />
+          )}
+
+          {gbsiStage === 'results' && (!gbsiResult || !gbsiUserInfo || !gbsiAnswers) && (
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-gray-600 mb-4">Redirecting to start...</p>
+                <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-teal-500 rounded-full mx-auto"></div>
+              </div>
+            </div>
+          )}
+        </Suspense>
+
+        <Footer />
+      </div>
     );
   }
 

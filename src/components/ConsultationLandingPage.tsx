@@ -30,47 +30,16 @@ export default function ConsultationLandingPage() {
   };
 
   return (
-    <section className="min-h-screen pt-24 pb-16 bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b] relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0">
-        <motion.div
-          className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl opacity-10"
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 30, 0],
-            y: [0, -20, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-[#64CB81] rounded-full blur-3xl opacity-10"
-          animate={{
-            scale: [1, 1.3, 1],
-            x: [0, -40, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-        />
-      </div>
-
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <section className="min-h-screen pt-24 pb-16 bg-gradient-to-br from-[#096b17] via-[#075110] to-[#053d0b]">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Hero Section */}
         <motion.div
-          initial={{ opacity: 0, y: -30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-8"
+          className="text-center mb-12 space-y-4"
         >
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
             Talk to an Anxiety Specialist.<br />Get Clarity in One Session.
           </h1>
 
@@ -81,10 +50,10 @@ export default function ConsultationLandingPage() {
 
         {/* Main Content Card */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.8 }}
-          className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
+          className="rounded-2xl shadow-xl p-8 md:p-10 mb-10 border-2 border-[#096b17]/10"
           style={{ backgroundColor: '#FFFDBD' }}
         >
           {/* What We Offer */}
@@ -122,23 +91,23 @@ export default function ConsultationLandingPage() {
             </div>
 
             {/* Feature Icons */}
-            <div className="flex flex-row gap-3 mb-6 overflow-x-auto">
-              <div className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20 text-center flex-1 min-w-[140px]">
-                <Shield className="w-6 h-6 mx-auto mb-1" style={{ color: '#096b17' }} />
-                <p className="font-semibold text-gray-800 text-xs md:text-sm">Private & Confidential</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20 text-center">
+                <Shield className="w-6 h-6 mx-auto mb-2" style={{ color: '#096b17' }} />
+                <p className="font-semibold text-gray-800 text-sm">Private & Confidential</p>
               </div>
-              <div className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20 text-center flex-1 min-w-[140px]">
-                <Clock className="w-6 h-6 mx-auto mb-1" style={{ color: '#096b17' }} />
-                <p className="font-semibold text-gray-800 text-xs md:text-sm">Same Day Consultations</p>
+              <div className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20 text-center">
+                <Clock className="w-6 h-6 mx-auto mb-2" style={{ color: '#096b17' }} />
+                <p className="font-semibold text-gray-800 text-sm">Same Day Consultations</p>
               </div>
-              <div className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20 text-center flex-1 min-w-[140px]">
-                <Calendar className="w-6 h-6 mx-auto mb-1" style={{ color: '#096b17' }} />
-                <p className="font-semibold text-gray-800 text-xs md:text-sm">Evidence-Based Approach</p>
+              <div className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20 text-center">
+                <Calendar className="w-6 h-6 mx-auto mb-2" style={{ color: '#096b17' }} />
+                <p className="font-semibold text-gray-800 text-sm">Evidence-Based Approach</p>
               </div>
             </div>
 
             {/* Primary CTA - Razorpay Button */}
-            <div className="text-center mb-6 mt-6">
+            <div className="flex justify-center items-center mb-6 mt-6">
               <style>
                 {`
                   .razorpay-embed-btn button {
@@ -165,7 +134,7 @@ export default function ConsultationLandingPage() {
                 `}
               </style>
               <div
-                className="razorpay-embed-btn inline-block"
+                className="razorpay-embed-btn"
                 data-url="https://pages.razorpay.com/pl_RSf6K4Ml6DJIuq/view"
                 data-text="Book Consultation – ₹1200"
                 data-color="#0B8419"
@@ -185,18 +154,13 @@ export default function ConsultationLandingPage() {
           </div>
 
           {/* How This Works */}
-          <div className="mt-8 pt-6 border-t-2 border-[#096b17]/20">
-            <h2 className="text-2xl md:text-3xl font-bold mb-5 text-center" style={{ color: '#096b17' }}>
+          <div className="mt-10 pt-8 border-t-2 border-[#096b17]/20">
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center" style={{ color: '#096b17' }}>
               How This Works
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
-                className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20"
-              >
+              <div className="bg-white/80 rounded-xl p-5 border-2 border-[#096b17]/20">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-base" style={{ backgroundColor: '#096b17' }}>
                     1
@@ -205,14 +169,9 @@ export default function ConsultationLandingPage() {
                     Book your session – ₹1200
                   </h3>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 }}
-                className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20"
-              >
+              <div className="bg-white/80 rounded-xl p-5 border-2 border-[#096b17]/20">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-base" style={{ backgroundColor: '#096b17' }}>
                     2
@@ -221,14 +180,9 @@ export default function ConsultationLandingPage() {
                     Fill a short form
                   </h3>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 }}
-                className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20"
-              >
+              <div className="bg-white/80 rounded-xl p-5 border-2 border-[#096b17]/20">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-base" style={{ backgroundColor: '#096b17' }}>
                     3
@@ -237,14 +191,9 @@ export default function ConsultationLandingPage() {
                     Schedule at your convenience
                   </h3>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 }}
-                className="bg-white/80 rounded-xl p-4 border-2 border-[#096b17]/20"
-              >
+              <div className="bg-white/80 rounded-xl p-5 border-2 border-[#096b17]/20">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-base" style={{ backgroundColor: '#096b17' }}>
                     4
@@ -253,33 +202,26 @@ export default function ConsultationLandingPage() {
                     Get clarity on what to do next
                   </h3>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </motion.div>
 
         {/* Trust Indicators */}
-        <motion.div
-          className="text-center text-white space-y-4"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20">
-              <p className="text-2xl font-semibold mb-1">45+ mins</p>
-              <p className="text-sm text-green-100">Consultation Duration</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20">
-              <p className="text-2xl font-semibold mb-1">100% Online</p>
-              <p className="text-sm text-green-100">Video Consultation</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20">
-              <p className="text-2xl font-semibold mb-1">100% Private</p>
-              <p className="text-sm text-green-100">Safe & Confidential</p>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 text-center">
+            <p className="text-2xl font-bold text-white mb-2">45+ mins</p>
+            <p className="text-sm text-green-100">Consultation Duration</p>
           </div>
-        </motion.div>
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 text-center">
+            <p className="text-2xl font-bold text-white mb-2">100% Online</p>
+            <p className="text-sm text-green-100">Video Consultation</p>
+          </div>
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 text-center">
+            <p className="text-2xl font-bold text-white mb-2">100% Private</p>
+            <p className="text-sm text-green-100">Safe & Confidential</p>
+          </div>
+        </div>
       </div>
     </section>
   );
