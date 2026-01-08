@@ -130,7 +130,7 @@
         '/api/google-sheets': {
           target: 'https://script.google.com',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/google-sheets/, '/macros/s/AKfycbxU7vjSvZprWQmtmR8g490nQpYQkJm04cZHpiTkD_bHU4hYbGaYUXEiV1MT85Tetbgh/exec'),
+          rewrite: (path) => path.replace(/^\/api\/google-sheets/, '/macros/s/AKfycbyOFTGhDB4Uf9jujXzgOTXRu4cl82r6OJVb5eFtJ7Il-oF5lCBhjqkz-x8_ghPzmRMn/exec'),
           secure: true,
           followRedirects: true,
         },
