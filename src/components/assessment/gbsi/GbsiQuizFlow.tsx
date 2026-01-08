@@ -7,7 +7,7 @@ import { Checkbox } from '../components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 import { Label } from '../components/ui/label';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, Mail, Phone } from 'lucide-react';
 import type { GbsiAnswers, GbsiUserInfo, AgeRange, AlarmingSign, FamilyHistory, PainFrequency, ReliefFactor, BristolType, RefluxFrequency, FullnessFactor, FattyLiver, BrainFog } from '../../../types/gbsi';
 
 interface GbsiQuizFlowProps {
@@ -15,6 +15,15 @@ interface GbsiQuizFlowProps {
 }
 
 export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
+  const [showUserInfoForm, setShowUserInfoForm] = useState(true);
+  const [userInfo, setUserInfo] = useState<GbsiUserInfo>({ name: '', whatsapp: '', email: '' });
+  const [formErrors, setFormErrors] = useState({ name: '', whatsapp: '', email: '' });
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Partial<GbsiAnswers>>({
     alarmingSigns: [],
@@ -33,7 +42,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
 
   // Fire GTM event when quiz starts
   useEffect(() => {
-    if (!startedRef.current) {
+    if (!startedRef.current && !showUserInfoForm) {
       startedRef.current = true;
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
@@ -43,7 +52,109 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
       });
       console.log('🧠 gbsi_quiz_start event pushed to dataLayer');
     }
-  }, []);
+  }, [showUserInfoForm]);
+
+  // Form validation
+  const validateUserInfoForm = (): boolean => {
+    const errors = { name: '', whatsapp: '', email: '' };
+    let isValid = true;
+
+    if (!userInfo.name.trim()) {
+      errors.name = 'Name is required';
+      isValid = false;
+    }
+
+    if (!userInfo.whatsapp.trim()) {
+      errors.whatsapp = 'WhatsApp number is required';
+      isValid = false;
+    } else if (!/^\d{10}$/.test(userInfo.whatsapp.trim())) {
+      errors.whatsapp = 'Please enter a valid 10-digit number';
+      isValid = false;
+    }
+
+    if (!userInfo.email || !userInfo.email.trim()) {
+      errors.email = 'Email is required';
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userInfo.email.trim())) {
+      errors.email = 'Please enter a valid email address';
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
+  // Send OTP via WhatsApp only
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateUserInfoForm()) return;
+
+    setIsSendingOtp(true);
+    try {
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userInfo.email,
+          whatsapp: userInfo.whatsapp,
+          name: userInfo.name,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setShowOtpInput(true);
+        setOtpError('');
+      } else {
+        setOtpError(data.message || 'Failed to send OTP. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      setOtpError('Failed to send OTP. Please try again.');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  // Verify OTP
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otp.trim()) {
+      setOtpError('Please enter the OTP');
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+    try {
+      const response = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userInfo.email,
+          whatsapp: userInfo.whatsapp,
+          otp: otp,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setShowUserInfoForm(false);
+        setOtpError('');
+      } else {
+        setOtpError(data.message || 'Invalid OTP. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      setOtpError('Failed to verify OTP. Please try again.');
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof GbsiUserInfo, value: string) => {
+    setUserInfo(prev => ({ ...prev, [field]: value }));
+    setFormErrors(prev => ({ ...prev, [field]: '' }));
+  };
 
   const handleNext = () => {
     if (currentQuestion < totalQuestions - 1) {
@@ -51,8 +162,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       // Quiz complete
-      const user: GbsiUserInfo = { name: '', whatsapp: '', email: '' };
-      onComplete(answers as GbsiAnswers, user);
+      onComplete(answers as GbsiAnswers, userInfo);
     }
   };
 
@@ -653,6 +763,148 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
         return null;
     }
   };
+
+  // Show user info form if needed
+  if (showUserInfoForm) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-4 pt-24" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full"
+        >
+          <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border-2 border-[#096b17]/20">
+            <h2 className="text-2xl font-bold mb-4" style={{ color: '#096b17' }}>
+              Gut-Brain Sensitivity Index
+            </h2>
+            <p className="mb-6 text-sm leading-relaxed" style={{ color: '#000000' }}>
+              Please provide your details to begin the assessment. You'll receive an OTP on WhatsApp for verification.
+            </p>
+
+            {!showOtpInput ? (
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                {/* Name Field */}
+                <div>
+                  <div className="flex items-center mb-2">
+                    <User className="w-4 h-4 mr-2" style={{ color: '#096b17' }} />
+                    <label className="text-sm font-medium" style={{ color: '#096b17' }}>Full Name *</label>
+                  </div>
+                  <input
+                    type="text"
+                    value={userInfo.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#096b17] focus:border-[#096b17] outline-none transition-colors ${
+                      formErrors.name ? 'border-red-500' : 'border-[#096b17]/20'
+                    }`}
+                    placeholder="Enter your full name"
+                    style={{ color: '#096b17' }}
+                  />
+                  {formErrors.name && <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>}
+                </div>
+
+                {/* WhatsApp Field */}
+                <div>
+                  <div className="flex items-center mb-2">
+                    <Phone className="w-4 h-4 mr-2" style={{ color: '#096b17' }} />
+                    <label className="text-sm font-medium" style={{ color: '#096b17' }}>WhatsApp Number *</label>
+                  </div>
+                  <div className="flex rounded-lg overflow-hidden">
+                    <span className="inline-flex items-center px-3 py-3 border border-r-0 bg-[#F5F5DC] text-sm font-medium" style={{ color: '#096b17', borderColor: formErrors.whatsapp ? '#ef4444' : 'rgba(9, 107, 23, 0.2)' }}>
+                      +91
+                    </span>
+                    <input
+                      type="text"
+                      value={userInfo.whatsapp}
+                      onChange={(e) => handleInputChange('whatsapp', e.target.value)}
+                      className={`w-full px-4 py-3 border rounded-r-lg focus:ring-2 focus:ring-[#096b17] focus:border-[#096b17] outline-none transition-colors ${
+                        formErrors.whatsapp ? 'border-red-500' : 'border-[#096b17]/20'
+                      }`}
+                      placeholder="Enter 10-digit number"
+                      maxLength={10}
+                      style={{ color: '#096b17' }}
+                    />
+                  </div>
+                  {formErrors.whatsapp && <p className="text-red-500 text-sm mt-1">{formErrors.whatsapp}</p>}
+                </div>
+
+                {/* Email Field */}
+                <div>
+                  <div className="flex items-center mb-2">
+                    <Mail className="w-4 h-4 mr-2" style={{ color: '#096b17' }} />
+                    <label className="text-sm font-medium" style={{ color: '#096b17' }}>Email Address *</label>
+                  </div>
+                  <input
+                    type="email"
+                    value={userInfo.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#096b17] focus:border-[#096b17] outline-none transition-colors ${
+                      formErrors.email ? 'border-red-500' : 'border-[#096b17]/20'
+                    }`}
+                    placeholder="Enter your email address"
+                    style={{ color: '#096b17' }}
+                  />
+                  {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
+                </div>
+
+                {otpError && <p className="text-red-500 text-sm">{otpError}</p>}
+
+                <button
+                  type="submit"
+                  disabled={isSendingOtp}
+                  className="w-full bg-[#096b17] text-white hover:bg-[#075110] py-3 rounded-xl font-semibold text-base mt-6 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSendingOtp ? 'Sending OTP...' : 'Send OTP'}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    OTP sent to your WhatsApp. Please enter the 6-digit code to continue.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block" style={{ color: '#096b17' }}>
+                    Enter OTP *
+                  </label>
+                  <input
+                    type="text"
+                    value={otp}
+                    onChange={(e) => {
+                      setOtp(e.target.value);
+                      setOtpError('');
+                    }}
+                    className="w-full px-4 py-3 border border-[#096b17]/20 rounded-lg focus:ring-2 focus:ring-[#096b17] focus:border-[#096b17] outline-none transition-colors text-center text-2xl tracking-widest"
+                    placeholder="000000"
+                    maxLength={6}
+                    style={{ color: '#096b17' }}
+                  />
+                  {otpError && <p className="text-red-500 text-sm mt-1">{otpError}</p>}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isVerifyingOtp}
+                  className="w-full bg-[#096b17] text-white hover:bg-[#075110] py-3 rounded-xl font-semibold text-base mt-6 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isVerifyingOtp ? 'Verifying...' : 'Verify OTP'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowOtpInput(false)}
+                  className="w-full text-[#096b17] hover:underline text-sm mt-2"
+                >
+                  Change Details
+                </button>
+              </form>
+            )}
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F5DC] flex flex-col pt-24" style={{ fontFamily: 'Poppins, sans-serif' }}>

@@ -15,9 +15,11 @@ const CONFIG = {
   AURA_SHEET_NAME: 'AURA Results',
   ATM_SHEET_NAME: 'ATM Results',
   CALA_SHEET_NAME: 'CALA Results',
+  GBSI_SHEET_NAME: 'GBSI Results',
   EMAIL_SUBJECT_AURA: 'Your AURA Index Results from CuraGo',
   EMAIL_SUBJECT_ATM: 'Your ATM Assessment Results from CuraGo',
   EMAIL_SUBJECT_CALA: 'Your CALA 1.0 Assessment Results from CuraGo',
+  EMAIL_SUBJECT_GBSI: 'Your GBSI Assessment Results from CuraGo',
   FROM_NAME: 'CuraGo Team',
   COMPANY_WEBSITE: 'https://curago.in',
   SUPPORT_EMAIL: 'curagodoctor@gmail.com',
@@ -29,6 +31,10 @@ const CONFIG = {
   // 2. Create/open a folder for PDFs
   // 3. Copy the ID from the URL: https://drive.google.com/drive/folders/YOUR_FOLDER_ID_HERE
   DRIVE_FOLDER_ID: '1ztLlzdZgZyJZR1BfICOHBPzbeNRDwTTx', // Leave empty to save in root, or paste folder ID here
+
+  // DEPLOYED WEB APP URL (for reference):
+  // https://script.google.com/macros/s/AKfycbyfRm78TCMp4bKW31ZHD-LKnwjUEeUS88paX_zyvx5QE8rGx-hEym3sXjhyS3fIDXCr/exec
+  // Use this URL in your frontend to submit assessment results
 };
 
 // ============================================================
@@ -68,6 +74,8 @@ function doPost(e) {
       response = handleAtmSubmission(data);
     } else if (data.testType === 'cala_tool') {
       response = handleCalaSubmission(data);
+    } else if (data.testType === 'gbsi_tool') {
+      response = handleGbsiSubmission(data);
     } else {
       throw new Error('Invalid test type: ' + data.testType);
     }
@@ -1254,4 +1262,377 @@ ${CONFIG.COMPANY_WEBSITE}
   );
 
   Logger.log('CALA email with PDF sent to: ' + data.email);
+}
+
+// ============================================================
+// GBSI SUBMISSION HANDLER
+// ============================================================
+function handleGbsiSubmission(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(CONFIG.GBSI_SHEET_NAME);
+
+  if (!sheet) {
+    throw new Error('Sheet "' + CONFIG.GBSI_SHEET_NAME + '" not found. Please create it.');
+  }
+
+  // Generate PDF and save to Drive
+  const pdfFile = savePdfToDrive(generateGbsiPdf(data), 'GBSI_Results_' + data.name.replace(/\s+/g, '_'));
+  const pdfUrl = pdfFile.getUrl();
+
+  // Save to Google Sheet with PDF link
+  const rowData = [
+    new Date(),
+    data.name,
+    data.email || '',
+    data.phoneNumber,
+    data.age,
+    data.alarmingSigns.join(', '),
+    data.familyHistory.join(', '),
+    data.painFrequency,
+    data.reliefFactor,
+    data.bristolType,
+    data.refluxFrequency,
+    data.fullnessFactor,
+    data.fattyLiver,
+    data.stressLevel,
+    data.brainFog,
+    data.dietaryHabits.lateNightDinners ? 'Yes' : 'No',
+    data.dietaryHabits.highCaffeine ? 'Yes' : 'No',
+    data.dietaryHabits.frequentJunk ? 'Yes' : 'No',
+    data.dietaryHabits.skipBreakfast ? 'Yes' : 'No',
+    data.resultType,
+    data.ibsType || 'N/A',
+    data.hasRedFlags ? 'Yes' : 'No',
+    data.brainGutSensitivity,
+    data.axisScore,
+    data.eventId,
+    pdfUrl // PDF link in last column
+  ];
+
+  sheet.appendRow(rowData);
+  Logger.log('Data saved to sheet with PDF link');
+
+  // Send email with PDF
+  if (data.email && data.email.trim() !== '') {
+    sendGbsiPdfEmail(data, pdfFile);
+    Logger.log('Email sent to: ' + data.email);
+  } else {
+    Logger.log('No email provided, skipping email send');
+  }
+
+  return { success: true, message: 'GBSI results saved and email sent', pdfUrl: pdfUrl };
+}
+
+// ============================================================
+// GBSI PDF GENERATOR (Clean Design - No Emojis, No Gradients)
+// ============================================================
+function generateGbsiPdf(data) {
+  // Get result type description
+  const getResultDescription = function() {
+    switch(data.resultType) {
+      case 'clinicalPriority':
+        return {
+          title: 'Urgent Surgical Evaluation Recommended',
+          color: '#dc2626',
+          description: 'Based on your reports, we cannot categorize this as simple IBS. A physical examination and likely an Endoscopy/Colonoscopy is recommended to rule out structural issues immediately.'
+        };
+      case 'brainGutOverdrive':
+        return {
+          title: 'Your Axis is Hypersensitive',
+          color: '#7c3aed',
+          description: 'You meet the Rome IV criteria for IBS. Your Vagus nerve is in a state of hyper-vigilance. Your reports are likely "Normal" because the issue is communication, not anatomy.'
+        };
+      case 'mechanicalMetabolic':
+        return {
+          title: 'Upper GI Dysfunction & Metabolic Load',
+          color: '#ea580c',
+          description: 'Your symptoms point toward Functional Dyspepsia or GERD. Your digestive system needs support to process metabolic load more efficiently.'
+        };
+      case 'allClear':
+        return {
+          title: "You're Doing Great!",
+          color: '#16a34a',
+          description: 'You don\'t meet the criteria for IBS or serious pathology. Your symptoms are likely "Lifestyle Gastritis" that can be managed with habit adjustments.'
+        };
+      default:
+        return {
+          title: 'Assessment Complete',
+          color: '#096b17',
+          description: 'Your assessment results are ready.'
+        };
+    }
+  };
+
+  const resultInfo = getResultDescription();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header {
+      background: #096b17;
+      color: white;
+      padding: 30px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+      font-weight: normal;
+    }
+    .header p {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .greeting {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #096b17;
+      font-weight: bold;
+    }
+    .result-box {
+      background: ${resultInfo.color};
+      color: white;
+      padding: 25px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .result-title {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .section {
+      background: #ffffff;
+      padding: 20px;
+      margin-bottom: 15px;
+      border: 1px solid #e0e0e0;
+    }
+    .section h2 {
+      margin-top: 0;
+      color: #096b17;
+      font-size: 18px;
+    }
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .score-item {
+      background: #f8f9fa;
+      padding: 12px;
+      border-left: 3px solid #096b17;
+    }
+    .score-label {
+      font-weight: bold;
+      color: #096b17;
+      font-size: 12px;
+    }
+    .score-value {
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    .cta-box {
+      background: #096b17;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      margin: 25px 0;
+    }
+    .cta-box h3 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #e0e0e0;
+      color: #666;
+      font-size: 12px;
+    }
+    .warning-box {
+      background: #fef2f2;
+      border: 2px solid #fca5a5;
+      padding: 15px;
+      margin: 15px 0;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Your GBSI Assessment Results</h1>
+    <p>Gut-Brain Sensitivity Index</p>
+  </div>
+
+  <p class="greeting">Hi ${data.name}!</p>
+  <p>Thank you for completing the GBSI assessment. Here are your personalized results:</p>
+
+  <div class="result-box">
+    <div class="result-title">${resultInfo.title}</div>
+    <p style="margin: 0;">${resultInfo.description}</p>
+  </div>
+
+  ${data.ibsType && data.ibsType !== 'none' ? `
+  <div class="section">
+    <h2>IBS Classification</h2>
+    <p><strong>Type:</strong> ${data.ibsType}</p>
+  </div>
+  ` : ''}
+
+  <div class="section">
+    <h2>Brain-Gut Axis Assessment</h2>
+    <div class="score-grid">
+      <div class="score-item">
+        <div class="score-label">Axis Score</div>
+        <div class="score-value">${data.axisScore}/3</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Brain-Gut Sensitivity</div>
+        <div class="score-value">${data.brainGutSensitivity.toUpperCase()}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Assessment Details</h2>
+    <div class="score-grid">
+      <div class="score-item">
+        <div class="score-label">Age Range</div>
+        <div class="score-value">${data.age}</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Pain Frequency</div>
+        <div class="score-value">${data.painFrequency}</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Stool Type</div>
+        <div class="score-value">${data.bristolType}</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Stress Level</div>
+        <div class="score-value">${data.stressLevel}/10</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Reflux/Acidity</div>
+        <div class="score-value">${data.refluxFrequency}</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Brain Fog</div>
+        <div class="score-value">${data.brainFog === 'yesFrequently' ? 'Yes, Frequently' : 'No'}</div>
+      </div>
+    </div>
+  </div>
+
+  ${data.hasRedFlags ? `
+  <div class="warning-box">
+    <strong>IMPORTANT:</strong> Red flags detected in your assessment. Please seek professional medical evaluation.
+  </div>
+  ` : ''}
+
+  <div class="cta-box">
+    <h3>Ready to take your next step?</h3>
+    <p>Book a consultation with our gastroenterology experts</p>
+    <p><strong>Visit:</strong> ${CONFIG.COMPANY_WEBSITE}/contact</p>
+    <p><strong>WhatsApp:</strong> ${CONFIG.WHATSAPP_NUMBER}</p>
+  </div>
+
+  <div class="footer">
+    <strong>CuraGo - Your Partner in Gut Health</strong>
+    <p>${CONFIG.COMPANY_WEBSITE} | ${CONFIG.SUPPORT_EMAIL}</p>
+    <p style="margin-top: 10px;">
+      Report generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+    </p>
+  </div>
+</body>
+</html>
+  `;
+
+  return Utilities.newBlob(html, 'text/html', 'temp.html').getAs('application/pdf');
+}
+
+// ============================================================
+// SEND GBSI EMAIL WITH PDF
+// ============================================================
+function sendGbsiPdfEmail(data, pdfFile) {
+  const plainBody = `
+Hi ${data.name}!
+
+Thank you for completing the GBSI assessment.
+
+Your detailed results are attached as a PDF document.
+
+QUICK SUMMARY:
+Result: ${data.resultType}
+${data.ibsType && data.ibsType !== 'none' ? 'IBS Type: ' + data.ibsType : ''}
+Brain-Gut Sensitivity: ${data.brainGutSensitivity}
+Axis Score: ${data.axisScore}/3
+
+Next Steps:
+- Book a consultation: ${CONFIG.COMPANY_WEBSITE}/contact
+- Chat with us on WhatsApp: ${CONFIG.WHATSAPP_NUMBER}
+
+Best regards,
+CuraGo Team
+${CONFIG.COMPANY_WEBSITE}
+  `;
+
+  const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+    .header { background: #096b17; color: white; padding: 30px; text-align: center; }
+    .content { padding: 30px; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; background: #f8f9fa; }
+    .cta-button { background: #64CB81; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Your GBSI Assessment Results</h1>
+  </div>
+  <div class="content">
+    <h2>Hi ${data.name}!</h2>
+    <p>Thank you for completing the GBSI assessment.</p>
+    <p><strong>Your detailed results are attached as a PDF document.</strong></p>
+    <p>Brain-Gut Sensitivity: <strong>${data.brainGutSensitivity.toUpperCase()}</strong></p>
+    <p style="text-align: center;">
+      <a href="${CONFIG.COMPANY_WEBSITE}/contact" class="cta-button">Book Consultation</a>
+    </p>
+  </div>
+  <div class="footer">
+    <p><strong>CuraGo Team</strong></p>
+    <p>${CONFIG.COMPANY_WEBSITE} | ${CONFIG.WHATSAPP_NUMBER}</p>
+  </div>
+</body>
+</html>
+  `;
+
+  GmailApp.sendEmail(
+    data.email,
+    CONFIG.EMAIL_SUBJECT_GBSI,
+    plainBody,
+    {
+      htmlBody: htmlBody,
+      name: CONFIG.FROM_NAME,
+      attachments: [pdfFile.getBlob()]
+    }
+  );
+
+  Logger.log('GBSI email with PDF sent to: ' + data.email);
 }

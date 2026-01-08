@@ -70,6 +70,36 @@ interface CalaResultData {
   eventId: string;
 }
 
+interface GbsiResultData {
+  testType: 'gbsi_tool';
+  name: string;
+  email: string;
+  phoneNumber: string;
+  age: string;
+  alarmingSigns: string[];
+  familyHistory: string[];
+  painFrequency: string;
+  reliefFactor: string;
+  bristolType: string;
+  refluxFrequency: string;
+  fullnessFactor: string;
+  fattyLiver: string;
+  stressLevel: number;
+  brainFog: string;
+  dietaryHabits: {
+    lateNightDinners: boolean;
+    highCaffeine: boolean;
+    frequentJunk: boolean;
+    skipBreakfast: boolean;
+  };
+  resultType: string;
+  ibsType?: string;
+  hasRedFlags: boolean;
+  brainGutSensitivity: string;
+  axisScore: number;
+  eventId: string;
+}
+
 /**
  * Send AURA assessment results to Google Sheets and trigger email
  */
@@ -201,6 +231,53 @@ export async function sendCalaResultsToGoogleSheets(data: CalaResultData): Promi
     }
   } catch (error) {
     console.error('❌ Failed to send CALA results to Google Sheets:', error);
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      console.error('💡 This is likely a CORS error. Check:');
+      console.error('   1. Apps Script deployment "Who has access" is set to "Anyone"');
+      console.error('   2. You are using the latest deployment URL');
+      console.error('   3. The doOptions function is handling preflight requests');
+    }
+    return false;
+  }
+}
+
+/**
+ * Send GBSI assessment results to Google Sheets and trigger email
+ */
+export async function sendGbsiResultsToGoogleSheets(data: GbsiResultData): Promise<boolean> {
+  console.log('📤 Sending GBSI results to Google Sheets...', {
+    name: data.name,
+    email: data.email,
+    testType: data.testType
+  });
+
+  try {
+    const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+      redirect: 'follow', // Follow redirects from Google Apps Script
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ HTTP error response:', errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      console.log('✅ GBSI results sent to Google Sheets and email sent');
+      return true;
+    } else {
+      console.error('❌ Google Sheets API error:', result.error);
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Failed to send GBSI results to Google Sheets:', error);
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
       console.error('💡 This is likely a CORS error. Check:');
       console.error('   1. Apps Script deployment "Who has access" is set to "Anyone"');

@@ -53,7 +53,7 @@ const GbsiResultScreen = lazy(() => import('./components/assessment/gbsi').then(
 
 // Keep these as regular imports (small utilities)
 import { calculateCalmResult } from './components/assessment/calm/scoringEngine';
-import { sendCalaResultsToGoogleSheets } from './utils/googleSheets';
+import { sendCalaResultsToGoogleSheets, sendGbsiResultsToGoogleSheets } from './utils/googleSheets';
 import { calculateGbsiResult } from './components/assessment/gbsi/scoringEngine';
 
 // ✅ Single source of truth for types (new 8-pillar model)
@@ -708,13 +708,46 @@ export default function App() {
 
   const handleStartGbsiQuiz = () => goToGbsi('quiz');
 
-  const handleGbsiQuizComplete = (answers: GbsiAnswers, userInfo: GbsiUserInfo) => {
+  const handleGbsiQuizComplete = async (answers: GbsiAnswers, userInfo: GbsiUserInfo) => {
     setGbsiAnswers(answers);
     setGbsiUserInfo(userInfo);
 
     // Calculate the result
     const result = calculateGbsiResult(answers);
     setGbsiResult(result);
+
+    // Send results to Google Sheets
+    const eventId = `gbsi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    const gbsiData = {
+      testType: 'gbsi_tool' as const,
+      name: userInfo.name,
+      email: userInfo.email || '',
+      phoneNumber: userInfo.whatsapp,
+      age: answers.age,
+      alarmingSigns: answers.alarmingSigns,
+      familyHistory: answers.familyHistory,
+      painFrequency: answers.painFrequency,
+      reliefFactor: answers.reliefFactor,
+      bristolType: answers.bristolType,
+      refluxFrequency: answers.refluxFrequency,
+      fullnessFactor: answers.fullnessFactor,
+      fattyLiver: answers.fattyLiver,
+      stressLevel: answers.stressLevel,
+      brainFog: answers.brainFog,
+      dietaryHabits: answers.dietaryHabits,
+      resultType: result.resultType,
+      ibsType: result.ibsType,
+      hasRedFlags: result.hasRedFlags,
+      brainGutSensitivity: result.brainGutSensitivity,
+      axisScore: result.axisScore,
+      eventId: eventId
+    };
+
+    // Send to Google Sheets (non-blocking)
+    sendGbsiResultsToGoogleSheets(gbsiData).catch(err => {
+      console.error('Failed to send GBSI results to Google Sheets:', err);
+    });
 
     goToGbsi('results');
   };
