@@ -16,6 +16,8 @@ const CONFIG = {
   ATM_SHEET_NAME: 'ATM Results',
   CALA_SHEET_NAME: 'CALA Results',
   GBSI_SHEET_NAME: 'GBSI Results',
+  PRIORITY_CIRCLE_SHEET_NAME: 'Priority Circle 365',
+  CONSULTATION_BOOKING_SHEET_NAME: 'Consultation Bookings',
   EMAIL_SUBJECT_AURA: 'Your AURA Index Results from CuraGo',
   EMAIL_SUBJECT_ATM: 'Your ATM Assessment Results from CuraGo',
   EMAIL_SUBJECT_CALA: 'Your CALA 1.0 Assessment Results from CuraGo',
@@ -31,10 +33,6 @@ const CONFIG = {
   // 2. Create/open a folder for PDFs
   // 3. Copy the ID from the URL: https://drive.google.com/drive/folders/YOUR_FOLDER_ID_HERE
   DRIVE_FOLDER_ID: '1ztLlzdZgZyJZR1BfICOHBPzbeNRDwTTx', // Leave empty to save in root, or paste folder ID here
-
-  // DEPLOYED WEB APP URL (for reference):
-  // https://script.google.com/macros/s/AKfycbyOFTGhDB4Uf9jujXzgOTXRu4cl82r6OJVb5eFtJ7Il-oF5lCBhjqkz-x8_ghPzmRMn/exec
-  // Use this URL in your frontend to submit assessment results
 };
 
 // ============================================================
@@ -76,6 +74,10 @@ function doPost(e) {
       response = handleCalaSubmission(data);
     } else if (data.testType === 'gbsi_tool') {
       response = handleGbsiSubmission(data);
+    } else if (data.testType === 'priority_circle') {
+      response = handlePriorityCircleSubmission(data);
+    } else if (data.testType === 'consultation_booking') {
+      response = handleConsultationBookingSubmission(data);
     } else {
       throw new Error('Invalid test type: ' + data.testType);
     }
@@ -1324,46 +1326,127 @@ function handleGbsiSubmission(data) {
 }
 
 // ============================================================
-// GBSI PDF GENERATOR (Clean Design - No Emojis, No Gradients)
+// GBSI PDF GENERATOR - COMPREHENSIVE VERSION WITH ALL DETAILS
 // ============================================================
 function generateGbsiPdf(data) {
-  // Get result type description
-  const getResultDescription = function() {
+  // Helper function to get alarming signs as readable text
+  const getAlarmingSignsText = function(signs) {
+    const mapping = {
+      'weightLoss': 'Unintended weight loss (>5kg in 6 months)',
+      'bloodInStool': 'Blood in stool or black/tarry stool',
+      'difficultySwallowing': 'Difficulty swallowing or feeling food "stuck"',
+      'persistentVomiting': 'Persistent vomiting',
+      'nightSymptoms': 'Symptoms that wake you up from deep sleep'
+    };
+
+    return signs
+      .filter(function(sign) { return sign !== 'none'; })
+      .map(function(sign) { return mapping[sign] || sign; })
+      .join(', ');
+  };
+
+  // Get comprehensive result content based on result type
+  const getResultContent = function() {
     switch(data.resultType) {
       case 'clinicalPriority':
+        var alarmingSigns = getAlarmingSignsText(data.alarmingSigns);
+        var reasons = [];
+        if (alarmingSigns) reasons.push(alarmingSigns);
+        if (data.age === 'over50') reasons.push('your age');
+        if (data.familyHistory.includes('colorectalCancer')) reasons.push('your family history of colorectal cancer');
+
         return {
           title: 'Urgent Surgical Evaluation Recommended',
           color: '#dc2626',
-          description: 'Based on your reports, we cannot categorize this as simple IBS. A physical examination and likely an Endoscopy/Colonoscopy is recommended to rule out structural issues immediately.'
+          mainText: 'Based on your reports of <strong>' + reasons.join(', ') + '</strong>, we cannot categorize this as simple IBS.',
+          detailText: 'As a Surgical Gastroenterologist, I recommend a physical examination and likely an Endoscopy/Colonoscopy to rule out structural issues immediately.',
+          warning: 'This assessment does not replace professional medical advice. Please seek immediate medical attention.',
+          recommendations: [
+            'Book an urgent consultation with a gastroenterologist',
+            'Get a physical examination as soon as possible',
+            'Discuss Endoscopy/Colonoscopy with your doctor',
+            'Bring this report to your consultation'
+          ]
         };
+
       case 'brainGutOverdrive':
+        var symptoms = [];
+        if (data.brainFog === 'yesFrequently') symptoms.push('"Brain Fog"');
+        if (data.stressLevel > 7) symptoms.push('high stress levels');
+
         return {
           title: 'Your Axis is Hypersensitive',
+          subtitle: data.ibsType && data.ibsType !== 'none' ? 'IBS Type: ' + data.ibsType : '',
           color: '#7c3aed',
-          description: 'You meet the Rome IV criteria for IBS. Your Vagus nerve is in a state of hyper-vigilance. Your reports are likely "Normal" because the issue is communication, not anatomy.'
+          mainText: 'You meet the Rome IV criteria for IBS. ' + (symptoms.length > 0 ? 'Your ' + symptoms.join(' and ') + ' suggest ' : '') + 'your Vagus nerve is in a state of hyper-vigilance.',
+          detailText: 'Your reports are likely "Normal" because the issue is <strong>communication, not anatomy</strong>.',
+          brainGutInfo: 'Your Brain-Gut Axis Score: ' + data.axisScore + '/3<br>Brain-Gut Sensitivity: <strong>' + data.brainGutSensitivity.toUpperCase() + '</strong>',
+          recommendations: [
+            'Start the 12-Month Gut-Brain Recalibration Program',
+            'Learn vagus nerve regulation techniques',
+            'Personalized dietary modifications based on your triggers',
+            'Consider consultation for a comprehensive treatment plan'
+          ]
         };
+
       case 'mechanicalMetabolic':
+        var issues = [];
+        if (data.refluxFrequency === 'dailyNightly') issues.push('Daily/Nightly Reflux or Acidity');
+        if (data.fullnessFactor === 'yes') issues.push('Early Satiety (Uncomfortable Fullness)');
+        if (data.fattyLiver === 'yes') issues.push('Fatty Liver Disease');
+
+        var detailParts = [];
+        if (data.fattyLiver === 'yes') detailParts.push('Your liver is struggling to process the metabolic load, which is why you may feel sluggish.');
+        if (data.refluxFrequency === 'dailyNightly') detailParts.push('Your frequent reflux needs to be addressed to prevent complications.');
+        if (data.fullnessFactor === 'yes') detailParts.push('The early fullness suggests your digestive motility may be affected.');
+
         return {
           title: 'Upper GI Dysfunction & Metabolic Load',
           color: '#ea580c',
-          description: 'Your symptoms point toward Functional Dyspepsia or GERD. Your digestive system needs support to process metabolic load more efficiently.'
+          mainText: 'Your symptoms point toward <strong>Functional Dyspepsia or GERD</strong>' + (data.fattyLiver === 'yes' ? ', complicated by Fatty Liver' : '') + '.',
+          detailText: detailParts.join(' '),
+          issuesList: issues,
+          recommendations: [
+            'Custom Diet & Lifestyle Protocol for upper GI health',
+            'Metabolic load management strategies',
+            data.fattyLiver === 'yes' ? 'Liver health optimization program' : 'Digestive health monitoring',
+            'Book consultation for personalized treatment plan'
+          ]
         };
+
       case 'allClear':
+        var habits = [];
+        if (data.dietaryHabits.lateNightDinners) habits.push('Late night dinners');
+        if (data.dietaryHabits.highCaffeine) habits.push('High caffeine intake');
+        if (data.dietaryHabits.frequentJunk) habits.push('Frequent junk/processed food');
+        if (data.dietaryHabits.skipBreakfast) habits.push('Skipping breakfast');
+
         return {
           title: "You're Doing Great!",
+          subtitle: 'But Watch the Habits',
           color: '#16a34a',
-          description: 'You don\'t meet the criteria for IBS or serious pathology. Your symptoms are likely "Lifestyle Gastritis" that can be managed with habit adjustments.'
+          mainText: 'You don\'t meet the criteria for IBS or serious pathology. Your symptoms are likely <strong>"Lifestyle Gastritis"</strong>.',
+          habits: habits,
+          recommendations: [
+            'Reduce late-night meals (eat at least 3 hours before bed)',
+            'Limit caffeine intake, especially on an empty stomach',
+            'Minimize processed and junk food consumption',
+            'Maintain regular meal times and don\'t skip breakfast',
+            'Stay hydrated and manage stress levels'
+          ]
         };
+
       default:
         return {
           title: 'Assessment Complete',
           color: '#096b17',
-          description: 'Your assessment results are ready.'
+          mainText: 'Your GBSI assessment has been completed.',
+          detailText: ''
         };
     }
   };
 
-  const resultInfo = getResultDescription();
+  const resultContent = getResultContent();
 
   const html = `
 <!DOCTYPE html>
@@ -1374,125 +1457,224 @@ function generateGbsiPdf(data) {
       font-family: Arial, sans-serif;
       line-height: 1.6;
       color: #333;
-      padding: 40px;
-      max-width: 800px;
+      padding: 30px;
+      max-width: 900px;
       margin: 0 auto;
+      font-size: 11pt;
     }
     .header {
       background: #096b17;
       color: white;
-      padding: 30px;
+      padding: 25px;
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
     .header h1 {
-      margin: 0 0 10px 0;
-      font-size: 28px;
-      font-weight: normal;
+      margin: 0 0 8px 0;
+      font-size: 24pt;
+      font-weight: bold;
     }
     .header p {
       margin: 0;
-      font-size: 14px;
-      opacity: 0.9;
+      font-size: 12pt;
+      opacity: 0.95;
     }
     .greeting {
-      font-size: 18px;
-      margin-bottom: 20px;
+      font-size: 14pt;
+      margin-bottom: 15px;
       color: #096b17;
       font-weight: bold;
     }
     .result-box {
-      background: ${resultInfo.color};
+      background: ${resultContent.color};
       color: white;
-      padding: 25px;
-      margin-bottom: 20px;
-      text-align: center;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      page-break-inside: avoid;
     }
     .result-title {
-      font-size: 22px;
+      font-size: 20pt;
       font-weight: bold;
-      margin-bottom: 15px;
+      margin-bottom: ${resultContent.subtitle ? '8px' : '12px'};
+    }
+    .result-subtitle {
+      font-size: 14pt;
+      margin-bottom: 12px;
+      opacity: 0.95;
+    }
+    .result-text {
+      font-size: 11pt;
+      line-height: 1.6;
+      margin: 10px 0;
     }
     .section {
       background: #ffffff;
-      padding: 20px;
+      padding: 18px;
       margin-bottom: 15px;
       border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      page-break-inside: avoid;
     }
     .section h2 {
-      margin-top: 0;
+      margin: 0 0 12px 0;
       color: #096b17;
-      font-size: 18px;
+      font-size: 14pt;
+      font-weight: bold;
+    }
+    .section h3 {
+      margin: 12px 0 8px 0;
+      color: #096b17;
+      font-size: 12pt;
+      font-weight: bold;
+    }
+    .info-box {
+      background: #f0f7f1;
+      padding: 15px;
+      margin: 12px 0;
+      border-left: 4px solid #096b17;
+      border-radius: 4px;
+    }
+    .info-box h4 {
+      margin: 0 0 8px 0;
+      color: #096b17;
+      font-size: 11pt;
+      font-weight: bold;
+    }
+    .info-box ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+    .info-box li {
+      margin: 4px 0;
+      font-size: 10.5pt;
     }
     .score-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
-      margin-top: 15px;
+      margin-top: 12px;
     }
     .score-item {
       background: #f8f9fa;
       padding: 12px;
       border-left: 3px solid #096b17;
+      border-radius: 4px;
     }
     .score-label {
       font-weight: bold;
       color: #096b17;
-      font-size: 12px;
+      font-size: 10pt;
     }
     .score-value {
-      font-size: 14px;
+      font-size: 11pt;
       margin-top: 5px;
+      color: #333;
     }
-    .cta-box {
-      background: #096b17;
-      color: white;
-      padding: 20px;
-      text-align: center;
-      margin: 25px 0;
+    .recommendations {
+      background: #f8f9fa;
+      padding: 18px;
+      margin: 15px 0;
+      border-radius: 6px;
     }
-    .cta-box h3 {
-      margin-top: 0;
-      font-size: 18px;
+    .recommendations h3 {
+      margin: 0 0 12px 0;
+      color: #096b17;
+      font-size: 13pt;
+      font-weight: bold;
     }
-    .footer {
-      text-align: center;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 2px solid #e0e0e0;
-      color: #666;
-      font-size: 12px;
+    .recommendations ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .recommendations li {
+      margin: 8px 0;
+      font-size: 10.5pt;
+      line-height: 1.5;
     }
     .warning-box {
       background: #fef2f2;
       border: 2px solid #fca5a5;
       padding: 15px;
       margin: 15px 0;
+      border-radius: 6px;
       color: #991b1b;
+      font-weight: 500;
+      page-break-inside: avoid;
+    }
+    .cta-box {
+      background: #096b17;
+      color: white;
+      padding: 18px;
+      text-align: center;
+      margin: 20px 0;
+      border-radius: 8px;
+      page-break-inside: avoid;
+    }
+    .cta-box h3 {
+      margin: 0 0 10px 0;
+      font-size: 13pt;
+    }
+    .cta-box p {
+      margin: 6px 0;
+      font-size: 10.5pt;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 25px;
+      padding-top: 18px;
+      border-top: 2px solid #e0e0e0;
+      color: #666;
+      font-size: 9pt;
     }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>Your GBSI Assessment Results</h1>
-    <p>Gut-Brain Sensitivity Index</p>
+    <p>Gut-Brain Sensitivity Index - Comprehensive Report</p>
   </div>
 
   <p class="greeting">Hi ${data.name}!</p>
-  <p>Thank you for completing the GBSI assessment. Here are your personalized results:</p>
+  <p style="margin-bottom: 20px;">Thank you for completing the GBSI assessment. Here is your comprehensive personalized report:</p>
 
+  <!-- Main Result Box -->
   <div class="result-box">
-    <div class="result-title">${resultInfo.title}</div>
-    <p style="margin: 0;">${resultInfo.description}</p>
+    <div class="result-title">${resultContent.title}</div>
+    ${resultContent.subtitle ? '<div class="result-subtitle">' + resultContent.subtitle + '</div>' : ''}
+    <div class="result-text">${resultContent.mainText}</div>
+    ${resultContent.detailText ? '<div class="result-text" style="margin-top: 12px;">' + resultContent.detailText + '</div>' : ''}
+    ${resultContent.brainGutInfo ? '<div class="result-text" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.3);">' + resultContent.brainGutInfo + '</div>' : ''}
   </div>
 
-  ${data.ibsType && data.ibsType !== 'none' ? `
-  <div class="section">
-    <h2>IBS Classification</h2>
-    <p><strong>Type:</strong> ${data.ibsType}</p>
+  <!-- Warning Box (if applicable) -->
+  ${resultContent.warning ? `
+  <div class="warning-box">
+    <strong>⚠️ IMPORTANT:</strong> ${resultContent.warning}
   </div>
   ` : ''}
 
+  <!-- Key Issues Identified (for Mechanical/Metabolic) -->
+  ${resultContent.issuesList && resultContent.issuesList.length > 0 ? `
+  <div class="info-box">
+    <h4>Key Issues Identified:</h4>
+    <ul>
+      ${resultContent.issuesList.map(function(issue) { return '<li>' + issue + '</li>'; }).join('')}
+    </ul>
+  </div>
+  ` : ''}
+
+  <!-- Dietary Habits (for All Clear) -->
+  ${resultContent.habits && resultContent.habits.length > 0 ? `
+  <div class="info-box">
+    <h4>Habits to Watch Out For:</h4>
+    <ul>
+      ${resultContent.habits.map(function(habit) { return '<li>' + habit + '</li>'; }).join('')}
+    </ul>
+  </div>
+  ` : ''}
+
+  <!-- Brain-Gut Axis Assessment -->
   <div class="section">
     <h2>Brain-Gut Axis Assessment</h2>
     <div class="score-grid">
@@ -1504,11 +1686,18 @@ function generateGbsiPdf(data) {
         <div class="score-label">Brain-Gut Sensitivity</div>
         <div class="score-value">${data.brainGutSensitivity.toUpperCase()}</div>
       </div>
+      ${data.ibsType && data.ibsType !== 'none' ? `
+      <div class="score-item">
+        <div class="score-label">IBS Classification</div>
+        <div class="score-value">${data.ibsType}</div>
+      </div>
+      ` : ''}
     </div>
   </div>
 
+  <!-- Detailed Assessment Data -->
   <div class="section">
-    <h2>Assessment Details</h2>
+    <h2>Your Assessment Details</h2>
     <div class="score-grid">
       <div class="score-item">
         <div class="score-label">Age Range</div>
@@ -1519,32 +1708,59 @@ function generateGbsiPdf(data) {
         <div class="score-value">${data.painFrequency}</div>
       </div>
       <div class="score-item">
-        <div class="score-label">Stool Type</div>
-        <div class="score-value">${data.bristolType}</div>
+        <div class="score-label">Pain Relief Factor</div>
+        <div class="score-value">${data.reliefFactor === 'yes' ? 'Related to Stool' : 'No Relation'}</div>
       </div>
       <div class="score-item">
-        <div class="score-label">Stress Level</div>
-        <div class="score-value">${data.stressLevel}/10</div>
+        <div class="score-label">Stool Type (Bristol)</div>
+        <div class="score-value">${data.bristolType.replace('type', 'Type ')}</div>
       </div>
       <div class="score-item">
         <div class="score-label">Reflux/Acidity</div>
         <div class="score-value">${data.refluxFrequency}</div>
       </div>
       <div class="score-item">
+        <div class="score-label">Early Fullness</div>
+        <div class="score-value">${data.fullnessFactor === 'yes' ? 'Yes' : 'No'}</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Fatty Liver</div>
+        <div class="score-value">${data.fattyLiver === 'yes' ? 'Yes' : data.fattyLiver === 'no' ? 'No' : "Don't Know"}</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Stress Level</div>
+        <div class="score-value">${data.stressLevel}/10</div>
+      </div>
+      <div class="score-item">
         <div class="score-label">Brain Fog</div>
         <div class="score-value">${data.brainFog === 'yesFrequently' ? 'Yes, Frequently' : 'No'}</div>
       </div>
     </div>
+
+    <!-- Family History -->
+    <h3 style="margin-top: 15px;">Family History</h3>
+    <p style="font-size: 10.5pt; margin: 5px 0;">${data.familyHistory.filter(function(h) { return h !== 'none'; }).length > 0 ? data.familyHistory.filter(function(h) { return h !== 'none'; }).map(function(h) { return h === 'colorectalCancer' ? 'Colorectal Cancer' : h === 'ibd' ? 'IBD (Ulcerative Colitis/Crohn\'s)' : h === 'celiac' ? 'Celiac Disease' : h; }).join(', ') : 'None reported'}</p>
+
+    <!-- Dietary Habits -->
+    <h3 style="margin-top: 15px;">Dietary Habits</h3>
+    <p style="font-size: 10.5pt; margin: 5px 0;">
+      ${data.dietaryHabits.lateNightDinners ? 'Late Night Dinners, ' : ''}${data.dietaryHabits.highCaffeine ? 'High Caffeine, ' : ''}${data.dietaryHabits.frequentJunk ? 'Frequent Junk Food, ' : ''}${data.dietaryHabits.skipBreakfast ? 'Skip Breakfast' : ''}${(!data.dietaryHabits.lateNightDinners && !data.dietaryHabits.highCaffeine && !data.dietaryHabits.frequentJunk && !data.dietaryHabits.skipBreakfast) ? 'No concerning habits reported' : ''}
+    </p>
   </div>
 
-  ${data.hasRedFlags ? `
-  <div class="warning-box">
-    <strong>IMPORTANT:</strong> Red flags detected in your assessment. Please seek professional medical evaluation.
+  <!-- Recommendations -->
+  ${resultContent.recommendations && resultContent.recommendations.length > 0 ? `
+  <div class="recommendations">
+    <h3>Recommended Next Steps</h3>
+    <ul>
+      ${resultContent.recommendations.map(function(rec) { return '<li>' + rec + '</li>'; }).join('')}
+    </ul>
   </div>
   ` : ''}
 
+  <!-- CTA Box -->
   <div class="cta-box">
-    <h3>Ready to take your next step?</h3>
+    <h3>Ready to Take Your Next Step?</h3>
     <p>Book a consultation with our gastroenterology experts</p>
     <p><strong>Visit:</strong> ${CONFIG.COMPANY_WEBSITE}/contact</p>
     <p><strong>WhatsApp:</strong> ${CONFIG.WHATSAPP_NUMBER}</p>
@@ -1553,8 +1769,11 @@ function generateGbsiPdf(data) {
   <div class="footer">
     <strong>CuraGo - Your Partner in Gut Health</strong>
     <p>${CONFIG.COMPANY_WEBSITE} | ${CONFIG.SUPPORT_EMAIL}</p>
-    <p style="margin-top: 10px;">
+    <p style="margin-top: 8px;">
       Report generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+    </p>
+    <p style="margin-top: 8px; font-size: 8pt; font-style: italic;">
+      This assessment provides educational insights and does not replace professional medical advice.
     </p>
   </div>
 </body>
@@ -1568,26 +1787,61 @@ function generateGbsiPdf(data) {
 // SEND GBSI EMAIL WITH PDF
 // ============================================================
 function sendGbsiPdfEmail(data, pdfFile) {
+  // Get result type text
+  const getResultText = function() {
+    switch(data.resultType) {
+      case 'clinicalPriority':
+        return 'Urgent Surgical Evaluation Recommended';
+      case 'brainGutOverdrive':
+        return 'Your Axis is Hypersensitive';
+      case 'mechanicalMetabolic':
+        return 'Upper GI Dysfunction & Metabolic Load';
+      case 'allClear':
+        return "You're Doing Great!";
+      default:
+        return 'Assessment Complete';
+    }
+  };
+
   const plainBody = `
 Hi ${data.name}!
 
-Thank you for completing the GBSI assessment.
+Thank you for completing the GBSI (Gut-Brain Sensitivity Index) Assessment.
 
-Your detailed results are attached as a PDF document.
+Your comprehensive results report is attached as a PDF document.
 
-QUICK SUMMARY:
-Result: ${data.resultType}
-${data.ibsType && data.ibsType !== 'none' ? 'IBS Type: ' + data.ibsType : ''}
-Brain-Gut Sensitivity: ${data.brainGutSensitivity}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUICK SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Result: ${getResultText()}
+${data.ibsType && data.ibsType !== 'none' ? 'IBS Classification: ' + data.ibsType : ''}
+Brain-Gut Sensitivity: ${data.brainGutSensitivity.toUpperCase()}
 Axis Score: ${data.axisScore}/3
 
-Next Steps:
-- Book a consultation: ${CONFIG.COMPANY_WEBSITE}/contact
-- Chat with us on WhatsApp: ${CONFIG.WHATSAPP_NUMBER}
+Assessment Details:
+• Pain Frequency: ${data.painFrequency}
+• Stool Type: ${data.bristolType}
+• Stress Level: ${data.stressLevel}/10
+• Brain Fog: ${data.brainFog === 'yesFrequently' ? 'Yes, Frequently' : 'No'}
+${data.refluxFrequency === 'dailyNightly' ? '• Reflux: Daily/Nightly' : ''}
+${data.fattyLiver === 'yes' ? '• Fatty Liver: Yes' : ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Please review the attached PDF for your complete personalized report including detailed explanations and recommended next steps.
+
+NEXT STEPS:
+→ Book a consultation: ${CONFIG.COMPANY_WEBSITE}/contact
+→ WhatsApp us: ${CONFIG.WHATSAPP_NUMBER}
+→ Visit our website: ${CONFIG.COMPANY_WEBSITE}
 
 Best regards,
 CuraGo Team
-${CONFIG.COMPANY_WEBSITE}
+Your Partner in Gut Health
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${data.hasRedFlags ? '⚠️ IMPORTANT: Your results indicate red flags that require professional medical evaluation. Please seek immediate medical attention.' : ''}
   `;
 
   const htmlBody = `
@@ -1595,29 +1849,55 @@ ${CONFIG.COMPANY_WEBSITE}
 <html>
 <head>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
     .header { background: #096b17; color: white; padding: 30px; text-align: center; }
-    .content { padding: 30px; }
+    .content { padding: 30px; background-color: white; max-width: 600px; margin: 0 auto; }
+    .summary-box { background: #f8f9fa; border-left: 4px solid #096b17; padding: 20px; margin: 20px 0; }
+    .summary-box h3 { margin-top: 0; color: #096b17; }
+    .summary-item { margin: 8px 0; }
+    .summary-item strong { color: #096b17; }
+    ${data.hasRedFlags ? '.warning-box { background: #fef2f2; border: 2px solid #fca5a5; padding: 15px; margin: 15px 0; color: #991b1b; border-radius: 5px; }' : ''}
     .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; background: #f8f9fa; }
-    .cta-button { background: #64CB81; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
+    .cta-button { background: #096b17; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 5px; }
+    .cta-button:hover { background: #075110; }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>Your GBSI Assessment Results</h1>
+    <p>Gut-Brain Sensitivity Index</p>
   </div>
   <div class="content">
     <h2>Hi ${data.name}!</h2>
     <p>Thank you for completing the GBSI assessment.</p>
-    <p><strong>Your detailed results are attached as a PDF document.</strong></p>
-    <p>Brain-Gut Sensitivity: <strong>${data.brainGutSensitivity.toUpperCase()}</strong></p>
-    <p style="text-align: center;">
+    <p><strong>Your comprehensive results report is attached as a PDF document.</strong></p>
+
+    <div class="summary-box">
+      <h3>Quick Summary</h3>
+      <div class="summary-item"><strong>Result:</strong> ${getResultText()}</div>
+      ${data.ibsType && data.ibsType !== 'none' ? '<div class="summary-item"><strong>IBS Type:</strong> ' + data.ibsType + '</div>' : ''}
+      <div class="summary-item"><strong>Brain-Gut Sensitivity:</strong> ${data.brainGutSensitivity.toUpperCase()}</div>
+      <div class="summary-item"><strong>Axis Score:</strong> ${data.axisScore}/3</div>
+      <div class="summary-item"><strong>Stress Level:</strong> ${data.stressLevel}/10</div>
+    </div>
+
+    ${data.hasRedFlags ? `
+    <div class="warning-box">
+      <strong>⚠️ IMPORTANT:</strong> Your results indicate red flags that require professional medical evaluation. Please seek immediate medical attention.
+    </div>
+    ` : ''}
+
+    <p style="text-align: center; margin-top: 30px;">
       <a href="${CONFIG.COMPANY_WEBSITE}/contact" class="cta-button">Book Consultation</a>
+      <a href="https://wa.me/${CONFIG.WHATSAPP_NUMBER.replace(/[^0-9]/g, '')}" class="cta-button">WhatsApp Us</a>
     </p>
   </div>
   <div class="footer">
-    <p><strong>CuraGo Team</strong></p>
+    <p><strong>CuraGo - Your Partner in Gut Health</strong></p>
     <p>${CONFIG.COMPANY_WEBSITE} | ${CONFIG.WHATSAPP_NUMBER}</p>
+    <p style="margin-top: 10px; font-size: 12px; color: #999;">
+      This assessment provides educational insights and does not replace professional medical advice.
+    </p>
   </div>
 </body>
 </html>
@@ -1635,4 +1915,80 @@ ${CONFIG.COMPANY_WEBSITE}
   );
 
   Logger.log('GBSI email with PDF sent to: ' + data.email);
+}
+
+// ============================================================
+// PRIORITY CIRCLE 365 SUBMISSION HANDLER
+// ============================================================
+function handlePriorityCircleSubmission(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(CONFIG.PRIORITY_CIRCLE_SHEET_NAME);
+
+  if (!sheet) {
+    throw new Error('Sheet "' + CONFIG.PRIORITY_CIRCLE_SHEET_NAME + '" not found. Please create it.');
+  }
+
+  // Prepare row data to match the columns:
+  // Timestamp, Name, WhatsApp Number, Email, Age, City, Area of Residence,
+  // Has Gut-Brain Problem, Problem Description, Preferred Option, Status, Notes
+  const timestamp = new Date();
+  const rowData = [
+    timestamp,
+    data.name || '',
+    data.phoneNumber || '',
+    data.email || '',
+    data.age || '',
+    data.city || '',
+    data.area || '',
+    data.hasGutBrainProblem || '',
+    data.problemDescription || '',
+    data.preferredOption || '',
+    'Pending Review', // Status
+    '' // Notes (empty for now)
+  ];
+
+  sheet.appendRow(rowData);
+  Logger.log('Priority Circle 365 application saved to sheet');
+
+  return {
+    success: true,
+    message: 'Priority Circle 365 application submitted successfully',
+    timestamp: timestamp.toISOString()
+  };
+}
+
+// ============================================================
+// CONSULTATION BOOKING SUBMISSION HANDLER
+// ============================================================
+function handleConsultationBookingSubmission(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(CONFIG.CONSULTATION_BOOKING_SHEET_NAME);
+
+  if (!sheet) {
+    throw new Error('Sheet "' + CONFIG.CONSULTATION_BOOKING_SHEET_NAME + '" not found. Please create it.');
+  }
+
+  // Prepare row data to match the columns:
+  // Timestamp, Name, WhatsApp Number, Email, Consultation Type, Preferred Date, Preferred Time, Status, Notes
+  const timestamp = new Date();
+  const rowData = [
+    timestamp,
+    data.name || '',
+    data.phoneNumber || '',
+    data.email || '',
+    data.consultationType || '',
+    data.preferredDate || '',
+    data.preferredTime || '',
+    'Pending Confirmation', // Status
+    '' // Notes (empty for now)
+  ];
+
+  sheet.appendRow(rowData);
+  Logger.log('Consultation booking saved to sheet');
+
+  return {
+    success: true,
+    message: 'Consultation booking submitted successfully',
+    timestamp: timestamp.toISOString()
+  };
 }

@@ -55,6 +55,7 @@ const GbsiResultScreen = lazy(() => import('./components/assessment/gbsi').then(
 import { calculateCalmResult } from './components/assessment/calm/scoringEngine';
 import { sendCalaResultsToGoogleSheets, sendGbsiResultsToGoogleSheets } from './utils/googleSheets';
 import { calculateGbsiResult } from './components/assessment/gbsi/scoringEngine';
+import { submitGbsiCompletion } from './utils/wylto';
 
 // ✅ Single source of truth for types (new 8-pillar model)
 import type { QuizAnswers, UserInfo, AuraScores } from './types/aura';
@@ -747,6 +748,15 @@ export default function App() {
     // Send to Google Sheets (non-blocking)
     sendGbsiResultsToGoogleSheets(gbsiData).catch(err => {
       console.error('Failed to send GBSI results to Google Sheets:', err);
+    });
+
+    // Send GBSI completion webhook with user data (non-blocking)
+    submitGbsiCompletion({
+      name: userInfo.name,
+      whatsapp: userInfo.whatsapp,
+      email: userInfo.email
+    }).catch(err => {
+      console.error('Failed to send GBSI completion webhook:', err);
     });
 
     goToGbsi('results');

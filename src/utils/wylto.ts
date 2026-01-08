@@ -1,6 +1,7 @@
 // Wylto API Integration with proper form flags
 
 const WYLTO_WEBHOOK_URL = 'https://server.wylto.com/webhook/k224WX6y6exVpUZAM0';
+const GBSI_COMPLETION_WEBHOOK_URL = 'https://server.wylto.com/webhook/K0V0jURzRsE6pokW9y';
 
 export interface WyltoFormData {
   name: string;
@@ -109,4 +110,58 @@ export const getCurlCommand = (formData: WyltoFormData): string => {
   return `curl -X POST "${WYLTO_WEBHOOK_URL}" \\
   -H "Content-Type: application/json" \\
   -d '${JSON.stringify(payload, null, 2)}'`;
+};
+
+/**
+ * Submit GBSI test completion data to Wylto webhook
+ * This is called when a user finishes the GBSI test
+ */
+export const submitGbsiCompletion = async (data: {
+  name: string;
+  whatsapp: string;
+  email?: string;
+}): Promise<{ success: boolean; message?: string }> => {
+  try {
+    // Format phone number with +91 prefix
+    const phoneNumber = data.whatsapp.startsWith('+91')
+      ? data.whatsapp
+      : `+91${data.whatsapp}`;
+
+    const payload = {
+      name: data.name,
+      phoneNumber: phoneNumber,
+      // Include email if provided, otherwise omit the field
+      ...(data.email && { email: data.email }),
+    };
+
+    console.log('📤 Sending GBSI completion to Wylto:', { name: data.name, phoneNumber: phoneNumber });
+
+    const response = await fetch(GBSI_COMPLETION_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`GBSI webhook error: ${response.status} ${response.statusText}`);
+    }
+
+    const responseData = await response.json().catch(() => ({}));
+
+    console.log('✅ GBSI completion webhook successful:', responseData);
+
+    return {
+      success: true,
+      message: 'GBSI completion submitted successfully'
+    };
+  } catch (error) {
+    console.error('❌ GBSI completion webhook error:', error);
+
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to submit GBSI completion'
+    };
+  }
 };

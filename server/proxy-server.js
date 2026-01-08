@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Your Google Apps Script Web App URL
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyOFTGhDB4Uf9jujXzgOTXRu4cl82r6OJVb5eFtJ7Il-oF5lCBhjqkz-x8_ghPzmRMn/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4We2ZjXEY1raav_VXx-4PP3RoPTmdABvjocDYUs4gY6ZjfqlKY-RpF3rNZw5QqKOx/exec';
 
 // Razorpay credentials from environment variables
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
