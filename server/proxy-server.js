@@ -15,6 +15,10 @@ const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxU7vjSv
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 
+// Wylto WhatsApp API credentials from environment variables
+const WYLTO_API_URL = process.env.WYLTO_API_URL || 'https://server.wylto.com/api/v1/wa/send';
+const WYLTO_API_KEY = process.env.WYLTO_API_KEY;
+
 // Enable CORS for all origins (you can restrict this to your domain)
 app.use(cors());
 
@@ -223,9 +227,254 @@ app.post('/api/verify-payment', async (req, res) => {
 // Handle OPTIONS requests (CORS preflight) for payment verification
 app.options('/api/verify-payment', cors());
 
+// ========================
+// OTP ENDPOINTS
+// ========================
+
+// In-memory OTP storage (for production, use Redis or database)
+const otpStore = new Map();
+const OTP_EXPIRY_TIME = 10 * 60 * 1000; // 10 minutes
+const MAX_ATTEMPTS = 3;
+
+// Generate 6-digit OTP
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Create storage key
+function createKey(email, whatsapp) {
+  return `${email}-${whatsapp}`;
+}
+
+// Send OTP via Wylto WhatsApp API
+async function sendOTPViaWhatsApp({ whatsapp, otp, name }) {
+  try {
+    if (!WYLTO_API_KEY) {
+      console.error('Wylto API key not configured');
+      throw new Error('Wylto API not configured');
+    }
+
+    // Format phone number: 91XXXXXXXXXX
+    const phoneNumber = whatsapp.replace(/^(\+91)?/, '');
+    const fullNumber = `91${phoneNumber}`;
+
+    console.log(`📱 Sending OTP to WhatsApp: ${fullNumber}`);
+
+    const response = await fetch(`${WYLTO_API_URL}?sync=true`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${WYLTO_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: fullNumber,
+        message: {
+          type: 'template',
+          template: {
+            templateName: 'otp_template',
+            language: 'en_US',
+            body: [
+              { type: 'text', text: otp },
+              { type: 'text', text: otp },
+              { type: 'text', text: otp },
+              { type: 'text', text: otp }
+            ],
+            buttons: [
+              { type: 'url', payload: otp }
+            ],
+            category: 'AUTHENTICATION'
+          }
+        }
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log(`✅ WhatsApp OTP sent successfully to ${fullNumber}`);
+      return true;
+    } else {
+      console.error('❌ Wylto API error:', data);
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Error sending WhatsApp OTP:', error);
+    return false;
+  }
+}
+
+// Send OTP endpoint
+app.post('/api/send-otp', async (req, res) => {
+  try {
+    const { email, whatsapp, name } = req.body;
+
+    console.log('📨 Send OTP request:', { email, whatsapp, name });
+
+    // Validate input
+    if (!email || !whatsapp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and WhatsApp number are required',
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email address',
+      });
+    }
+
+    // Validate WhatsApp number (10 digits)
+    const whatsappRegex = /^\d{10}$/;
+    if (!whatsappRegex.test(whatsapp)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid WhatsApp number. Must be 10 digits.',
+      });
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    console.log(`🔐 Generated OTP for ${email}: ${otp}`);
+
+    // Store OTP
+    const key = createKey(email, whatsapp);
+    otpStore.set(key, {
+      otp,
+      email,
+      whatsapp,
+      expiresAt: Date.now() + OTP_EXPIRY_TIME,
+      attempts: 0,
+    });
+
+    // Send OTP via WhatsApp
+    const whatsappSent = await sendOTPViaWhatsApp({
+      whatsapp,
+      otp,
+      name: name || 'User',
+    });
+
+    if (!whatsappSent) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send OTP to WhatsApp. Please check your number and try again.',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'OTP sent successfully to your WhatsApp',
+    });
+
+  } catch (error) {
+    console.error('❌ Send OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while sending OTP. Please try again.',
+      error: error.message,
+    });
+  }
+});
+
+// Verify OTP endpoint
+app.post('/api/verify-otp', async (req, res) => {
+  try {
+    const { email, whatsapp, otp } = req.body;
+
+    console.log('🔍 Verify OTP request:', { email, whatsapp, otp });
+
+    // Validate input
+    if (!email || !whatsapp || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email, WhatsApp number, and OTP are required',
+      });
+    }
+
+    const key = createKey(email, whatsapp);
+    const otpData = otpStore.get(key);
+
+    // Check if OTP exists
+    if (!otpData) {
+      return res.status(400).json({
+        success: false,
+        message: 'OTP not found. Please request a new one.',
+      });
+    }
+
+    // Check if OTP is expired
+    if (Date.now() > otpData.expiresAt) {
+      otpStore.delete(key);
+      return res.status(400).json({
+        success: false,
+        message: 'OTP has expired. Please request a new one.',
+      });
+    }
+
+    // Check if max attempts exceeded
+    if (otpData.attempts >= MAX_ATTEMPTS) {
+      otpStore.delete(key);
+      return res.status(400).json({
+        success: false,
+        message: 'Maximum attempts exceeded. Please request a new OTP.',
+      });
+    }
+
+    // Increment attempts
+    otpData.attempts++;
+
+    // Verify OTP
+    if (otpData.otp === otp) {
+      otpStore.delete(key); // Clear OTP after successful verification
+      console.log(`✅ OTP verified successfully for ${email}`);
+      return res.json({
+        success: true,
+        message: 'OTP verified successfully.',
+      });
+    }
+
+    // Update attempts
+    otpStore.set(key, otpData);
+
+    console.log(`❌ Invalid OTP attempt for ${email}. Attempts: ${otpData.attempts}`);
+    res.status(400).json({
+      success: false,
+      message: `Invalid OTP. ${MAX_ATTEMPTS - otpData.attempts} attempts remaining.`,
+    });
+
+  } catch (error) {
+    console.error('❌ Verify OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while verifying OTP. Please try again.',
+      error: error.message,
+    });
+  }
+});
+
+// Handle OPTIONS requests (CORS preflight) for OTP endpoints
+app.options('/api/send-otp', cors());
+app.options('/api/verify-otp', cors());
+
+// Cleanup expired OTPs every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, data] of otpStore.entries()) {
+    if (now > data.expiresAt) {
+      otpStore.delete(key);
+      console.log(`🧹 Cleaned up expired OTP for: ${key}`);
+    }
+  }
+}, 5 * 60 * 1000);
+
 app.listen(PORT, () => {
   console.log(`🚀 Proxy server running on port ${PORT}`);
   console.log(`📍 Proxying to: ${GOOGLE_APPS_SCRIPT_URL}`);
   console.log(`🔗 Google Sheets endpoint: http://localhost:${PORT}/api/google-sheets`);
   console.log(`💳 Payment verification endpoint: http://localhost:${PORT}/api/verify-payment`);
+  console.log(`📱 OTP endpoints: http://localhost:${PORT}/api/send-otp & /api/verify-otp`);
+  console.log(`🔑 Wylto API configured: ${WYLTO_API_KEY ? 'Yes' : 'No'}`);
 });
