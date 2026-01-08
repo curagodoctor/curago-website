@@ -14,8 +14,8 @@ interface GbsiResultScreenProps {
 }
 
 // Razorpay configuration for online consultation
-const RAZORPAY_CONSULTATION_BUTTON_ID = 'pl_Rtue8bSVIson8p'; // Replace with actual consultation button ID
-const CONSULTATION_AMOUNT = 99900; // ₹999 in paise
+const RAZORPAY_CONSULTATION_BUTTON_ID = 'pl_S16kCY67frwiRs'; // Razorpay Payment Button ID
+const CONSULTATION_AMOUNT = 100000; // ₹1000 in paise
 
 declare global {
   interface Window {
@@ -32,17 +32,18 @@ export default function GbsiResultScreen({
 }: GbsiResultScreenProps) {
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const paymentFormRef = React.useRef<HTMLFormElement>(null);
 
-  // Load Razorpay script
+  // Load Razorpay checkout script
   React.useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
+    const checkoutScript = document.createElement('script');
+    checkoutScript.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    checkoutScript.async = true;
+    document.body.appendChild(checkoutScript);
 
     return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
+      if (document.body.contains(checkoutScript)) {
+        document.body.removeChild(checkoutScript);
       }
     };
   }, []);
@@ -56,6 +57,43 @@ export default function GbsiResultScreen({
     return () => clearTimeout(timer);
   }, []);
 
+  // Load Razorpay payment button into form when popup shows
+  React.useEffect(() => {
+    if (showPopup && paymentFormRef.current) {
+      // Clear any existing content
+      paymentFormRef.current.innerHTML = '';
+
+      // Create and append the payment button script
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/payment-button.js';
+      script.setAttribute('data-payment_button_id', RAZORPAY_CONSULTATION_BUTTON_ID);
+      script.async = true;
+
+      paymentFormRef.current.appendChild(script);
+
+      // Add custom styling to the Razorpay button
+      const style = document.createElement('style');
+      style.textContent = `
+        .razorpay-payment-button {
+          width: 100% !important;
+          padding: 16px 24px !important;
+          border-radius: 12px !important;
+          font-weight: 600 !important;
+          font-size: 16px !important;
+          background-color: #096b17 !important;
+          border: none !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+          transition: all 0.3s !important;
+        }
+        .razorpay-payment-button:hover {
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+          transform: scale(1.05) !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, [showPopup]);
+
   // Handle online consultation payment
   const handleOnlineConsultation = () => {
     setIsPaymentLoading(true);
@@ -65,12 +103,12 @@ export default function GbsiResultScreen({
     window.dataLayer.push({
       event: 'initiatecheckout',
       test_type: 'gbsi_consultation',
-      amount: 999,
+      amount: 1000,
       currency: 'INR',
       page_path: window.location.pathname,
       timestamp: new Date().toISOString(),
     });
-    console.log('✅ initiatecheckout event pushed to dataLayer (GBSI Online Consultation, ₹999)');
+    console.log('✅ initiatecheckout event pushed to dataLayer (GBSI Online Consultation, ₹1000)');
 
     // Open Razorpay payment link
     const paymentUrl = `https://razorpay.com/payment-button/${RAZORPAY_CONSULTATION_BUTTON_ID}/view/?amount=${CONSULTATION_AMOUNT}`;
@@ -145,7 +183,7 @@ export default function GbsiResultScreen({
             style={{ backgroundColor: '#096b17', color: '#ffffff' }}
           >
             <Calendar className="w-5 h-5" />
-            {isPaymentLoading ? 'Opening...' : 'Book Online Consultation (₹999)'}
+            {isPaymentLoading ? 'Opening...' : 'Book Online Consultation (₹1000)'}
           </button>
 
           {/* Apply for Priority Circle 365 */}
@@ -333,7 +371,7 @@ export default function GbsiResultScreen({
                 className="inline-block px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
                 style={{ backgroundColor: '#096b17', color: '#ffffff' }}
               >
-                Apply for Founder's Membership (₹999)
+                Apply for Founder's Membership (₹1000)
               </a>
               <button
                 onClick={onRetake}
@@ -629,26 +667,22 @@ export default function GbsiResultScreen({
 
               {/* Action Buttons */}
               <div className="space-y-3">
-                {/* Book Appointment Button */}
-                <button
-                  onClick={handlePopupConsultation}
-                  disabled={isPaymentLoading}
-                  className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-                  style={{ backgroundColor: '#096b17', color: '#ffffff' }}
-                >
-                  <Calendar className="w-5 h-5" />
-                  {isPaymentLoading ? 'Opening...' : 'Book an Appointment (₹999)'}
-                </button>
+                {/* Razorpay Payment Button */}
+                <form ref={paymentFormRef} className="w-full">
+                  {/* Razorpay payment button script will be loaded here */}
+                </form>
 
                 {/* Chat on WhatsApp Button */}
-                <button
-                  onClick={handleWhatsAppChat}
+                <a
+                  href={`https://wa.me/919148615951?text=${encodeURIComponent(`Hi, I've completed the GBSI Assessment. My name is ${userName || 'User'}.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
                   style={{ backgroundColor: '#25D366', color: '#ffffff' }}
                 >
                   <MessageCircle className="w-5 h-5" />
                   Chat Now on WhatsApp
-                </button>
+                </a>
               </div>
 
               {/* Close text */}
