@@ -709,7 +709,7 @@ export default function App() {
 
   const handleStartGbsiQuiz = () => goToGbsi('quiz');
 
-  const handleGbsiQuizComplete = async (answers: GbsiAnswers, userInfo: GbsiUserInfo) => {
+  const handleGbsiQuizComplete = async (answers: GbsiAnswers, userInfo: GbsiUserInfo, paymentId: string) => {
     setGbsiAnswers(answers);
     setGbsiUserInfo(userInfo);
 
@@ -725,6 +725,7 @@ export default function App() {
       name: userInfo.name,
       email: userInfo.email || '',
       phoneNumber: userInfo.whatsapp,
+      payment_id: paymentId,
       age: answers.age,
       alarmingSigns: answers.alarmingSigns,
       familyHistory: answers.familyHistory,

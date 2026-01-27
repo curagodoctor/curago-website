@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../components/ui/button';
 import { Progress } from '../components/ui/progress';
 import RcSlider from 'rc-slider';
@@ -7,22 +7,30 @@ import { Checkbox } from '../components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 import { Label } from '../components/ui/label';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, User, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, Mail, Phone, Copy, Download, Share2, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
 import type { GbsiAnswers, GbsiUserInfo, AgeRange, AlarmingSign, FamilyHistory, PainFrequency, ReliefFactor, BristolType, RefluxFrequency, FullnessFactor, FattyLiver, BrainFog } from '../../../types/gbsi';
 
 interface GbsiQuizFlowProps {
-  onComplete: (answers: GbsiAnswers, userInfo: GbsiUserInfo) => void;
+  onComplete: (answers: GbsiAnswers, userInfo: GbsiUserInfo, paymentId: string) => void;
 }
 
 export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
-  const [showUserInfoForm, setShowUserInfoForm] = useState(true);
+  const [showCredentialsScreen, setShowCredentialsScreen] = useState(true);
+  const [showUserInfoForm, setShowUserInfoForm] = useState(false);
   const [userInfo, setUserInfo] = useState<GbsiUserInfo>({ name: '', whatsapp: '', email: '' });
   const [formErrors, setFormErrors] = useState({ name: '', whatsapp: '', email: '' });
-  const [showOtpInput, setShowOtpInput] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [otpError, setOtpError] = useState('');
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
+
+  // Payment verification states
+  const [hasValidUUID, setHasValidUUID] = useState(false);
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(true);
+  const [paymentVerified, setPaymentVerified] = useState(false);
+  const [paymentError, setPaymentError] = useState<string>('');
+  const [paymentDetails, setPaymentDetails] = useState<{ email: string; contact: string } | null>(null);
+  const [quizAlreadyTaken, setQuizAlreadyTaken] = useState(false);
+  const [currentPaymentId, setCurrentPaymentId] = useState<string>('');
+
+  // Valid UUID for accessing the quiz
+  const VALID_UUID = 'gbsi-2024-f3c9b8e4-a2d4-4c6a-9f21-8c7e5b2d1a94';
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Partial<GbsiAnswers>>({
@@ -40,19 +48,130 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
   const totalQuestions = 12;
   const progress = ((currentQuestion + 1) / totalQuestions) * 100;
 
+  // Check for UUID and payment_id in URL params and verify payment
+  useEffect(() => {
+    const verifyAccessAndPayment = async () => {
+      // Parse URL parameters
+      const urlString = window.location.href;
+      const queryStart = urlString.indexOf('?');
+
+      if (queryStart === -1) {
+        setHasValidUUID(false);
+        setIsVerifyingPayment(false);
+        return;
+      }
+
+      // Get everything after first '?' and replace additional '?' with '&'
+      const queryString = urlString.substring(queryStart + 1).replace(/\?/g, '&');
+      const urlParams = new URLSearchParams(queryString);
+
+      const uuid = urlParams.get('uuid');
+      const paymentId = urlParams.get('payment_id');
+
+      console.log('URL params:', { uuid, paymentId });
+
+      // Check UUID first
+      if (uuid !== VALID_UUID) {
+        setHasValidUUID(false);
+        setIsVerifyingPayment(false);
+        return;
+      }
+
+      setHasValidUUID(true);
+
+      // Check if payment_id is provided
+      if (!paymentId) {
+        setPaymentError('Payment ID not found. Please complete the payment first.');
+        setIsVerifyingPayment(false);
+        return;
+      }
+
+      setCurrentPaymentId(paymentId);
+
+      // Check if quiz has already been completed with this payment_id
+      try {
+        const completionCheckResponse = await fetch('/api/google-sheets', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'check_completion',
+            payment_id: paymentId
+          }),
+        });
+
+        const completionData = await completionCheckResponse.json();
+        console.log('Completion check response:', completionData);
+
+        if (completionData.success && completionData.completed) {
+          console.log('⚠️ Quiz already completed with this payment_id');
+          setQuizAlreadyTaken(true);
+          setIsVerifyingPayment(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking quiz completion:', error);
+        // Continue with payment verification even if completion check fails
+      }
+
+      // Verify payment with backend
+      try {
+        console.log('Verifying payment:', paymentId);
+
+        const response = await fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ payment_id: paymentId }),
+        });
+
+        const data = await response.json();
+
+        console.log('Payment verification response:', data);
+
+        if (data.success && data.valid) {
+          setPaymentVerified(true);
+          // Store payment details for validation
+          if (data.payment?.email && data.payment?.contact) {
+            setPaymentDetails({
+              email: data.payment.email,
+              contact: data.payment.contact
+            });
+          }
+          console.log('✅ Payment verified successfully');
+        } else {
+          setPaymentError(
+            data.payment?.status === 'failed'
+              ? 'Payment failed. Please try again.'
+              : 'Payment not completed. Please complete the payment to access the quiz.'
+          );
+        }
+      } catch (error) {
+        console.error('Payment verification error:', error);
+        setPaymentError('Unable to verify payment. Please try again or contact support.');
+      } finally {
+        setIsVerifyingPayment(false);
+      }
+    };
+
+    verifyAccessAndPayment();
+  }, []);
+
   // Fire GTM event when quiz starts
   useEffect(() => {
-    if (!startedRef.current && !showUserInfoForm) {
+    if (!startedRef.current && !showUserInfoForm && !showCredentialsScreen) {
       startedRef.current = true;
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({
         event: 'gbsi_quiz_start',
         page_path: window.location.pathname,
         gbsi_stage: 'start',
       });
       console.log('🧠 gbsi_quiz_start event pushed to dataLayer');
     }
-  }, [showUserInfoForm]);
+  }, [showUserInfoForm, showCredentialsScreen]);
 
   // Form validation
   const validateUserInfoForm = (): boolean => {
@@ -84,71 +203,21 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
     return isValid;
   };
 
-  // Send OTP via WhatsApp only
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleUserInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateUserInfoForm()) return;
-
-    setIsSendingOtp(true);
-    try {
-      const response = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userInfo.email,
-          whatsapp: userInfo.whatsapp,
-          name: userInfo.name,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setShowOtpInput(true);
-        setOtpError('');
-      } else {
-        setOtpError(data.message || 'Failed to send OTP. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error sending OTP:', error);
-      setOtpError('Failed to send OTP. Please try again.');
-    } finally {
-      setIsSendingOtp(false);
+    if (validateUserInfoForm()) {
+      setShowUserInfoForm(false);
+      // Start the quiz directly
     }
   };
 
-  // Verify OTP
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otp.trim()) {
-      setOtpError('Please enter the OTP');
-      return;
-    }
+  const handleStartTest = () => {
+    setShowCredentialsScreen(false);
+    setShowUserInfoForm(true);
+  };
 
-    setIsVerifyingOtp(true);
-    try {
-      const response = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userInfo.email,
-          whatsapp: userInfo.whatsapp,
-          otp: otp,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setShowUserInfoForm(false);
-        setOtpError('');
-      } else {
-        setOtpError(data.message || 'Invalid OTP. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error verifying OTP:', error);
-      setOtpError('Failed to verify OTP. Please try again.');
-    } finally {
-      setIsVerifyingOtp(false);
-    }
+  const handleStartLater = () => {
+    window.location.href = '/gbsi';
   };
 
   const handleInputChange = (field: keyof GbsiUserInfo, value: string) => {
@@ -156,13 +225,61 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
     setFormErrors(prev => ({ ...prev, [field]: '' }));
   };
 
+  // Copy credentials to clipboard
+  const handleCopyCredentials = () => {
+    const testUrl = window.location.href;
+
+    navigator.clipboard.writeText(testUrl).then(() => {
+      alert('Access link copied to clipboard!');
+    }).catch(() => {
+      alert('Failed to copy. Please copy manually.');
+    });
+  };
+
+  // Download credentials as text file
+  const handleDownloadCredentials = () => {
+    const testUrl = window.location.href;
+    const credentials = `${testUrl}`;
+
+    const blob = new Blob([credentials], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'GBSI-Access-Link.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Share credentials using Web Share API
+  const handleShareCredentials = async () => {
+    const testUrl = window.location.href;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'GBSI Assessment Access Link',
+          text: `Access your GBSI Assessment here: ${testUrl}`,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      alert('Sharing is not supported on this browser. Please use Copy or Download instead.');
+    }
+  };
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleNext = () => {
     if (currentQuestion < totalQuestions - 1) {
       setCurrentQuestion((q) => q + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      // Quiz complete
-      onComplete(answers as GbsiAnswers, userInfo);
+      // Quiz complete - submit with payment_id
+      setIsSubmitting(true);
+      onComplete(answers as GbsiAnswers, userInfo, currentPaymentId);
     }
   };
 
@@ -764,25 +881,279 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
     }
   };
 
-  // Show user info form if needed
+  // Show loading screen while verifying payment
+  if (isVerifyingPayment) {
+    return (
+      <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-24" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full text-center"
+        >
+          <div className="bg-white rounded-2xl p-8 border-2 border-[#096b17]/20 shadow-2xl">
+            <div className="flex justify-center mb-4">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#096b17]"></div>
+            </div>
+            <h2 className="text-2xl font-bold mb-3" style={{ color: '#096b17' }}>Verifying Payment</h2>
+            <p style={{ color: '#096b17' }}>
+              Please wait while we verify your payment...
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Show access denied if no valid UUID
+  if (!hasValidUUID) {
+    return (
+      <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-24" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full text-center"
+        >
+          <div className="bg-white rounded-2xl p-8 border-2 border-[#096b17]/20 shadow-2xl">
+            <AlertCircle className="w-16 h-16 text-[#096b17] mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-3" style={{ color: '#096b17' }}>Access Denied</h2>
+            <p className="mb-6" style={{ color: '#096b17' }}>
+              You need a valid assessment link to access this quiz. Please check your email or contact support for assistance.
+            </p>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="px-6 py-3 bg-[#096b17] text-white font-semibold hover:bg-[#075110] transition-all rounded-xl"
+            >
+              Return to Home
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Show quiz already taken message
+  if (quizAlreadyTaken) {
+    return (
+      <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-24" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full text-center"
+        >
+          <div className="bg-white rounded-2xl p-8 border-2 border-[#096b17]/20 shadow-2xl">
+            <AlertCircle className="w-16 h-16 text-[#096b17] mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-3" style={{ color: '#096b17' }}>Quiz Already Completed</h2>
+            <p className="mb-6" style={{ color: '#096b17' }}>
+              This assessment has already been completed with this payment. Each payment allows for one quiz attempt only.
+            </p>
+            <p className="mb-6 text-sm" style={{ color: '#096b17' }}>
+              Please check your email for the results. If you need to retake the assessment, please make a new payment.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => window.location.href = '/gbsi'}
+                className="px-6 py-3 bg-[#096b17] text-white font-semibold hover:bg-[#075110] transition-all rounded-xl"
+              >
+                Return to Home
+              </button>
+              <a
+                href="https://wa.me/917021227203?text=I%20need%20help%20with%20my%20GBSI%20assessment"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-white text-[#096b17] font-semibold border-2 border-[#096b17] hover:bg-[#F5F5DC] transition-all rounded-xl inline-flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                Contact Support
+              </a>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Show payment error if payment verification failed
+  if (paymentError || !paymentVerified) {
+    return (
+      <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-24" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full text-center"
+        >
+          <div className="bg-white rounded-2xl p-8 border-2 border-[#096b17]/20 shadow-2xl">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-3" style={{ color: '#096b17' }}>Payment Verification Failed</h2>
+            <p className="mb-6" style={{ color: '#096b17' }}>
+              {paymentError || 'Unable to verify your payment. Please complete the payment to access the quiz.'}
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => window.location.href = '/gbsi'}
+                className="px-6 py-3 bg-[#096b17] text-white font-semibold hover:bg-[#075110] transition-all rounded-xl"
+              >
+                Go to Payment Page
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-white text-[#096b17] font-semibold border-2 border-[#096b17] hover:bg-[#F5F5DC] transition-all rounded-xl"
+              >
+                Retry Verification
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Show credentials confirmation screen
+  if (showCredentialsScreen) {
+    const testUrl = window.location.href;
+
+    return (
+      <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-16" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-2xl w-full"
+        >
+          <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border-2 border-[#096b17]/20">
+            {/* Success Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="bg-green-100 rounded-full p-3">
+                <CheckCircle className="w-12 h-12 text-green-600" />
+              </div>
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-center" style={{ color: '#096b17' }}>
+              Ready to Begin Your Assessment
+            </h2>
+
+            <p className="text-center mb-6 text-sm" style={{ color: '#096b17' }}>
+              Please save your secure access link below. You'll need it to access the assessment again if you choose to start later.
+            </p>
+
+            {/* Credentials Box */}
+            <div className="bg-[#F5F5DC] border-2 border-[#096b17]/20 rounded-xl p-5 mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <ExternalLink className="w-5 h-5" style={{ color: '#096b17' }} />
+                <h3 className="font-semibold text-lg" style={{ color: '#096b17' }}>Secure Access Link</h3>
+              </div>
+
+              <div className="space-y-3 text-sm">
+                <div>
+                  <p className="bg-white p-3 rounded border border-[#096b17]/20 break-all text-xs" style={{ color: '#096b17' }}>
+                    {testUrl}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons - Copy, Download, Share */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              <button
+                onClick={handleCopyCredentials}
+                className="flex flex-col items-center gap-2 p-3 bg-white border-2 border-[#096b17]/20 rounded-xl hover:border-[#096b17] hover:bg-[#F5F5DC] transition-all"
+              >
+                <Copy className="w-5 h-5" style={{ color: '#096b17' }} />
+                <span className="text-xs font-medium" style={{ color: '#096b17' }}>Copy</span>
+              </button>
+
+              <button
+                onClick={handleDownloadCredentials}
+                className="flex flex-col items-center gap-2 p-3 bg-white border-2 border-[#096b17]/20 rounded-xl hover:border-[#096b17] hover:bg-[#F5F5DC] transition-all"
+              >
+                <Download className="w-5 h-5" style={{ color: '#096b17' }} />
+                <span className="text-xs font-medium" style={{ color: '#096b17' }}>Download</span>
+              </button>
+
+              <button
+                onClick={handleShareCredentials}
+                className="flex flex-col items-center gap-2 p-3 bg-white border-2 border-[#096b17]/20 rounded-xl hover:border-[#096b17] hover:bg-[#F5F5DC] transition-all"
+              >
+                <Share2 className="w-5 h-5" style={{ color: '#096b17' }} />
+                <span className="text-xs font-medium" style={{ color: '#096b17' }}>Share</span>
+              </button>
+            </div>
+
+            {/* Important Notice */}
+            <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+              <p className="text-xs font-medium text-yellow-800">
+                ⚠️ Important: Save this access link now! You'll need it if you want to access this assessment later.
+              </p>
+            </div>
+
+            {/* Start Test Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleStartTest}
+                className="flex-1 bg-[#096b17] text-white hover:bg-[#075110] py-4 rounded-xl font-semibold text-base transition-all shadow-lg hover:shadow-xl"
+              >
+                Start Test Now
+              </button>
+
+              <button
+                onClick={handleStartLater}
+                className="flex-1 bg-white text-[#096b17] border-2 border-[#096b17] hover:bg-[#F5F5DC] py-4 rounded-xl font-semibold text-base transition-all"
+              >
+                Start Later
+              </button>
+            </div>
+
+            {/* Help Link */}
+            <div className="mt-6 text-center">
+              <a
+                href="https://wa.me/917021227203?text=I%20need%20help%20with%20my%20GBSI%20assessment%20access%20link"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-medium hover:underline transition-all"
+                style={{ color: '#096b17' }}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                Need help? Contact Support
+              </a>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Show user info form
   if (showUserInfoForm) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4 pt-24" style={{ fontFamily: 'Poppins, sans-serif' }}>
+      <div className="min-h-screen bg-[#F5F5DC] flex items-center justify-center px-4 pt-16" style={{ fontFamily: 'Poppins, sans-serif' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-md w-full"
         >
           <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border-2 border-[#096b17]/20">
-            <h2 className="text-2xl font-bold mb-4" style={{ color: '#096b17' }}>
-              Gut-Brain Sensitivity Index
-            </h2>
-            <p className="mb-6 text-sm leading-relaxed" style={{ color: '#000000' }}>
-              Please provide your details to begin the assessment. You'll receive an OTP on WhatsApp for verification.
+            <h2 className="text-2xl font-bold mb-4" style={{ color: '#096b17' }}>Gut-Brain Sensitivity Index</h2>
+
+            {/* Email Confirmation Message */}
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Mail className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-green-800 mb-1">Payment Successful!</p>
+                  <p className="text-xs text-green-700 leading-relaxed">
+                    We've sent you an email with your invoice and assessment access link. Please check your inbox (and spam folder if needed).
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <p className="mb-4 text-sm leading-relaxed" style={{ color: '#096b17' }}>
+              Please provide your details to receive the comprehensive assessment results via email and WhatsApp. Your information will be kept confidential.
             </p>
 
-            {!showOtpInput ? (
-              <form onSubmit={handleSendOtp} className="space-y-4">
+            <form onSubmit={handleUserInfoSubmit} className="space-y-4">
                 {/* Name Field */}
                 <div>
                   <div className="flex items-center mb-2">
@@ -846,60 +1217,28 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
                   {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
                 </div>
 
-                {otpError && <p className="text-red-500 text-sm">{otpError}</p>}
+              <button
+                type="submit"
+                className="w-full bg-[#096b17] text-white hover:bg-[#075110] py-3 rounded-xl font-semibold text-base mt-6 transition-all shadow-lg hover:shadow-xl"
+              >
+                Begin Assessment
+              </button>
 
-                <button
-                  type="submit"
-                  disabled={isSendingOtp}
-                  className="w-full bg-[#096b17] text-white hover:bg-[#075110] py-3 rounded-xl font-semibold text-base mt-6 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              <div className="mt-4 text-center">
+                <a
+                  href="https://wa.me/917021227203?text=I%20am%20unable%20to%20start%20my%20GBSI%20assessment"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-medium hover:underline transition-all"
+                  style={{ color: '#096b17' }}
                 >
-                  {isSendingOtp ? 'Sending OTP...' : 'Send OTP'}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm text-green-800">
-                    OTP sent to your WhatsApp. Please enter the 6-digit code to continue.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block" style={{ color: '#096b17' }}>
-                    Enter OTP *
-                  </label>
-                  <input
-                    type="text"
-                    value={otp}
-                    onChange={(e) => {
-                      setOtp(e.target.value);
-                      setOtpError('');
-                    }}
-                    className="w-full px-4 py-3 border border-[#096b17]/20 rounded-lg focus:ring-2 focus:ring-[#096b17] focus:border-[#096b17] outline-none transition-colors text-center text-2xl tracking-widest"
-                    placeholder="000000"
-                    maxLength={6}
-                    style={{ color: '#096b17' }}
-                  />
-                  {otpError && <p className="text-red-500 text-sm mt-1">{otpError}</p>}
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isVerifyingOtp}
-                  className="w-full bg-[#096b17] text-white hover:bg-[#075110] py-3 rounded-xl font-semibold text-base mt-6 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isVerifyingOtp ? 'Verifying...' : 'Verify OTP'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowOtpInput(false)}
-                  className="w-full text-[#096b17] hover:underline text-sm mt-2"
-                >
-                  Change Details
-                </button>
-              </form>
-            )}
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                  </svg>
+                  Trouble starting your test? Chat with us
+                </a>
+              </div>
+            </form>
           </div>
         </motion.div>
       </div>
