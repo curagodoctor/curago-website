@@ -763,13 +763,6 @@ export default function App() {
     goToGbsi('results');
   };
 
-  const handleGbsiRetake = () => {
-    setGbsiAnswers(null);
-    setGbsiUserInfo(null);
-    setGbsiResult(null);
-    goToGbsi('landing');
-  };
-
   // ---------- Handle refresh on results pages without data ----------
   useEffect(() => {
     // If we're on ATM results page but have no answers, redirect to landing
@@ -1002,7 +995,6 @@ export default function App() {
               result={gbsiResult}
               answers={gbsiAnswers}
               userName={gbsiUserInfo.name}
-              onRetake={handleGbsiRetake}
             />
           )}
 

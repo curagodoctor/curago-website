@@ -10,7 +10,7 @@ const CONFIG = {
   SUPPORT_EMAIL: 'curagodoctor@gmail.com',
   COMPANY_NAME: 'CuraGo',
   COMPANY_WEBSITE: 'https://curago.in',
-  WHATSAPP_NUMBER: '+919148615951',
+  WHATSAPP_NUMBER: '+917021227203',
 
   // Test link settings
   TEST_UUID: '7f3c9b8e-4a2d-4c6a-9f21-8c7e5b2d1a94',

@@ -60,7 +60,7 @@ React.useEffect(() => {
 // WhatsApp handler for popup
 const handleWhatsAppChat = () => {
   const message = `Hi, I've received my GBSI Assessment results. I would like to discuss my results. My name is ${userName}.`;
-  window.open(`https://wa.me/919148615951?text=${encodeURIComponent(message)}`, '_blank');
+  window.open(`https://wa.me/917021227203?text=${encodeURIComponent(message)}`, '_blank');
   setShowPopup(false);
 };
 
@@ -163,7 +163,7 @@ const handlePriorityCircleInfo = () => {
 
 #### 4. Book In-Clinic Appointment on WhatsApp
 - **Functionality**: Opens WhatsApp chat with pre-filled message
-- **WhatsApp Number**: +919148615951 (CuraGo)
+- **WhatsApp Number**: +917021227203 (CuraGo)
 - **Pre-filled Message**: Includes user's name from GBSI assessment
 - **Opens**: In new tab
 - **Button Style**: WhatsApp green (#25D366) with white text
@@ -173,7 +173,7 @@ const handlePriorityCircleInfo = () => {
 ```typescript
 const handleWhatsAppAppointment = () => {
   const message = `Hi, I've completed the GBSI Assessment and would like to book an in-clinic appointment. My name is ${userName}.`;
-  window.open(`https://wa.me/919148615951?text=${encodeURIComponent(message)}`, '_blank');
+  window.open(`https://wa.me/917021227203?text=${encodeURIComponent(message)}`, '_blank');
 };
 ```
 
@@ -201,7 +201,7 @@ To change the consultation fee or Razorpay button:
 
 **Update in `handleWhatsAppAppointment` function**:
 ```typescript
-const whatsappNumber = '919148615951'; // CuraGo WhatsApp number
+const whatsappNumber = '917021227203'; // CuraGo WhatsApp number
 ```
 
 To change the WhatsApp number:
@@ -333,7 +333,7 @@ This event helps track:
 1. Click "Book In-Clinic on WhatsApp"
 2. Verify WhatsApp opens with pre-filled message
 3. Verify message includes user's name
-4. Verify number is +919148615951
+4. Verify number is +917021227203
 
 ## Customization
 

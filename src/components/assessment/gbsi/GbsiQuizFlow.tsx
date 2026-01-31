@@ -364,7 +364,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                 Do you have any of these alarming signs?
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#096b17' }}>Check all that apply</p>
+              <p className="text-base sm:text-lg mt-2" style={{ color: '#096b17' }}>Check all that apply</p>
             </div>
             <div className="space-y-3 sm:space-y-4 md:space-y-5 max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
               {[
@@ -418,7 +418,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                 Family History
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#096b17' }}>Does any immediate family member have:</p>
+              <p className="text-base sm:text-lg mt-2" style={{ color: '#096b17' }}>Does any immediate family member have:</p>
             </div>
             <div className="space-y-3 sm:space-y-4 md:space-y-5 max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
               {[
@@ -470,7 +470,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                 Pain Frequency
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#096b17' }}>How often have you had abdominal pain in the last 3 months?</p>
+              <p className="text-base sm:text-lg mt-2" style={{ color: '#096b17' }}>How often have you had abdominal pain in the last 3 months?</p>
             </div>
             <div className="space-y-3 sm:space-y-4 md:space-y-5 max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
               {[
@@ -511,7 +511,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                 The Relief Factor
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#096b17' }}>Is your pain related to passing stool?</p>
+              <p className="text-base sm:text-lg mt-2" style={{ color: '#096b17' }}>Is your pain related to passing stool?</p>
             </div>
             <div className="space-y-3 sm:space-y-4 md:space-y-5 max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
               {[
@@ -550,7 +550,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                 Bristol Stool Chart
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#096b17' }}>Which best describes your typical stool?</p>
+              <p className="text-base sm:text-lg mt-2" style={{ color: '#096b17' }}>Which best describes your typical stool?</p>
             </div>
             <div className="space-y-3 sm:space-y-4 max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
               {[
@@ -605,7 +605,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                 Reflux/Acidity
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#096b17' }}>Do you experience burning in chest or a sour taste in mouth?</p>
+              <p className="text-base sm:text-lg mt-2" style={{ color: '#096b17' }}>Do you experience burning in chest or a sour taste in mouth?</p>
             </div>
             <div className="space-y-3 sm:space-y-4 md:space-y-5 max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
               {[
@@ -645,7 +645,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                 The Fullness Factor
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#096b17' }}>Do you feel "uncomfortably full" after a normal-sized meal?</p>
+              <p className="text-base sm:text-lg mt-2" style={{ color: '#096b17' }}>Do you feel "uncomfortably full" after a normal-sized meal?</p>
             </div>
             <div className="space-y-3 sm:space-y-4 md:space-y-5 max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
               {[
@@ -684,7 +684,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                 Liver Health
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#096b17' }}>Have you been diagnosed with Fatty Liver (Grade 1/2/3)?</p>
+              <p className="text-base sm:text-lg mt-2" style={{ color: '#096b17' }}>Have you been diagnosed with Fatty Liver (Grade 1/2/3)?</p>
             </div>
             <div className="space-y-3 sm:space-y-4 md:space-y-5 max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
               {[
@@ -724,7 +724,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                 Stress Level
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#096b17' }}>Rate your current life/work stress (1-10)</p>
+              <p className="text-base sm:text-lg mt-2" style={{ color: '#096b17' }}>Rate your current life/work stress (1-10)</p>
             </div>
             <div className="max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
               <div className="bg-white rounded-2xl md:rounded-3xl p-8 md:p-12 shadow-xl border-2 border-[#096b17]/20">
@@ -789,7 +789,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                 Cognitive Link
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#096b17' }}>Do you experience "Brain Fog," fatigue, or low mood during a gut flare?</p>
+              <p className="text-base sm:text-lg mt-2" style={{ color: '#096b17' }}>Do you experience "Brain Fog," fatigue, or low mood during a gut flare?</p>
             </div>
             <div className="space-y-3 sm:space-y-4 md:space-y-5 max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
               {[
@@ -828,7 +828,7 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold max-w-3xl mx-auto leading-tight px-4" style={{ color: '#096b17' }}>
                 Dietary Habits
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#096b17' }}>Check all that apply to you:</p>
+              <p className="text-base sm:text-lg mt-2" style={{ color: '#096b17' }}>Check all that apply to you:</p>
             </div>
             <div className="space-y-3 sm:space-y-4 md:space-y-5 max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto">
               {[
@@ -1284,31 +1284,30 @@ export default function GbsiQuizFlow({ onComplete }: GbsiQuizFlowProps) {
             </motion.div>
           </AnimatePresence>
 
-          {/* Navigation - only show for multi-select questions */}
-          {currentQuestion > 0 && (
-            <div className="flex justify-center mt-8 sm:mt-12">
-              <button
-                onClick={handlePrevious}
-                className="flex items-center gap-2 px-6 py-3 rounded-full border-2 transition-all duration-300 hover:shadow-lg"
-                style={{ borderColor: '#096b17', color: '#096b17' }}
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="font-medium">Previous</span>
-              </button>
+          {/* Navigation - side by side buttons */}
+          {([1, 2, 9, 11].includes(currentQuestion) && isQuestionAnswered()) || currentQuestion > 0 ? (
+            <div className="flex justify-center items-center gap-4 mt-8 sm:mt-12">
+              {currentQuestion > 0 && (
+                <button
+                  onClick={handlePrevious}
+                  className="flex items-center gap-2 px-6 py-3 rounded-full border-2 transition-all duration-300 hover:shadow-lg"
+                  style={{ borderColor: '#096b17', color: '#096b17' }}
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="font-medium">Previous</span>
+                </button>
+              )}
+              {[1, 2, 9, 11].includes(currentQuestion) && isQuestionAnswered() && (
+                <button
+                  onClick={handleNext}
+                  className="px-8 py-3 rounded-full text-white font-semibold transition-all duration-300 hover:shadow-xl"
+                  style={{ backgroundColor: '#096b17' }}
+                >
+                  {currentQuestion === totalQuestions - 1 ? 'Complete' : 'Next'}
+                </button>
+              )}
             </div>
-          )}
-          {/* Show Next button only for multi-select questions (1, 2, 11) and slider (9) */}
-          {[1, 2, 9, 11].includes(currentQuestion) && isQuestionAnswered() && (
-            <div className="flex justify-center mt-6">
-              <button
-                onClick={handleNext}
-                className="px-8 py-3 rounded-full text-white font-semibold transition-all duration-300 hover:shadow-xl"
-                style={{ backgroundColor: '#096b17' }}
-              >
-                {currentQuestion === totalQuestions - 1 ? 'Complete' : 'Next'}
-              </button>
-            </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

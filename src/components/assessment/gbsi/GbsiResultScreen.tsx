@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { AlertCircle, Brain, Activity, CheckCircle2, ArrowRight, Phone, Calendar, MessageCircle, ExternalLink, FileText, X } from 'lucide-react';
+import { AlertCircle, Brain, Activity, CheckCircle2, Calendar, MessageCircle, FileText, X } from 'lucide-react';
 import type { GbsiResult, GbsiAnswers } from '../../../types/gbsi';
 import { getAlarmingSignsText } from './scoringEngine';
 
@@ -10,16 +9,10 @@ interface GbsiResultScreenProps {
   result: GbsiResult;
   answers: GbsiAnswers;
   userName: string;
-  onRetake: () => void;
 }
-
-// Razorpay configuration for online consultation
-const RAZORPAY_CONSULTATION_BUTTON_ID = 'pl_S16kCY67frwiRs'; // Razorpay Payment Button ID
-const CONSULTATION_AMOUNT = 100000; // ₹1000 in paise
 
 declare global {
   interface Window {
-    Razorpay: any;
     dataLayer: any[];
   }
 }
@@ -28,25 +21,8 @@ export default function GbsiResultScreen({
   result,
   answers,
   userName,
-  onRetake,
 }: GbsiResultScreenProps) {
-  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const paymentFormRef = React.useRef<HTMLFormElement>(null);
-
-  // Load Razorpay checkout script
-  React.useEffect(() => {
-    const checkoutScript = document.createElement('script');
-    checkoutScript.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    checkoutScript.async = true;
-    document.body.appendChild(checkoutScript);
-
-    return () => {
-      if (document.body.contains(checkoutScript)) {
-        document.body.removeChild(checkoutScript);
-      }
-    };
-  }, []);
 
   // Show popup after 5 seconds
   React.useEffect(() => {
@@ -57,69 +33,10 @@ export default function GbsiResultScreen({
     return () => clearTimeout(timer);
   }, []);
 
-  // Load Razorpay payment button into form when popup shows
-  React.useEffect(() => {
-    if (showPopup && paymentFormRef.current) {
-      // Clear any existing content
-      paymentFormRef.current.innerHTML = '';
-
-      // Create and append the payment button script
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/payment-button.js';
-      script.setAttribute('data-payment_button_id', RAZORPAY_CONSULTATION_BUTTON_ID);
-      script.async = true;
-
-      paymentFormRef.current.appendChild(script);
-
-      // Add custom styling to the Razorpay button
-      const style = document.createElement('style');
-      style.textContent = `
-        .razorpay-payment-button {
-          width: 100% !important;
-          padding: 16px 24px !important;
-          border-radius: 12px !important;
-          font-weight: 600 !important;
-          font-size: 16px !important;
-          background-color: #096b17 !important;
-          border: none !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-          transition: all 0.3s !important;
-        }
-        .razorpay-payment-button:hover {
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
-          transform: scale(1.05) !important;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-  }, [showPopup]);
-
-  // Handle online consultation payment
-  const handleOnlineConsultation = () => {
-    setIsPaymentLoading(true);
-
-    // Track initiate checkout event
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: 'initiatecheckout',
-      test_type: 'gbsi_consultation',
-      amount: 1000,
-      currency: 'INR',
-      page_path: window.location.pathname,
-      timestamp: new Date().toISOString(),
-    });
-    console.log('✅ initiatecheckout event pushed to dataLayer (GBSI Online Consultation, ₹1000)');
-
-    // Open Razorpay payment link
-    const paymentUrl = `https://razorpay.com/payment-button/${RAZORPAY_CONSULTATION_BUTTON_ID}/view/?amount=${CONSULTATION_AMOUNT}`;
-
-    // Add success redirect URL parameter
-    const redirectUrl = encodeURIComponent(`${window.location.origin}/schedule-consultation`);
-    const paymentUrlWithRedirect = `${paymentUrl}&redirect_url=${redirectUrl}`;
-
-    window.open(paymentUrlWithRedirect, '_blank');
-
-    setIsPaymentLoading(false);
+  // Handle appointment booking
+  const handleAppointmentBooking = () => {
+    // Open clinic booking page
+    window.open('https://dryuvaraj.curago.in/myclinic', '_blank');
   };
 
   // Handle Priority Circle 365 application
@@ -128,15 +45,9 @@ export default function GbsiResultScreen({
     window.open('https://dryuvaraj.curago.in/apply', '_blank');
   };
 
-  // Handle Priority Circle 365 info
-  const handlePriorityCircleInfo = () => {
-    // Open Priority Circle main page
-    window.open('https://dryuvaraj.curago.in', '_blank');
-  };
-
   // Handle WhatsApp appointment booking
   const handleWhatsAppAppointment = () => {
-    const whatsappNumber = '919148615951'; // CuraGo WhatsApp number
+    const whatsappNumber = '917021227203'; // CuraGo WhatsApp number
     const message = encodeURIComponent(
       `Hi, I've completed the GBSI Assessment and would like to book an in-clinic appointment. My name is ${userName || 'User'}.`
     );
@@ -144,20 +55,9 @@ export default function GbsiResultScreen({
     window.open(whatsappUrl, '_blank');
   };
 
-  // Handle WhatsApp chat from popup
-  const handleWhatsAppChat = () => {
-    const whatsappNumber = '919148615951'; // CuraGo WhatsApp number
-    const message = encodeURIComponent(
-      `Hi, I've received my GBSI Assessment results. I would like to discuss my results. My name is ${userName || 'User'}.`
-    );
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
-    window.open(whatsappUrl, '_blank');
-    setShowPopup(false); // Close popup after clicking
-  };
-
-  // Handle consultation booking from popup
-  const handlePopupConsultation = () => {
-    handleOnlineConsultation();
+  // Handle appointment booking from popup
+  const handlePopupAppointment = () => {
+    window.open('https://dryuvaraj.curago.in/myclinic', '_blank');
     setShowPopup(false); // Close popup after clicking
   };
 
@@ -174,16 +74,25 @@ export default function GbsiResultScreen({
           Next Steps & Support
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Book Online Consultation */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Book a Consult */}
           <button
-            onClick={handleOnlineConsultation}
-            disabled={isPaymentLoading}
+            onClick={handleAppointmentBooking}
             className="flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
             style={{ backgroundColor: '#096b17', color: '#ffffff' }}
           >
             <Calendar className="w-5 h-5" />
-            {isPaymentLoading ? 'Opening...' : 'Book Online Consultation (₹1000)'}
+            Book a Consult
+          </button>
+
+          {/* Chat on WhatsApp */}
+          <button
+            onClick={handleWhatsAppAppointment}
+            className="flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+            style={{ backgroundColor: '#25D366', color: '#ffffff' }}
+          >
+            <MessageCircle className="w-5 h-5" />
+            Chat on WhatsApp
           </button>
 
           {/* Apply for Priority Circle 365 */}
@@ -193,27 +102,7 @@ export default function GbsiResultScreen({
             style={{ color: '#096b17', borderColor: '#096b17' }}
           >
             <FileText className="w-5 h-5" />
-            Apply for Priority Circle 365
-          </button>
-
-          {/* Know More about Priority Circle 365 */}
-          <button
-            onClick={handlePriorityCircleInfo}
-            className="flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 bg-white border-2"
-            style={{ color: '#096b17', borderColor: '#096b17' }}
-          >
-            <ExternalLink className="w-5 h-5" />
-            Know More - Priority Circle 365
-          </button>
-
-          {/* Book In-Clinic Appointment on WhatsApp */}
-          <button
-            onClick={handleWhatsAppAppointment}
-            className="flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-            style={{ backgroundColor: '#25D366', color: '#ffffff' }}
-          >
-            <MessageCircle className="w-5 h-5" />
-            Book In-Clinic on WhatsApp
+            Priority Access
           </button>
         </div>
 
@@ -278,13 +167,6 @@ export default function GbsiResultScreen({
               >
                 Book Urgent Consultation
               </a>
-              <button
-                onClick={onRetake}
-                className="inline-block bg-white hover:bg-gray-50 px-8 py-3 rounded-xl font-semibold border-2 transition-all duration-300 shadow-md"
-                style={{ color: '#096b17', borderColor: '#096b1733' }}
-              >
-                Retake Assessment
-              </button>
             </div>
 
             {/* Action Buttons */}
@@ -373,13 +255,6 @@ export default function GbsiResultScreen({
               >
                 Apply for Founder's Membership (₹1000)
               </a>
-              <button
-                onClick={onRetake}
-                className="inline-block bg-white hover:bg-gray-50 px-8 py-3 rounded-xl font-semibold border-2 transition-all duration-300 shadow-md"
-                style={{ color: '#096b17', borderColor: '#096b1733' }}
-              >
-                Retake Assessment
-              </button>
             </div>
 
             {/* Action Buttons */}
@@ -469,13 +344,6 @@ export default function GbsiResultScreen({
               >
                 Book Online Consultation
               </a>
-              <button
-                onClick={onRetake}
-                className="inline-block bg-white hover:bg-gray-50 px-8 py-3 rounded-xl font-semibold border-2 transition-all duration-300 shadow-md"
-                style={{ color: '#096b17', borderColor: '#096b1733' }}
-              >
-                Retake Assessment
-              </button>
             </div>
 
             {/* Action Buttons */}
@@ -566,13 +434,6 @@ export default function GbsiResultScreen({
                 style={{ backgroundColor: '#096b17', color: '#ffffff' }}
               >
                 Download Free Gut Guide
-              </button>
-              <button
-                onClick={onRetake}
-                className="inline-block bg-white hover:bg-gray-50 px-8 py-3 rounded-xl font-semibold border-2 transition-all duration-300 shadow-md"
-                style={{ color: '#096b17', borderColor: '#096b1733' }}
-              >
-                Retake Assessment
               </button>
             </div>
 
@@ -667,14 +528,19 @@ export default function GbsiResultScreen({
 
               {/* Action Buttons */}
               <div className="space-y-3">
-                {/* Razorpay Payment Button */}
-                <form ref={paymentFormRef} className="w-full">
-                  {/* Razorpay payment button script will be loaded here */}
-                </form>
+                {/* Book Appointment Button */}
+                <button
+                  onClick={handlePopupAppointment}
+                  className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+                  style={{ backgroundColor: '#096b17', color: '#ffffff' }}
+                >
+                  <Calendar className="w-5 h-5" />
+                  Book Appointment
+                </button>
 
                 {/* Chat on WhatsApp Button */}
                 <a
-                  href={`https://wa.me/919148615951?text=${encodeURIComponent(`Hi, I've completed the GBSI Assessment. My name is ${userName || 'User'}.`)}`}
+                  href={`https://wa.me/917021227203?text=${encodeURIComponent(`Hi, I've completed the GBSI Assessment. My name is ${userName || 'User'}.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
