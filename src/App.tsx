@@ -51,6 +51,9 @@ const GbsiLandingPage = lazy(() => import('./components/assessment/gbsi').then(m
 const GbsiQuizFlow = lazy(() => import('./components/assessment/gbsi').then(m => ({ default: m.GbsiQuizFlow })));
 const GbsiResultScreen = lazy(() => import('./components/assessment/gbsi').then(m => ({ default: m.GbsiResultScreen })));
 
+// CuraGo Ecosystem page - lazy loaded
+const CuraGoEcosystemPage = lazy(() => import('./components/CuraGoEcosystemPage'));
+
 // Keep these as regular imports (small utilities)
 import { calculateCalmResult } from './components/assessment/calm/scoringEngine';
 import { sendCalaResultsToGoogleSheets, sendGbsiResultsToGoogleSheets } from './utils/googleSheets';
@@ -73,6 +76,7 @@ const isAtmPath = (p: string) => p.startsWith('/atm');
 const isCalmPath = (p: string) => p.startsWith('/cala');
 const isGbsiPath = (p: string) => p.startsWith('/gbsi');
 const isConsultationPath = (p: string) => p === '/bookconsultation' || p === '/paymentSuccess';
+const isScienceMeetsMindPath = (p: string) => p.startsWith('/science-meets-mind');
 
 /** =========================
  *  Referral-safe URL helpers
@@ -137,6 +141,9 @@ export default function App() {
   const [isConsultationRoute, setIsConsultationRoute] = useState<boolean>(
     isConsultationPath(getPathname())
   );
+  const [isScienceMeetsMindRoute, setIsScienceMeetsMindRoute] = useState<boolean>(
+    isScienceMeetsMindPath(getPathname())
+  );
 
   // ---------- Record referral once (captures ?ref=...) ----------
   useEffect(() => {
@@ -144,16 +151,11 @@ export default function App() {
   }, []);
 
 
-  // ---------- Hash routing (marketing pages) ----------
+  // ---------- Hash routing (science-meets-mind pages) ----------
   useEffect(() => {
-    if (isAuraRoute || isAtmRoute || isCalmRoute || isGbsiRoute || isConsultationRoute) return;
+    if (isAuraRoute || isAtmRoute || isCalmRoute || isGbsiRoute || isConsultationRoute || !isScienceMeetsMindRoute) return;
 
     const handleHashChange = () => {
-      // Ensure /contact#... becomes just /#... to keep single-shell SPA feel
-      if (window.location.pathname === '/contact' && window.location.hash) {
-        history.replaceState(null, '', buildUrl('/', window.location.hash));
-      }
-
       const hash = window.location.hash;
 
       if (hash === '#mental-health-team') {
@@ -167,14 +169,14 @@ export default function App() {
       } else if (hash === '#home' || hash === '') {
         setCurrentPage('home');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        trackPageView('Home', 'CuraGo - Professional Healthcare At Your Doorstep');
+        trackPageView('Science Meets Mind', 'CuraGo - Science Meets Mind');
       }
     };
 
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [isAuraRoute, isAtmRoute, isCalmRoute, isGbsiRoute]);
+  }, [isAuraRoute, isAtmRoute, isCalmRoute, isGbsiRoute, isScienceMeetsMindRoute]);
 
   // ---------- Path routing (/contact and /aura-rise-index*) ----------
   useEffect(() => {
@@ -187,6 +189,7 @@ export default function App() {
       setIsCalmRoute(isCalmPath(pathname));
       setIsGbsiRoute(isGbsiPath(pathname));
       setIsConsultationRoute(isConsultationPath(pathname));
+      setIsScienceMeetsMindRoute(isScienceMeetsMindPath(pathname));
 
       // AURA routes
       if (pathname === '/aura-rise-index') {
@@ -346,6 +349,14 @@ export default function App() {
         return;
       }
 
+      // Science Meets Mind route (mental health marketing pages)
+      if (pathname === '/science-meets-mind') {
+        setCurrentPage('home');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('Science Meets Mind', 'CuraGo - Science Meets Mind');
+        return;
+      }
+
       // Contact route (full page)
       if (pathname === '/contact') {
         setCurrentPage('contact');
@@ -368,12 +379,10 @@ export default function App() {
         return;
       }
 
-      // Handle home route (root path with no hash or #home)
+      // Handle home route (root path - CuraGo Ecosystem)
       if (pathname === '/' || pathname === '') {
-        if (!window.location.hash || window.location.hash === '#home') {
-          setCurrentPage('home');
-          trackPageView('Home', 'CuraGo - Professional Healthcare At Your Doorstep');
-        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        trackPageView('CuraGo Ecosystem', 'CuraGo - Practice Growth Ecosystem');
         return;
       }
       
@@ -394,31 +403,43 @@ export default function App() {
   };
 
   const handleNavigate = (page: string) => {
-    console.log('🧭 Navigating to:', page, 'from current route:', { isAuraRoute, isAtmRoute, isCalmRoute, isGbsiRoute, currentPage });
+    console.log('🧭 Navigating to:', page, 'from current route:', { isAuraRoute, isAtmRoute, isCalmRoute, isGbsiRoute, isScienceMeetsMindRoute, currentPage });
 
     if (page === 'home') {
-      history.pushState(null, '', buildUrl('/', '#home'));
+      // Home is now CuraGo Ecosystem page
+      history.pushState(null, '', buildUrl('/'));
       setIsAuraRoute(false);
       setIsAtmRoute(false);
       setIsCalmRoute(false);
       setIsGbsiRoute(false);
+      setIsScienceMeetsMindRoute(false);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    } else if (page === 'science-meets-mind') {
+      // Mental health marketing pages
+      history.pushState(null, '', buildUrl('/science-meets-mind'));
+      setIsAuraRoute(false);
+      setIsAtmRoute(false);
+      setIsCalmRoute(false);
+      setIsGbsiRoute(false);
+      setIsScienceMeetsMindRoute(true);
       setCurrentPage('home');
-      // Force a popstate event to trigger route sync
       window.dispatchEvent(new PopStateEvent('popstate'));
     } else if (page === 'team') {
-      history.pushState(null, '', buildUrl('/', '#mental-health-team'));
+      history.pushState(null, '', buildUrl('/science-meets-mind', '#mental-health-team'));
       setIsAuraRoute(false);
       setIsAtmRoute(false);
       setIsCalmRoute(false);
       setIsGbsiRoute(false);
+      setIsScienceMeetsMindRoute(true);
       setCurrentPage('team');
       window.dispatchEvent(new PopStateEvent('popstate'));
     } else if (page === 'booking') {
-      history.pushState(null, '', buildUrl('/', '#booking'));
+      history.pushState(null, '', buildUrl('/science-meets-mind', '#booking'));
       setIsAuraRoute(false);
       setIsAtmRoute(false);
       setIsCalmRoute(false);
       setIsGbsiRoute(false);
+      setIsScienceMeetsMindRoute(true);
       setCurrentPage('booking');
       window.dispatchEvent(new PopStateEvent('popstate'));
     } else if (page === 'contact') {
@@ -1033,52 +1054,70 @@ export default function App() {
     );
   }
 
-  // Marketing site
+  // Science Meets Mind route (mental health marketing pages)
+  if (isScienceMeetsMindRoute) {
+    return (
+      <div className="min-h-screen bg-white scroll-smooth">
+        <Toaster />
+        <Suspense fallback={null}>
+          <FloatingButtons onBookNow={navigateToBooking} />
+        </Suspense>
+
+        <Navbar
+          onBookAppointment={navigateToBooking}
+          currentPage={currentPage}
+          onNavigate={handleNavigate}
+        />
+
+        <Suspense fallback={<LoadingSpinner />}>
+          {currentPage === 'home' ? (
+            <>
+              <Hero onBookAppointment={navigateToBooking} />
+              <Services />
+              <ExpertiseScroller />
+              <MentalHealthTeam
+                onViewAllTeam={() => handleNavigate('team')}
+                onBookNow={navigateToBooking}
+              />
+              <TestimonialsMarquee />
+              <About onGetStarted={navigateToBooking} />
+              <Contact />
+              <Footer />
+            </>
+          ) : currentPage === 'booking' ? (
+            <>
+              <BookingFormPage />
+              <Footer />
+            </>
+          ) : currentPage === 'team' ? (
+            <>
+              <MentalHealthTeamPage onBookAppointment={navigateToBooking} />
+              <Footer />
+            </>
+          ) : currentPage === 'contact' ? (
+            <>
+              <Contact />
+              <Footer />
+            </>
+          ) : null}
+        </Suspense>
+      </div>
+    );
+  }
+
+  // Home page - CuraGo Ecosystem (new default)
   return (
     <div className="min-h-screen bg-white scroll-smooth">
       <Toaster />
-      <Suspense fallback={null}>
-        <FloatingButtons onBookNow={navigateToBooking} />
-      </Suspense>
-
       <Navbar
         onBookAppointment={navigateToBooking}
-        currentPage={currentPage}
+        currentPage="home"
         onNavigate={handleNavigate}
       />
-
       <Suspense fallback={<LoadingSpinner />}>
-        {currentPage === 'home' ? (
-          <>
-            <Hero onBookAppointment={navigateToBooking} />
-            <Services />
-            <ExpertiseScroller />
-            <MentalHealthTeam
-              onViewAllTeam={() => handleNavigate('team')}
-              onBookNow={navigateToBooking}
-            />
-            <TestimonialsMarquee />
-            <About onGetStarted={navigateToBooking} />
-            <Contact />
-            <Footer />
-          </>
-        ) : currentPage === 'booking' ? (
-          <>
-            <BookingFormPage />
-            <Footer />
-          </>
-        ) : currentPage === 'team' ? (
-          <>
-            <MentalHealthTeamPage onBookAppointment={navigateToBooking} />
-            <Footer />
-          </>
-        ) : currentPage === 'contact' ? (
-          <>
-            <Contact />
-            <Footer />
-          </>
-        ) : null}
+        <CuraGoEcosystemPage onApply={navigateToBooking} onNavigate={handleNavigate} />
       </Suspense>
+      <Footer />
     </div>
   );
 }
