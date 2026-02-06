@@ -141,164 +141,53 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
             transition={{ delay: 0.3 }}
           >
             <a
-              href="#home"
-              onClick={(e) => {
-                if (onNavigate) {
-                  e.preventDefault();
-                  onNavigate('home');
-                } else {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
-              className={`${baseLink} ${activeSection === 'home' ? 'text-[#096b17]' : ''}`}
-            >
-              Home
-              <span className={underline(activeSection === 'home')} />
-            </a>
-
-            <a
-              href="#team"
-              onClick={(e) => {
-                if (onNavigate) {
-                  e.preventDefault();
-                  onNavigate('team');
-                } else {
-                  document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className={`${baseLink} ${currentPage === 'team' ? 'text-[#096b17]' : ''}`}
-            >
-              Mental Health Team
-              <span className={underline(currentPage === 'team')} />
-            </a>
-
-            <a
-              href="/#services"
-              onClick={(e) => {
-                e.preventDefault();
-                if (currentPage === 'aura' || currentPage === 'atm' || currentPage === 'calm') {
-                  // Navigate away from assessment pages to home
-                  window.location.href = '/#services';
-                } else if (onNavigate) {
-                  onNavigate('home');
-                  setTimeout(() => {
-                    document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                } else {
-                  document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className={`${baseLink} ${activeSection === 'services' ? 'text-[#096b17]' : ''}`}
-            >
-              Our Services
-              <span className={underline(activeSection === 'services')} />
-            </a>
-
-            <a
-              href="/#about"
-              onClick={(e) => {
-                e.preventDefault();
-                if (currentPage === 'aura' || currentPage === 'atm' || currentPage === 'calm') {
-                  // Navigate away from assessment pages to home
-                  window.location.href = '/#about';
-                } else if (onNavigate) {
-                  onNavigate('home');
-                  setTimeout(() => {
-                    document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                } else {
-                  document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className={`${baseLink} ${activeSection === 'about' ? 'text-[#096b17]' : ''}`}
-            >
-              About Us
-              <span className={underline(activeSection === 'about')} />
-            </a>
-
-            {/* Free Tools Dropdown */}
-            <div ref={dropdownRef} className="relative">
-              <button
-                onClick={() => setShowFreeToolsDropdown(!showFreeToolsDropdown)}
-                className={`${baseLink} flex items-center gap-1 ${
-                  currentPage === 'aura' || currentPage === 'atm' ? 'text-[#096b17]' : ''
-                }`}
-              >
-                Free Tools
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${
-                    showFreeToolsDropdown ? 'rotate-180' : ''
-                  }`}
-                />
-                <span className={underline(currentPage === 'aura' || currentPage === 'atm')} />
-              </button>
-
-              {/* Dropdown Menu */}
-              <AnimatePresence>
-                {showFreeToolsDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
-                  >
-                    <a
-                      href="/aura-rise-index"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        goToAssessment('/aura-rise-index');
-                        setShowFreeToolsDropdown(false);
-                      }}
-                      className={`block px-4 py-3 hover:bg-[#096b17]/10 transition-colors ${
-                        currentPage === 'aura' ? 'bg-[#096b17]/5 text-[#096b17] font-semibold' : 'text-gray-700'
-                      }`}
-                    >
-                      AURA Index
-                    </a>
-                    <a
-                      href="/atm"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        goToAssessment('/atm');
-                        setShowFreeToolsDropdown(false);
-                      }}
-                      className={`block px-4 py-3 hover:bg-[#096b17]/10 transition-colors ${
-                        currentPage === 'atm' ? 'bg-[#096b17]/5 text-[#096b17] font-semibold' : 'text-gray-700'
-                      }`}
-                    >
-                      ATM Tool
-                    </a>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* CALM 1.0 - external link to cala.curago.in */}
-            <a
-              href="https://cala.curago.in"
+              href="https://dryuvaraj.curago.in"
               target="_blank"
               rel="noopener noreferrer"
-              className={`${baseLink}`}
+              className={baseLink}
             >
-              CALM 1.0
+              Dr Yuvaraj's Gastro Digital Clinic
+              <span className={underline(false)} />
             </a>
 
             <a
-              href="/contact"
+              href="/atm"
               onClick={(e) => {
-                trackButtonClick('Contact Us', 'navigation', 'navbar');
+                e.preventDefault();
+                goToAssessment('/atm');
+              }}
+              className={`${baseLink} ${currentPage === 'atm' ? 'text-[#096b17]' : ''}`}
+            >
+              Anxiety Care
+              <span className={underline(currentPage === 'atm')} />
+            </a>
+
+            <a
+              href="/science-meets-mind"
+              onClick={(e) => {
                 if (onNavigate) {
                   e.preventDefault();
-                  onNavigate('contact');
-                } else {
-                  // Allow default navigation to /contact
+                  onNavigate('science-meets-mind');
                 }
               }}
-              className={`${baseLink} ${currentPage === 'contact' ? 'text-[#096b17]' : ''}`}
+              className={`${baseLink} ${currentPage === 'home' || currentPage === 'team' ? 'text-[#096b17]' : ''}`}
             >
-              Contact Us
-              <span className={underline(currentPage === 'contact')} />
+              Mental Health Services
+              <span className={underline(currentPage === 'home' || currentPage === 'team')} />
+            </a>
+
+            <a
+              href="/"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault();
+                  onNavigate('home');
+                }
+              }}
+              className={`${baseLink}`}
+            >
+              Join Us
+              <span className={underline(false)} />
             </a>
           </motion.nav>
 
@@ -309,27 +198,16 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
           >
-            {/* hide on mobile to reduce clutter */}
-            <button
+            {/* Chat on WhatsApp Button */}
+            <Button
               onClick={handleWhatsAppClick}
-              className="hidden sm:flex items-center gap-2 text-gray-700 hover:text-[#096b17] transition-all duration-300 hover:scale-105"
-              aria-label="WhatsApp us"
+              className="hidden sm:inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white h-9 px-3 text-sm md:h-10 md:px-4 md:text-base rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              aria-label="Chat on WhatsApp"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-2.462-.96-4.779-2.705-6.526-1.746-1.746-4.065-2.711-6.526-2.713-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.092-.634zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.867-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.149-.173.198-.297.297-.495.099-.198.05-.372-.025-.521-.074-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414l-.005.009z"/>
               </svg>
-              <span className="hidden lg:inline">+917021227203</span>
-            </button>
-
-            {/* Book Now — hidden on mobile, compact on desktop */}
-            <Button
-              onClick={() => {
-                trackButtonClick('Book Now', 'navbar', 'header');
-                onBookAppointment();
-              }}
-              className="hidden sm:inline-flex bg-[#096b17] hover:bg-[#075110] text-white h-9 px-3 text-sm md:h-10 md:px-4 md:text-base rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            >
-              Book Now
+              <span className="hidden lg:inline">Chat on WhatsApp</span>
             </Button>
 
             {/* Hamburger (mobile only) */}
@@ -369,130 +247,53 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
               <div className="px-4 pb-4 pt-2 border-t border-black/10" style={{ backgroundColor: '#FFFDBD' }}>
                 <div className="flex flex-col space-y-3">
                   <a
-                    href="#home"
-                    onClick={(e) => {
-                      if (onNavigate) {
-                        e.preventDefault();
-                        onNavigate('home');
-                      }
-                      setMobileOpen(false);
-                    }}
-                    className="py-2 text-gray-800"
-                  >
-                    Home
-                  </a>
-
-                  <a
-                    href="#team"
-                    onClick={(e) => {
-                      if (onNavigate) {
-                        e.preventDefault();
-                        onNavigate('team');
-                      }
-                      setMobileOpen(false);
-                    }}
-                    className="py-2 text-gray-800"
-                  >
-                    Mental Health Team
-                  </a>
-
-                  <a
-                    href="/#services"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setMobileOpen(false);
-                      if (currentPage === 'aura' || currentPage === 'atm' || currentPage === 'calm') {
-                        // Navigate away from assessment pages to home
-                        window.location.href = '/#services';
-                      } else if (onNavigate) {
-                        onNavigate('home');
-                        setTimeout(() => {
-                          document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
-                        }, 100);
-                      } else {
-                        setTimeout(() => {
-                          document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
-                        }, 100);
-                      }
-                    }}
-                    className="py-2 text-gray-800"
-                  >
-                    Our Services
-                  </a>
-
-                  <a
-                    href="/#about"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setMobileOpen(false);
-                      if (currentPage === 'aura' || currentPage === 'atm' || currentPage === 'calm') {
-                        // Navigate away from assessment pages to home
-                        window.location.href = '/#about';
-                      } else if (onNavigate) {
-                        onNavigate('home');
-                        setTimeout(() => {
-                          document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
-                        }, 100);
-                      } else {
-                        setTimeout(() => {
-                          document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
-                        }, 100);
-                      }
-                    }}
-                    className="py-2 text-gray-800"
-                  >
-                    About Us
-                  </a>
-
-                  {/* Free Tools Section */}
-                  <div className="py-2">
-                    <div className="text-gray-600 text-sm font-semibold mb-2">Free Tools</div>
-                    <div className="pl-4 space-y-2">
-                      <a
-                        href="/aura-rise-index"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          goToAssessment('/aura-rise-index');
-                        }}
-                        className="block py-1.5 text-gray-800"
-                      >
-                        AURA Index
-                      </a>
-                      <a
-                        href="/atm"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          goToAssessment('/atm');
-                        }}
-                        className="block py-1.5 text-gray-800"
-                      >
-                        ATM Tool
-                      </a>
-                    </div>
-                  </div>
-
-                  <a
-                    href="https://cala.curago.in"
+                    href="https://dryuvaraj.curago.in"
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => setMobileOpen(false)}
                     className="py-2 text-gray-800"
                   >
-                    CALM 1.0
+                    Dr Yuvaraj's Gastro Digital Clinic
                   </a>
 
                   <a
-                    href="/contact"
+                    href="/atm"
                     onClick={(e) => {
-                      trackButtonClick('Contact Us', 'navigation', 'navbar_mobile');
+                      e.preventDefault();
+                      goToAssessment('/atm');
+                      setMobileOpen(false);
+                    }}
+                    className="py-2 text-gray-800"
+                  >
+                    Anxiety Care
+                  </a>
+
+                  <a
+                    href="/science-meets-mind"
+                    onClick={(e) => {
                       if (onNavigate) {
                         e.preventDefault();
-                        onNavigate('contact');
+                        onNavigate('science-meets-mind');
                       }
                       setMobileOpen(false);
                     }}
                     className="py-2 text-gray-800"
                   >
-                    Contact Us
+                    Mental Health Services
+                  </a>
+
+                  <a
+                    href="/"
+                    onClick={(e) => {
+                      if (onNavigate) {
+                        e.preventDefault();
+                        onNavigate('home');
+                      }
+                      setMobileOpen(false);
+                    }}
+                    className="py-2 text-gray-800"
+                  >
+                    Join Us
                   </a>
 
                   <button
@@ -500,12 +301,12 @@ export function Navbar({ onBookAppointment, currentPage = 'home', onNavigate }: 
                       handleWhatsAppClick();
                       setMobileOpen(false);
                     }}
-                    className="py-2 text-gray-800 inline-flex items-center gap-2"
+                    className="py-2 text-left text-gray-800 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white px-4 rounded-lg transition-all duration-300"
                   >
-                    WhatsApp
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-2.462-.96-4.779-2.705-6.526-1.746-1.746-4.065-2.711-6.526-2.713-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.092-.634zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.867-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.149-.173.198-.297.297-.495.099-.198.05-.372-.025-.521-.074-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414l-.005.009z"/>
                     </svg>
+                    Chat on WhatsApp
                   </button>
                 </div>
               </div>

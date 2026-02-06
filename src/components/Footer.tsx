@@ -21,7 +21,7 @@ export function Footer() {
               <img src='/Logo.svg?v=6' alt="CuraGo Logo" className="h-12 w-auto" width="192" height="48" loading='lazy' />
             </div>
             <p className="text-sm leading-relaxed" style={{ color: '#096b17' }}>
-              India's beloved online mental health platform where science meets life with empathy.
+              CuraGo: The Specialized Patient Discovery & Practice Growth Ecosystem. Connecting healthcare excellence with patients across India.
             </p>
           </div>
 
@@ -29,21 +29,58 @@ export function Footer() {
           <div>
             <h4 className="mb-4" style={{ color: '#096b17' }}>Quick Links</h4>
             <ul className="space-y-2.5 text-sm" style={{ color: '#096b17', opacity: 0.8 }}>
-              <li><a href="#home" className="hover:opacity-100 transition-opacity">Home</a></li>
-              <li><a href="#team" className="hover:opacity-100 transition-opacity">Mental Health Team</a></li>
-              <li><a href="#services" className="hover:opacity-100 transition-opacity">Our Services</a></li>
-              <li><a href="#about" className="hover:opacity-100 transition-opacity">About Us</a></li>
-              <li><a href="#contact" className="hover:opacity-100 transition-opacity">Contact Us</a></li>
+              <li>
+                <a
+                  href="https://dryuvaraj.curago.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:opacity-100 transition-opacity"
+                >
+                  Dr Yuvaraj's Gastro Digital Clinic
+                </a>
+              </li>
+              <li>
+                <a href="/atm" className="hover:opacity-100 transition-opacity">
+                  Anxiety Care
+                </a>
+              </li>
+              <li>
+                <a href="/science-meets-mind" className="hover:opacity-100 transition-opacity">
+                  Mental Health Services
+                </a>
+              </li>
+              <li>
+                <a href="/" className="hover:opacity-100 transition-opacity">
+                  Join Us
+                </a>
+              </li>
             </ul>
           </div>
 
-          {/* Services */}
+          {/* Our Established Services */}
           <div>
-            <h4 className="mb-4" style={{ color: '#096b17' }}>Services</h4>
+            <h4 className="mb-4" style={{ color: '#096b17' }}>Our Established Services</h4>
             <ul className="space-y-2.5 text-sm" style={{ color: '#096b17', opacity: 0.8 }}>
-              <li>Psychiatric Consultations</li>
-              <li>Psychologist Therapy Sessions</li>
-              <li>WhatsApp Support</li>
+              <li>
+                <a
+                  href="https://dryuvaraj.curago.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:opacity-100 transition-opacity"
+                >
+                  Gastroenterology Consultations
+                </a>
+              </li>
+              <li>
+                <a href="/science-meets-mind" className="hover:opacity-100 transition-opacity">
+                  Mental Health Platform
+                </a>
+              </li>
+              <li>
+                <a href="/atm" className="hover:opacity-100 transition-opacity">
+                  Anxiety Assessment & Care
+                </a>
+              </li>
             </ul>
           </div>
 

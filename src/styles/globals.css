@@ -128,10 +128,12 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
   }
 }
 
@@ -193,6 +195,7 @@
 html {
   font-size: var(--font-size);
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 /* Custom scrollbar for premium feel */

@@ -38,6 +38,12 @@
         height: auto;
       }
 
+      /* Prevent horizontal scroll on mobile */
+      html, body {
+        overflow-x: hidden;
+        width: 100%;
+      }
+
       /* Critical Navbar styles - prevents invisible text before CSS loads */
       nav a, nav button {
         color: #374151; /* text-gray-700 */

@@ -8,15 +8,11 @@ import {
   CheckCircle,
   ShieldCheck,
   TrendingUp,
-  MapPin,
   Quote,
   ArrowRight,
   Building,
   Zap,
-  Brain,
-  HeartPulse,
   Loader2,
-  ExternalLink,
   Lightbulb,
   Clock,
   Mail
@@ -33,15 +29,6 @@ const fadeInUp = {
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
   transition: { duration: 0.6 }
-};
-
-const staggerContainer = {
-  initial: {},
-  whileInView: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
 };
 
 export function CuraGoEcosystemPage({ onApply, onNavigate }: CuraGoEcosystemPageProps) {
@@ -214,7 +201,7 @@ export function CuraGoEcosystemPage({ onApply, onNavigate }: CuraGoEcosystemPage
         </div>
       </section>
 
-      {/* Our Services Section */}
+      {/* Our Established Services Section */}
       <section className="py-16 md:py-24 bg-[#096b17]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -222,15 +209,15 @@ export function CuraGoEcosystemPage({ onApply, onNavigate }: CuraGoEcosystemPage
             {...fadeInUp}
           >
             <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">
-              Our Services
+              Our Established Services
             </h2>
             <p className="text-lg text-white max-w-2xl mx-auto">
               Explore our specialized healthcare platforms designed to provide you with the best care
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Gut Brain Sensitivity Index */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Dr Yuvaraj's Gastro Digital Clinic */}
             <motion.a
               href="https://dryuvaraj.curago.in/"
               target="_blank"
@@ -242,33 +229,26 @@ export function CuraGoEcosystemPage({ onApply, onNavigate }: CuraGoEcosystemPage
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
               whileHover={{ y: -8 }}
-              onClick={() => trackButtonClick('GBSI Service', 'curago_ecosystem', 'services')}
+              onClick={() => trackButtonClick('Dr Yuvaraj Clinic', 'curago_ecosystem', 'services')}
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-[#096b17]" />
               <div className="p-8">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="w-16 h-16 bg-[#096b17] rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg">
-                    <Brain className="h-8 w-8 text-white" />
-                  </div>
-                  <ExternalLink className="h-5 w-5 text-gray-400 group-hover:text-[#096b17] transition-colors" />
-                </div>
                 <div className="mb-4">
-                  <span className="text-xs font-semibold text-[#096b17] uppercase tracking-wider">Dr. Yuvaraj's Clinic</span>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-1 group-hover:text-[#096b17] transition-colors">
-                    Gut Brain Sensitivity Index
+                  <h3 className="text-2xl font-bold text-gray-900 group-hover:text-[#096b17] transition-colors">
+                    Dr Yuvaraj's Gastro Digital Clinic
                   </h3>
                 </div>
                 <p className="text-gray-600 leading-relaxed mb-6">
-                  Advanced assessment tool for understanding the gut-brain connection. Get personalized insights into your digestive health.
+                  Expert gastroenterology consultations with Dr. Yuvaraj T, MS, MCh (Gold Medalist). Get personalized digestive health care from a leading specialist.
                 </p>
                 <div className="flex items-center gap-2 text-[#096b17] font-semibold">
-                  <span>Take the Assessment</span>
+                  <span>Book Consultation</span>
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform duration-300" />
                 </div>
               </div>
             </motion.a>
 
-            {/* Science Meets Mind */}
+            {/* Mental Health Platform */}
             <motion.div
               onClick={handleScienceMeetsMindClick}
               className="group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer"
@@ -281,12 +261,6 @@ export function CuraGoEcosystemPage({ onApply, onNavigate }: CuraGoEcosystemPage
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-[#096b17]" />
               <div className="p-8">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="w-16 h-16 bg-[#096b17] rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg">
-                    <HeartPulse className="h-8 w-8 text-white" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-[#096b17] transition-colors" />
-                </div>
                 <div className="mb-4">
                   <span className="text-xs font-semibold text-[#096b17] uppercase tracking-wider">Mental Health Platform</span>
                   <h3 className="text-2xl font-bold text-gray-900 mt-1 group-hover:text-[#096b17] transition-colors">
@@ -302,6 +276,39 @@ export function CuraGoEcosystemPage({ onApply, onNavigate }: CuraGoEcosystemPage
                 </div>
               </div>
             </motion.div>
+
+            {/* Anxiety Care */}
+            <motion.a
+              href="/atm"
+              onClick={(e) => {
+                e.preventDefault();
+                trackButtonClick('Anxiety Care', 'curago_ecosystem', 'services');
+                window.location.href = '/atm';
+              }}
+              className="group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer"
+              style={{ backgroundColor: '#FFFDBD' }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              whileHover={{ y: -8 }}
+            >
+              <div className="absolute top-0 left-0 w-full h-2 bg-[#096b17]" />
+              <div className="p-8">
+                <div className="mb-4">
+                  <h3 className="text-2xl font-bold text-gray-900 group-hover:text-[#096b17] transition-colors">
+                    Anxiety Care
+                  </h3>
+                </div>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Specialized anxiety assessment and management tools. Understand your anxiety triggers and get personalized care recommendations.
+                </p>
+                <div className="flex items-center gap-2 text-[#096b17] font-semibold">
+                  <span>Start Assessment</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform duration-300" />
+                </div>
+              </div>
+            </motion.a>
           </div>
         </div>
       </section>
@@ -537,65 +544,6 @@ export function CuraGoEcosystemPage({ onApply, onNavigate }: CuraGoEcosystemPage
         </div>
       </section>
 
-      {/* Active Specialities Section */}
-      <section className="py-16 md:py-24 bg-[#096b17]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-12"
-            {...fadeInUp}
-          >
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">
-              Active Specialities Under CuraGo
-            </h2>
-            <p className="text-lg text-white">
-              We are currently scaling in specialized hubs
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto"
-            initial="initial"
-            whileInView="whileInView"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
-            <motion.div
-              className="rounded-xl p-6 flex items-center gap-4"
-              style={{ backgroundColor: '#FFFDBD' }}
-              variants={fadeInUp}
-            >
-              <div className="w-12 h-12 bg-[#096b17]/20 rounded-xl flex items-center justify-center">
-                <MapPin className="h-6 w-6 text-[#096b17]" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900">Surgical Gastroenterology</h4>
-                <p className="text-gray-600">Mumbai, Maharashtra</p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="rounded-xl p-6 flex items-center gap-4"
-              style={{ backgroundColor: '#FFFDBD' }}
-              variants={fadeInUp}
-            >
-              <div className="w-12 h-12 bg-[#096b17]/20 rounded-xl flex items-center justify-center">
-                <MapPin className="h-6 w-6 text-[#096b17]" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900">Surgical Gastroenterology</h4>
-                <p className="text-gray-600">Salem, Tamil Nadu</p>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          <motion.p
-            className="text-center text-white/70 mt-8 italic"
-            {...fadeInUp}
-          >
-            (More specialities are currently in the Vetting Phase)
-          </motion.p>
-        </div>
-      </section>
 
       {/* Founder's Journey Section */}
       <section className="py-16 md:py-24" style={{ backgroundColor: '#FFFDBD' }}>
