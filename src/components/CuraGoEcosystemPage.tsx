@@ -98,6 +98,19 @@ export function CuraGoEcosystemPage({ onApply, onNavigate }: CuraGoEcosystemPage
         setCallbackEmail('');
         setCallbackTime('');
         trackButtonClick('Callback Request Submitted', 'curago_ecosystem', 'form');
+
+        // Trigger "appointment booked" event for GTM/Analytics
+        if (typeof window !== 'undefined' && window.dataLayer) {
+          window.dataLayer.push({
+            event: 'appointment booked',
+            eventCategory: 'Conversion',
+            eventLabel: 'Request Callback Form',
+            eventAction: 'Submit',
+            formType: 'callback_request',
+            source: 'curago_homepage'
+          });
+          console.log('✅ Tracking: appointment booked event fired');
+        }
       } else {
         throw new Error('Failed to submit');
       }
@@ -627,6 +640,26 @@ export function CuraGoEcosystemPage({ onApply, onNavigate }: CuraGoEcosystemPage
                 </div>
               </motion.div>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Pricing Options Section */}
+      <section className="py-16 md:py-24 bg-[#096b17]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            className="text-center max-w-3xl mx-auto"
+            {...fadeInUp}
+          >
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-6">
+              Pricing Options
+            </h2>
+            <p className="text-lg text-white/90 leading-relaxed mb-4">
+              We are working on a three-tier subscription-based pricing system and it will be updated soon. Reach out to us to know more about it.
+            </p>
+            <p className="text-xl text-[#64CB81] font-medium italic">
+              We are consciously keeping the subscription pricing cheaper than a Saturday outing :)
+            </p>
           </motion.div>
         </div>
       </section>
